@@ -8,7 +8,7 @@ export default function Accueil() {
   return (
     <OnboardingScreen
       initial={profile}
-      onDone={async p => { await saveProfile(p); router.replace('/'); }}
+      onDone={async p => { await saveProfile(p); if (router.canGoBack()) router.back(); else router.replace('/'); }}
     />
   );
 }

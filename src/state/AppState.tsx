@@ -9,6 +9,10 @@ interface AppState extends AppData {
   error: string | null;
   saveProfile(p: Profile): Promise<void>;
   addExpense(e: Expense): Promise<void>;
+  removeExpense(id: string): Promise<void>;
+  /** dernière dépense ajoutée, pour la confirmation et « Annuler » */
+  lastAdded: Expense | null;
+  clearLastAdded(): void;
   wipeAll(): Promise<void>;
 }
 
@@ -18,6 +22,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<AppData>(EMPTY);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastAdded, setLastAdded] = useState<Expense | null>(null);
   const latest = useRef<AppData>(EMPTY);
 
   useEffect(() => {
@@ -39,9 +44,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AppState>(() => ({
     ...data, ready, error,
     saveProfile: p => commit({ ...latest.current, profile: p }),
-    addExpense: e => commit({ ...latest.current, expenses: [e, ...latest.current.expenses] }),
-    wipeAll: async () => { await kv.wipe(); latest.current = EMPTY; setData(EMPTY); },
-  }), [data, ready, error, commit]);
+    addExpense: async e => { await commit({ ...latest.current, expenses: [e, ...latest.current.expenses] }); setLastAdded(e); },
+    removeExpense: async id => { await commit({ ...latest.current, expenses: latest.current.expenses.filter(x => x.id !== id) }); setLastAdded(l => (l?.id === id ? null : l)); },
+    lastAdded, clearLastAdded: () => setLastAdded(null),
+    wipeAll: async () => { await kv.wipe(); latest.current = EMPTY; setData(EMPTY); setLastAdded(null); },
+  }), [data, ready, error, commit, lastAdded]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

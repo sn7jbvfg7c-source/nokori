@@ -17,14 +17,14 @@ npm run android    # émulateur Android ou Expo Go
 npm test           # tests unitaires (moteur, accueil, données relues)
 npm run typecheck  # vérification des types
 npm run lint       # règles de code
-npm run e2e        # parcours complet de l'accueil dans la version web (Playwright)
+npm run e2e        # parcours complet dans la version web : accueil, dépense, calendrier (Playwright)
 ```
 
 ## Organisation
 
 | Dossier | Contenu |
 | --- | --- |
-| `src/app` | Routes (Expo Router) : `index` (budget), `accueil` |
+| `src/app` | Routes (Expo Router) : `index` (budget et calendrier), `accueil`, `depense` (fenêtre de saisie) |
 | `src/domain` | Moteur de calcul, sans interface : budget du mois, charges fixes, argent en centimes, couleurs du mois, accueil |
 | `src/data` | Stockage : base SQLite chiffrée (SQLCipher) sur téléphone, validation de tout ce qui est relu |
 | `src/state` | État de l'app et enregistrement automatique |
@@ -54,4 +54,6 @@ Le chiffrement SQLCipher n'existe pas dans Expo Go : pour tester la vraie app, i
 - [x] 2. Accueil au premier lancement : revenu, paie, épargne, charges fixes (liste ou saisie), récapitulatif
 - [x] Stockage local chiffré et navigation
 - [x] 3. Budget : carte du mois et quatre piliers (première version, avec un profil d'exemple)
-- [ ] 4 à 12 : voir le cahier des charges, onglet « Plan solo avec agents IA »
+- [x] 4. Saisie d'une dépense : pavé numérique, catégories par pilier, libellé, aujourd'hui ou hier, confirmation avec « Annuler »
+- [x] 5. Calendrier : du mois dernier à dans 3 mois, couleur du mois, charges reportées, paie, dépenses, détail du jour
+- [ ] 6 à 12 : voir le cahier des charges, onglet « Plan solo avec agents IA »

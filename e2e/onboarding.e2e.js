@@ -56,10 +56,71 @@ const eq = (a, b, what) => { if (a !== b) throw new Error(`${what} : « ${a} » 
     await btn('Modifier mes réponses').click(); await W(500); await btn('Commencer').click(); await W(300);
     eq(await p.getByLabel('Revenu mensuel').inputValue(), '2 480,00', 'revenu repris');
   });
+  await t('retour au budget sans rien changer', async () => { await btn('Passer').click(); await W(300); await btn('Ouvrir mon budget').click(); await W(1000); await p.getByText('kaki, la couleur du mois').waitFor(); });
+  const envies = async () => (await p.locator('[aria-label^="Envies : il reste"]').first().getAttribute('aria-label'));
+  let before = '';
+  await t('dépense : « Ajouter » bloqué sans montant ni catégorie', async () => {
+    before = await envies();
+    await p.getByRole('button', { name: 'Ajouter une dépense' }).click(); await W(600);
+    if (!(await p.getByRole('button', { name: 'Ajouter la dépense' }).isDisabled())) throw new Error('bouton actif');
+  });
+  await t('dépense : pavé borné (2 décimales, 100 000 € au plus)', async () => {
+    for (const k of ['9', '9', '9', '9', '9', '9', '9']) await btn(k).click();
+    await p.getByLabel('Montant : 99 999,00 €').waitFor();
+    for (let i = 0; i < 5; i++) await btn('Effacer').click();
+    for (const k of ['4', 'Virgule', '8', '0', '5']) await btn(k).click();
+    await p.getByLabel('Montant : 4,80 €').waitFor();
+  });
+  await t('dépense : café 4,80 € en Envies, libellé hostile neutralisé', async () => {
+    await p.getByRole('button', { name: 'Restos et sorties, Envies' }).click();
+    await p.getByLabel('Libellé de la dépense').fill('<b onmouseover=alert(1)>Café');
+    await shot('d1');
+    await p.getByRole('button', { name: 'Ajouter la dépense' }).click(); await W(900);
+    await p.getByText('b onmouseover=alert(1)Café, 4,80 € ajouté en Envies').waitFor();
+    await shot('d2');
+  });
+  await t('dépense : le pilier Envies baisse de 4,80 €', async () => {
+    const after = await envies();
+    if (after === before) throw new Error('inchangé : ' + after);
+  });
+  await t('dépense : « Annuler » retire la dépense', async () => {
+    await p.getByRole('button', { name: 'Annuler l’ajout' }).click(); await W(500);
+    eq(await envies(), before, 'Envies après annulation');
+  });
+  await t('dépense : ajout d’un vrai café, gardé après rechargement', async () => {
+    await p.getByRole('button', { name: 'Ajouter une dépense' }).click(); await W(500);
+    for (const k of ['4', 'Virgule', '8']) await btn(k).click();
+    await p.getByRole('button', { name: 'Restos et sorties, Envies' }).click();
+    await p.getByLabel('Libellé de la dépense').fill('Café');
+    await p.getByRole('button', { name: 'Ajouter la dépense' }).click(); await W(800);
+    await p.reload(); await W(1800);
+    if ((await envies()) === before) throw new Error('dépense perdue');
+  });
+  await t('calendrier : novembre en cours, le café du 14 dans la journée', async () => {
+    await p.getByRole('tab', { name: 'Calendrier' }).click(); await W(500);
+    await p.getByText('Novembre 2026').waitFor(); await p.getByText('en cours').waitFor();
+    await p.getByText('Café', { exact: true }).waitFor(); await shot('c1');
+  });
+  await t('calendrier : décembre prévu, la salle de sport le 10, budget libre 1 129 €', async () => {
+    await p.getByRole('button', { name: 'Mois suivant' }).click(); await W(400);
+    await p.getByText('Décembre 2026').waitFor(); await p.getByText('prévu', { exact: true }).waitFor();
+    await p.getByText('pin, la couleur de décembre').waitFor();
+    await p.getByLabel('Budget libre 1 129 €').waitFor();
+    await p.getByRole('button', { name: '10 décembre, 1 charge fixe' }).click(); await W(300);
+    await p.getByText('Salle de sport').waitFor(); await p.getByText('charge fixe, prévue').waitFor(); await shot('c2');
+  });
+  await t('calendrier : de octobre (clos) à février au plus', async () => {
+    for (let i = 0; i < 2; i++) await p.getByRole('button', { name: 'Mois suivant' }).click();
+    await p.getByText('Février 2027').waitFor();
+    if (!(await p.getByRole('button', { name: 'Mois suivant' }).isDisabled())) throw new Error('au-delà de +3 mois');
+    for (let i = 0; i < 4; i++) await p.getByRole('button', { name: 'Mois précédent' }).click();
+    await p.getByText('Octobre 2026').waitFor(); await p.getByText('clos', { exact: true }).waitFor();
+  });
   await t('aucun débordement horizontal sur téléphone', async () => {
     const w = await p.evaluate(() => { const inScroller = e => { for (let a = e.parentElement; a; a = a.parentElement) { const s = getComputedStyle(a); if (/(auto|scroll)/.test(s.overflowX) && a.scrollWidth > a.clientWidth) return true; } return false; }; return [document.documentElement.scrollWidth, document.documentElement.clientWidth, Math.max(0, ...[...document.querySelectorAll('*')].filter(e => !inScroller(e)).map(e => e.getBoundingClientRect().right))]; });
     if (w[0] > w[1] + 1 || w[2] > 394) throw new Error('largeur ' + w.join(' / '));
   });
+  await t('un seul écran Budget dans la pile', async () => { eq(await p.getByRole('button', { name: 'Ajouter une dépense' }).count(), 1, 'écrans Budget'); });
   await t('aucune injection exécutée, aucune erreur', async () => {
     if (await p.evaluate(() => window.__xss)) throw new Error('script exécuté');
     if (errs.length) throw new Error(errs.slice(0, 2).join(' | '));

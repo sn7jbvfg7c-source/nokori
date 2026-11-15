@@ -1,11 +1,24 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Animated, StyleSheet, Text, View } from 'react-native';
 import type { PillarState } from '../domain/budget';
 import { formatEurosRound } from '../domain/money';
+import type { PillarId } from '../domain/types';
 import { colors, font, pillarColor, tint } from '../theme/tokens';
 
 const GLYPH: Record<string, string> = { besoins: '⌂', envies: '♡', culture: '❖', imprevus: '☂' };
 
-export function PillarList({ pillars, hideAmounts = false }: { pillars: PillarState[]; hideAmounts?: boolean }) {
+/** Bref éclat de la couleur du pilier quand une dépense vient d'y être ajoutée */
+function Flash({ color, run }: { color: string; run: unknown }) {
+  const [a] = useState(() => new Animated.Value(0));
+  useEffect(() => {
+    if (!run) return;
+    a.setValue(1);
+    Animated.timing(a, { toValue: 0, duration: 1400, useNativeDriver: false }).start();
+  }, [run, a]);
+  return <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { borderRadius: 14, backgroundColor: tint(color, 0.16), opacity: a }]} />;
+}
+
+export function PillarList({ pillars, hideAmounts = false, highlight }: { pillars: PillarState[]; hideAmounts?: boolean; highlight?: PillarId }) {
   const money = (v: number) => (hideAmounts ? '•••' : formatEurosRound(v));
   return (
     <View>
@@ -13,6 +26,7 @@ export function PillarList({ pillars, hideAmounts = false }: { pillars: PillarSt
       <View style={st.list}>
         {pillars.map((p, i) => (
           <View key={p.id} style={[st.row, i > 0 && st.sep]} accessible accessibilityLabel={`${p.name} : il reste ${money(p.left)} sur ${money(p.budget)}`}>
+            <Flash color={pillarColor[p.id]} run={highlight === p.id ? p.spent : 0} />
             <View style={[st.chip, { backgroundColor: tint(pillarColor[p.id], 0.12) }]}>
               <Text style={[st.glyph, { color: pillarColor[p.id] }]}>{GLYPH[p.id]}</Text>
             </View>

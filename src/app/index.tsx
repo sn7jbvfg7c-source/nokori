@@ -5,7 +5,7 @@ import { useAppState } from '../state/AppState';
 import { colors, font } from '../theme/tokens';
 
 export default function Home() {
-  const { ready, profile, expenses, error } = useAppState();
+  const { ready, profile, expenses, error, lastAdded, removeExpense, clearLastAdded } = useAppState();
   const router = useRouter();
   if (!ready) return <View style={{ flex: 1, backgroundColor: colors.paper }} />;
   if (error && !profile) return (
@@ -14,5 +14,6 @@ export default function Home() {
     </View>
   );
   if (!profile) return <Redirect href="/accueil" />;
-  return <BudgetScreen profile={profile} expenses={expenses} today={new Date()} onEdit={() => router.push('/accueil')} />;
+  return <BudgetScreen profile={profile} expenses={expenses} today={new Date()} onEdit={() => router.push('/accueil')} onAdd={() => router.push('/depense')}
+    lastAdded={lastAdded} onUndo={id => removeExpense(id)} onDismiss={clearLastAdded} />;
 }
