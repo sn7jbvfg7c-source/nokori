@@ -79,6 +79,17 @@
         }
       ]
     ],
-    "scheme": "nokori"
+    "scheme": "nokori",
+    "owner": "thomasbofill",
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "af0a1e09-2d6f-4290-8521-c3813179719a"
+      }
+    }
   }
 }
