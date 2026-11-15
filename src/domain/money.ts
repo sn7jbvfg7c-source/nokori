@@ -22,13 +22,13 @@ function group(n: number): string {
 
 /** 123456 → « 1 234,56 € » */
 export function formatEuros(c: Cents): string {
-  const neg = c < 0, a = Math.abs(Math.round(c));
+  const a = Math.abs(Math.round(c)), neg = c < 0 && a > 0;
   return `${neg ? '−' : ''}${group(Math.floor(a / 100))},${String(a % 100).padStart(2, '0')}${NBSP}€`;
 }
 
 /** 123456 → « 1 235 € » (arrondi à l'euro, pour les grands chiffres) */
 export function formatEurosRound(c: Cents): string {
-  const neg = c < 0, a = Math.round(Math.abs(c) / 100);
+  const a = Math.round(Math.abs(c) / 100), neg = c < 0 && a > 0;
   return `${neg ? '−' : ''}${group(a)}${NBSP}€`;
 }
 

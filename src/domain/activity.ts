@@ -17,7 +17,7 @@ export function dayTitle(date: string, today: Date): string {
   const diff = Math.round((t - x) / 86_400_000);
   if (diff === 0) return 'Aujourd’hui';
   if (diff === 1) return 'Hier';
-  return `${DOW[new Date(x).getUTCDay()]} ${d} ${MON[m - 1]}`;
+  return `${DOW[new Date(x).getUTCDay()]} ${d} ${MON[m - 1]}${y !== today.getFullYear() ? ` ${y}` : ''}`;
 }
 
 export function activity(p: Profile, expenses: Expense[], today: Date, filter: PillarId | null = null): ActivityDay[] {
@@ -85,7 +85,7 @@ export function activityFor(p: Profile, expenses: Expense[], today: Date, q: Act
     const prof = q.profileAt ? q.profileAt(y, m) : p;
     for (const c of prof.charges) {
       const group = GROUP_NAME[c.group];
-      if (search && !norm(c.name).includes(search) && !norm(group).includes(search) && !'charge fixe'.includes(search) && !norm('charges fixes').includes(search)) continue;
+      if (search && !norm(c.name).includes(search) && !norm(group).includes(search) && !(search.length >= 6 && ('charges fixes'.startsWith(search) || 'charge fixe'.startsWith(search)))) continue;
       for (const d of chargeDays(c, y, m)) {
         const date = iso(y, m, d);
         if (date > todayIso) continue;

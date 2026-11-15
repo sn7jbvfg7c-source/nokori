@@ -14,6 +14,7 @@ export interface Goal { id: string; name: string; type: GoalType; target: Cents;
 
 /** Note un versement : ajoute au total et à l'historique */
 export function addDeposit(g: Goal, amount: Cents, date: string): Goal {
+  if (!(amount > 0)) return g;
   // un versement ancien (noté après coup) se range à sa date : l'historique reste du plus récent au plus ancien
   const deposits = [{ date, amount }, ...(g.deposits ?? [])].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 100);
   return { ...g, saved: Math.min(g.saved + amount, 10_000_000_000), deposits };

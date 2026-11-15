@@ -24,7 +24,7 @@ export function parseBalance(input: string): Cents | null {
   const neg = s.startsWith('-'), [int, dec = ''] = s.replace('-', '').split('.');
   const c = Number(int) * 100 + Number((dec + '00').slice(0, 2));
   if (c > MAX_BALANCE) return null;
-  return neg ? -c : c;
+  return neg && c > 0 ? -c : c;
 }
 
 export function totals(accounts: Account[]) {

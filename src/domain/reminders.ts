@@ -24,7 +24,7 @@ export function reminders(p: Profile, now: Date, lead = 3, horizonDays = 62): Re
       out.push({
         id: `${c.id}-${due.getFullYear()}-${due.getMonth() + 1}-${d}`,
         date: at,
-        title: `Prélèvement dans ${lead} jours`,
+        title: lead === 0 ? 'Prélèvement aujourd’hui' : `Prélèvement dans ${lead} jour${lead > 1 ? 's' : ''}`,
         body: `${c.name} sera prélevé le ${d} ${MONTH_NAMES[due.getMonth()]}. Déjà compté dans votre budget.`,
       });
     }

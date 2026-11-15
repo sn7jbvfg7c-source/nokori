@@ -2,6 +2,7 @@
  * Logique de l'accueil : catalogue des charges fixes, brouillon des réponses, construction du profil.
  * Pas de logos de marques dans la vraie app tant que les marques ne l'ont pas autorisé.
  */
+import { savingOf } from './budget';
 import { daysInMonth, monthlyAmount } from './charges';
 import type { Cents } from './money';
 import type { ChargeGroup, FixedCharge, Frequency, Profile } from './types';
@@ -34,7 +35,7 @@ export const emptyDraft = (): Draft => ({ income: null, payday: 1, savePct: 0.2,
 
 /** Nettoie un nom saisi : pas de caractères de contrôle ni de chevrons, 40 caractères au plus */
 export const cleanName = (s: string): string =>
-  s.replace(/[\u0000-\u001f\u007f<>]/g, '').replace(/\s+/g, ' ').trimStart().slice(0, 40);
+  Array.from(s.replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/[<>]/g, '').replace(/\s+/g, ' ').trimStart()).slice(0, 40).join('');
 
 export const searchCatalog = (q: string, group: ChargeGroup | null): CatalogItem[] => {
   const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -69,7 +70,7 @@ export function buildProfile(d: Draft, today: Date, previous?: Profile | null): 
 /** Récapitulatif : revenus, épargne, charges fixes (équivalent mensuel), reste à vivre, montant par jour */
 export function summary(d: Draft, today: Date) {
   const p = buildProfile(d, today);
-  const saving = Math.round(p.income * p.savePct);
+  const saving = savingOf(p.income, p.savePct);
   const fixed = p.charges.reduce((a, c) => a + monthlyAmount(c), 0);
   const free = p.income - saving - fixed;
   return { income: p.income, saving, fixed, free, perDay: Math.round(Math.max(0, free) / 30) };

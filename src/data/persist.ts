@@ -24,7 +24,13 @@ const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object
 const cents = (x: unknown) => typeof x === 'number' && Number.isInteger(x) && x >= 0 && x <= MAX_CENTS;
 const text = (x: unknown, max = 40) => typeof x === 'string' && x.length > 0 && x.length <= max;
 const day = (x: unknown) => typeof x === 'number' && Number.isInteger(x) && x >= 1 && x <= 31;
-const isoDate = (x: unknown) => typeof x === 'string' && /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(x);
+/** Date AAAA-MM-JJ qui existe vraiment (pas de 31 février), entre 2000 et 2100 */
+const isoDate = (x: unknown): x is string => {
+  if (typeof x !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(x)) return false;
+  const y = Number(x.slice(0, 4)), m = Number(x.slice(5, 7)), d = Number(x.slice(8, 10));
+  if (y < 2000 || y > 2100 || m < 1 || m > 12 || d < 1) return false;
+  return d <= new Date(Date.UTC(y, m, 0)).getUTCDate();
+};
 
 function charge(x: unknown): FixedCharge | null {
   if (!isObj(x) || !text(x.id, 64) || !text(x.name) || !GROUPS.includes(x.group as ChargeGroup) || !cents(x.amount) || !day(x.day) || !FREQS.includes(x.freq as Frequency)) return null;
@@ -35,7 +41,8 @@ function charge(x: unknown): FixedCharge | null {
 }
 
 function profile(x: unknown): Profile | null {
-  if (!isObj(x) || !cents(x.income) || !cents(x.extraIncome) || !day(x.payday) || typeof x.savePct !== 'number' || !(x.savePct >= 0 && x.savePct <= 0.4) || !Array.isArray(x.charges)) return null;
+  if (isObj(x) && x.extraIncome === undefined) x = { ...x, extraIncome: 0 }; // champ ajouté plus tard : absent = 0
+  if (!isObj(x) || !cents(x.income) || !cents((x as Record<string, unknown>).extraIncome) || !day(x.payday) || typeof x.savePct !== 'number' || !(x.savePct >= 0 && x.savePct <= 0.4) || !Array.isArray(x.charges)) return null;
   const charges = x.charges.slice(0, 200).map(charge).filter((c): c is FixedCharge => c !== null);
   return { income: x.income as number, extraIncome: x.extraIncome as number, payday: x.payday as number, savePct: x.savePct, charges };
 }
@@ -96,7 +103,8 @@ export function decodeState(raw: string | null): Decoded {
 export const decode = (raw: string | null): AppData => decodeState(raw).data;
 
 function parse(raw: string): AppData | null {
-  if (raw.length > 5_000_000) return null;
+  // 50 000 dépenses font environ 6 Mo : tout ce que l'app peut écrire doit pouvoir être relu
+  if (raw.length > 30_000_000) return null;
   try {
     const j: unknown = JSON.parse(raw);
     if (!isObj(j) || typeof j.v !== 'number' || j.v < 1 || j.v > STATE_VERSION) return null;

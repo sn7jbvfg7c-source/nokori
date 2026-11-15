@@ -17,7 +17,7 @@ export const BACKUP_VERSION = 1;
 export const MIN_PASSPHRASE = 8;
 /** scrypt : 2^15 × 8 = 32 Mo de mémoire, quelques secondes sur un téléphone ; paramètres écrits dans le fichier */
 export const KDF = { N: 2 ** 15, r: 8, p: 1 } as const;
-const MAX_FILE = 20_000_000;
+const MAX_FILE = 50_000_000;
 
 export interface BackupHeader {
   format: typeof BACKUP_FORMAT; v: number; created: string;

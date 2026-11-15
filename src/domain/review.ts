@@ -36,7 +36,7 @@ export function review(p: Profile, expenses: Expense[], year: number, month: num
 }
 
 /** Note « comment faire mieux » : texte libre nettoyé, 280 caractères au plus */
-export const cleanNote = (s: string) => s.replace(/[\u0000-\u0008\u000b-\u001f\u007f<>]/g, '').slice(0, 280);
+export const cleanNote = (s: string) => Array.from(s.replace(/[\u0000-\u0008\u000b-\u001f\u007f<>]/g, '')).slice(0, 280).join('');
 
 export interface CategorySpend { id: string; name: string; pillar: Review['pillars'][number]['id']; spent: Cents; count: number }
 

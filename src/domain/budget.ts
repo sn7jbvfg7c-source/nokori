@@ -19,7 +19,6 @@ export const CATEGORIES: Category[] = [
   { id: 'culture', name: 'Livres et sorties culturelles', pillar: 'culture', reference: 8_000 },
   { id: 'imprevus', name: 'Imprévus', pillar: 'imprevus', reference: 12_000 },
 ];
-const REFERENCE_TOTAL = CATEGORIES.reduce((a, c) => a + c.reference, 0);
 
 export interface PillarState { id: PillarId; name: string; hint: string; budget: Cents; spent: Cents; left: Cents }
 export interface MonthState {
@@ -49,12 +48,32 @@ export interface MonthState {
 /** Nombre de jours en dessous duquel la projection mélange le rythme réel et le rythme prévu */
 export const PROJECTION_WARMUP = 7;
 
+/** Épargne prévue, en centimes : calcul en entiers (35 % de 0,90 € = 0,32 €, pas 0,31 € à cause des nombres à virgule) */
+export function savingOf(income: Cents, savePct: number): Cents {
+  const permille = Math.round(Math.min(0.4, Math.max(0, savePct)) * 1000);
+  return Math.round((income * permille) / 1000);
+}
+
+/** Partage `total` selon des poids, au centime près : la somme des parts vaut exactement `total` (méthode des plus forts restes) */
+export function share(total: Cents, weights: number[]): Cents[] {
+  const sum = weights.reduce((a, w) => a + w, 0);
+  if (sum <= 0 || total <= 0) return weights.map(() => 0);
+  const raw = weights.map(w => (total * w) / sum);
+  const out = raw.map(Math.floor);
+  let rest = total - out.reduce((a, x) => a + x, 0);
+  const order = raw.map((r, i) => [r - Math.floor(r), i] as const).sort((a, b) => b[0] - a[0]);
+  for (let k = 0; rest > 0; k = (k + 1) % order.length, rest--) out[order[k][1]] += 1;
+  return out;
+}
+
 /** Budget du mois de `date`, au jour de `date`. Tout est en centimes. */
 export function buildMonth(p: Profile, expenses: Expense[], date: Date): MonthState {
   const year = date.getFullYear(), month = date.getMonth(), today = date.getDate(), length = daysInMonth(year, month);
   const income = p.income + p.extraIncome;
-  const saving = Math.round(income * Math.min(0.4, Math.max(0, p.savePct)));
+  const saving = savingOf(income, p.savePct);
   const fixedMonthly = p.charges.reduce((a, c) => a + monthlyAmount(c), 0);
+  // charges fixes plus fortes que le revenu (moins l'épargne) : le trou est retiré du disponible, jamais caché
+  const shortfall = Math.min(0, income - saving - fixedMonthly);
   const pool = Math.max(0, income - saving - fixedMonthly);
 
   const budgets: Record<PillarId, Cents> = { besoins: 0, envies: 0, culture: 0, imprevus: 0 };
@@ -71,7 +90,7 @@ export function buildMonth(p: Profile, expenses: Expense[], date: Date): MonthSt
   }
   // catégories courantes : budgets de référence mis à l'échelle du reste à vivre
   let variableBudget = 0;
-  for (const cat of CATEGORIES) { const b = Math.round((cat.reference * pool) / REFERENCE_TOTAL); budgets[cat.pillar] += b; variableBudget += b; }
+  share(pool, CATEGORIES.map(c => c.reference)).forEach((b, i) => { budgets[CATEGORIES[i].pillar] += b; variableBudget += b; });
   // dépenses saisies ce mois-ci
   const prefix = `${year}-${String(month + 1).padStart(2, '0')}-`;
   let variable = 0;
@@ -84,7 +103,7 @@ export function buildMonth(p: Profile, expenses: Expense[], date: Date): MonthSt
   }
 
   const pillars = PILLARS.map(pl => ({ ...pl, budget: budgets[pl.id], spent: spentBy[pl.id], left: budgets[pl.id] - spentBy[pl.id] }));
-  const budget = pillars.reduce((a, x) => a + x.budget, 0), spent = pillars.reduce((a, x) => a + x.spent, 0);
+  const budget = pillars.reduce((a, x) => a + x.budget, 0) + shortfall, spent = pillars.reduce((a, x) => a + x.spent, 0);
   const left = budget - spent, free = left - upcoming, daysLeft = length - today + 1;
   // Rythme de dépense. Les premiers jours, un seul gros achat fausserait tout :
   // on complète les jours manquants (jusqu'à 7) avec le rythme prévu par le budget.

@@ -1,4 +1,5 @@
 /** Calendrier d'un mois : charges fixes reportées, dépenses saisies, paie. Tout en centimes. */
+import { CATEGORIES, savingOf } from './budget';
 import { chargeDays, daysInMonth } from './charges';
 import type { Cents } from './money';
 import type { Expense, Profile } from './types';
@@ -31,13 +32,13 @@ export function calendarMonth(p: Profile, expenses: Expense[], year: number, mon
   for (const e of expenses) {
     if (!e.date.startsWith(prefix)) continue;
     const d = Number(e.date.slice(8, 10));
-    if (d < 1 || d > length || days[d - 1].future) continue;
+    if (d < 1 || d > length || days[d - 1].future || !CATEGORIES.some(c => c.id === e.categoryId)) continue;
     days[d - 1].expenses.push(e);
     days[d - 1].spent += e.amount;
     variable += e.amount;
   }
 
   const fixed = days.reduce((a, x) => a + x.charges.reduce((b, c) => b + c.amount, 0), 0);
-  const saving = Math.round(income * Math.min(0.4, Math.max(0, p.savePct)));
+  const saving = savingOf(income, p.savePct);
   return { year, month, status, length, firstDow: (new Date(year, month, 1).getDay() + 6) % 7, days, income, saving, fixed, variable, free: income - saving - fixed };
 }
