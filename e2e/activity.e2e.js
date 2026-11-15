@@ -67,11 +67,16 @@ const SEED = {
   await t('accepter la suggestion : devient une charge fixe, sans doublon ce mois-ci', async () => {
     first = (await accept()).replace(/^Ajouter | aux charges fixes$/g, '');
     await p.getByRole('button', { name: `Ajouter ${first} aux charges fixes` }).click(); await W(800);
-    const rows = await p.getByRole('button', { name: new RegExp(`^${first.replace('+', '\\+')},`) }).count();
-    const chargeRows = await p.getByText(new RegExp(`^${first.replace('+', '\\+')}$`)).count();
-    // ce mois-ci : la charge remplace la dépense ; le mois dernier : la dépense reste
-    if (rows !== 1) throw new Error(`${rows} dépense(s) ${first} au lieu d’une (celle du mois dernier)`);
-    if (chargeRows < 2) throw new Error('charge du mois absente');
+    const esc = first.replace('+', '\\+');
+    // ce mois-ci : la charge remplace la dépense
+    const rowsNow = await p.getByRole('button', { name: new RegExp(`^${esc},`) }).count();
+    if (rowsNow !== 0) throw new Error(`${rowsNow} dépense(s) ${first} ce mois-ci au lieu de 0`);
+    if (!(await p.getByText(new RegExp(`^${esc}$`)).filter({ visible: true }).count())) throw new Error('charge du mois absente');
+    // le mois dernier : la dépense reste
+    await p.getByRole('button', { name: 'Activité : mois d’avant' }).click(); await W(400);
+    const rowsBefore = await p.getByRole('button', { name: new RegExp(`^${esc},`) }).count();
+    if (rowsBefore !== 1) throw new Error(`${rowsBefore} dépense(s) ${first} le mois dernier au lieu d’une`);
+    await p.getByRole('button', { name: 'Activité : mois d’après' }).click(); await W(300);
   });
   await t('la seconde suggestion apparaît, « Ignorer » la fait disparaître pour de bon', async () => {
     const second = (await accept()).replace(/^Ajouter | aux charges fixes$/g, '');

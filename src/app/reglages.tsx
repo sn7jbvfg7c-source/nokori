@@ -10,6 +10,7 @@ export default function Reglages() {
     <SettingsScreen
       prefs={prefs} onChange={savePrefs} onClose={close}
       onEditAnswers={() => router.replace('/accueil')}
+      onBackup={() => router.push('/sauvegarde')}
       onWipe={async () => { await wipeAll(); router.dismissAll(); router.replace('/accueil'); }}
     />
   );

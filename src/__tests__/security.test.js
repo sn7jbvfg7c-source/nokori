@@ -64,6 +64,25 @@ describe('garde-fous de sécurité', () => {
   });
 });
 
+describe('SQLCipher : fichiers temporaires et effacement', () => {
+  test('temp_store en mémoire et secure_delete activés', () => {
+    const src = fs.readFileSync(path.join(__dirname, '../data/kv.native.ts'), 'utf8');
+    expect(src).toMatch(/PRAGMA temp_store = MEMORY/);
+    expect(src).toMatch(/PRAGMA secure_delete = ON/);
+  });
+});
+
+describe('sauvegarde : rien ne part sans l’utilisateur', () => {
+  test('le fichier temporaire est effacé après le partage et après la lecture', () => {
+    const src = fs.readFileSync(path.join(__dirname, '../data/backupFile.native.ts'), 'utf8');
+    expect((src.match(/finally \{[^}]*delete\(\)/g) || []).length).toBe(2);
+  });
+  test('la phrase secrète n’est jamais enregistrée', () => {
+    const all = fs.readFileSync(path.join(__dirname, '../screens/BackupScreen.tsx'), 'utf8') + fs.readFileSync(path.join(__dirname, '../domain/backup.ts'), 'utf8');
+    expect(all).not.toMatch(/savePrefs\([^)]*pass|kv\.set\([^)]*pass/i);
+  });
+});
+
 describe('base restaurée sans sa clé', () => {
   test('une nouvelle clé efface d’abord l’ancienne base illisible (sauvegarde iCloud sur un autre iPhone)', () => {
     const src = fs.readFileSync(path.join(__dirname, '../data/kv.native.ts'), 'utf8');

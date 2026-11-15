@@ -62,12 +62,15 @@ const SEED = theme => ({
       if (tab === 'Comptes') { await p.getByRole('button', { name: /^Compte courant,/ }).click(); await W(400); await audit('modifier un compte'); await p.getByRole('button', { name: 'Annuler' }).filter({ visible: true }).click(); await W(300); }
       if (tab === 'Objectifs') { await p.getByRole('button', { name: /modifier Japon/ }).click(); await W(400); await audit('modifier un objectif'); await p.getByRole('button', { name: 'Annuler' }).filter({ visible: true }).click(); await W(300); }
     }
-    await p.getByRole('tab', { name: 'Octobre' }).click(); await W(400);
+    await p.getByRole('button', { name: 'Bilan : mois d’avant' }).click(); await W(400);
     await audit('bilan octobre');
     await p.getByRole('button', { name: 'Revoir octobre en story' }).click(); await W(800);
     await audit('story'); await p.goto('http://localhost:8092/'); await W(1800);
     await p.getByRole('button', { name: 'Réglages' }).click(); await W(700);
-    await audit('réglages'); await p.getByRole('button', { name: 'Fermer les réglages' }).click(); await W(500);
+    await audit('réglages');
+    await p.getByRole('button', { name: /^Sauvegarde et restauration/ }).click(); await W(700);
+    await audit('sauvegarde'); await p.getByRole('button', { name: 'Fermer la sauvegarde' }).click(); await W(500);
+    await p.getByRole('button', { name: 'Fermer les réglages' }).click(); await W(500);
     await p.getByRole('button', { name: /Ajouter une dépense/ }).first().click(); await W(700);
     await audit('dépense');
     await p.context().close();

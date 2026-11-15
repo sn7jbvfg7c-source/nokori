@@ -34,7 +34,7 @@ const SEED = {
     await shot('r1');
   });
   await t('octobre clos : 1 230 € épargnés, 50 % du revenu', async () => {
-    await p.getByRole('tab', { name: 'Octobre' }).click(); await W(400);
+    await p.getByRole('button', { name: 'Bilan : mois d’avant' }).click(); await W(400);
     await p.getByText('Octobre, clos').waitFor();
     await p.getByLabel(/^1.23\d.€ épargnés$/).waitFor();
     await p.getByText(/^50 % du revenu/).waitFor();
@@ -43,7 +43,7 @@ const SEED = {
   await t('note « comment faire mieux » nettoyée et enregistrée', async () => {
     await p.getByLabel('Comment faire mieux en octobre').fill('Moins de livraisons <b>le soir</b>');
     await p.getByRole('button', { name: 'Enregistrer la note' }).click(); await W(300);
-    await p.reload(); await W(1800); await p.getByRole('tab', { name: /Bilan/ }).click(); await W(400); await p.getByRole('tab', { name: 'Octobre' }).click(); await W(300);
+    await p.reload(); await W(1800); await p.getByRole('tab', { name: /Bilan/ }).click(); await W(400); await p.getByRole('button', { name: 'Bilan : mois d’avant' }).click(); await W(300);
     const v = await p.getByLabel('Comment faire mieux en octobre').inputValue();
     if (v !== 'Moins de livraisons ble soir/b') throw new Error('« ' + v + ' »');
     await shot('r2');

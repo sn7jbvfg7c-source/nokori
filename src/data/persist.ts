@@ -56,7 +56,12 @@ const GOAL_TYPES: GoalType[] = ['voyage', 'voiture', 'maison', 'precaution', 'et
 const bigCents = (x: unknown) => typeof x === 'number' && Number.isInteger(x) && x >= 0 && x <= MAX_BALANCE;
 function goal(x: unknown): Goal | null {
   if (!isObj(x) || !text(x.id, 64) || !text(x.name) || !GOAL_TYPES.includes(x.type as GoalType) || !bigCents(x.target) || !bigCents(x.saved) || !bigCents(x.monthly) || (x.target as number) <= 0) return null;
-  return { id: x.id as string, name: x.name as string, type: x.type as GoalType, target: x.target as number, saved: x.saved as number, monthly: x.monthly as number };
+  const g: Goal = { id: x.id as string, name: x.name as string, type: x.type as GoalType, target: x.target as number, saved: x.saved as number, monthly: x.monthly as number };
+  if (Array.isArray(x.deposits)) {
+    const deps = x.deposits.slice(0, 100).filter((d): d is { date: string; amount: number } => isObj(d) && isoDate(d.date) && bigCents(d.amount) && (d.amount as number) > 0).map(d => ({ date: d.date, amount: d.amount }));
+    if (deps.length) g.deposits = deps;
+  }
+  return g;
 }
 
 const monthKeyOk = (x: unknown): x is string => typeof x === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(x);

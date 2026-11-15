@@ -1,9 +1,8 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
 import { BIG_TEXT_MAX_SCALE, useReducedMotion, useScreenReader } from './a11y';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { formatEurosRound } from '../domain/money';
+import { useMoney } from './money';
 import { capitalize, MONTH_COLORS, MONTH_NAMES } from '../domain/months';
 import type { Review } from '../domain/review';
 import { font, pillarColor } from '../theme/tokens';
@@ -16,6 +15,7 @@ const N = 5, SLIDE_MS = 4000;
  */
 export function MonthStory({ r, note, visible, onClose }: { r: Review; note: string; visible: boolean; onClose: () => void }) {
   const insets = useSafeAreaInsets();
+  const formatEurosRound = useMoney().round;
   const reduced = useReducedMotion(), reader = useScreenReader();
   const autoplay = !reduced && !reader;
   const [i, setI] = useState(0);
@@ -65,13 +65,13 @@ export function MonthStory({ r, note, visible, onClose }: { r: Review; note: str
 
   return (
     <Modal visible={visible} animationType="fade" aria-label={`Bilan de ${name} en story`} onRequestClose={onClose} statusBarTranslucent>
-      <LinearGradient colors={[c.light, c.dark, '#1E1712']} locations={[0, 0.6, 1]} style={[st.root, { paddingTop: insets.top + 10 }]} accessibilityViewIsModal accessibilityLabel={`Bilan de ${name} en story`}>
+      <View style={[st.root, { paddingTop: insets.top + 10, backgroundColor: c.dark }]} accessibilityViewIsModal accessibilityLabel={`Bilan de ${name} en story`}>
         <View style={st.bars}>{Array.from({ length: N }, (_, k) => <View key={k} style={st.barBg}><View style={[st.barFill, { width: k <= i ? '100%' : '0%', opacity: k < i ? 1 : k === i ? 0.95 : 0 }]} /></View>)}</View>
         <Pressable onPress={onClose} style={st.close} accessibilityRole="button" accessibilityLabel="Fermer la story"><Text style={st.closeTxt}>×</Text></Pressable>
         <Pressable style={st.tapL} onPress={() => setI(x => Math.max(0, x - 1))} accessibilityRole="button" accessibilityLabel="Écran précédent" />
         <Pressable style={st.tapR} onPress={() => setI(x => Math.min(N - 1, x + 1))} accessibilityRole="button" accessibilityLabel="Écran suivant" />
         <View style={[st.body, { paddingBottom: insets.bottom + 30 }]} pointerEvents="box-none">{slides[i]}</View>
-      </LinearGradient>
+      </View>
     </Modal>
   );
 }

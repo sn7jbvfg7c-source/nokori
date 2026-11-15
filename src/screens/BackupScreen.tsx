@@ -26,10 +26,12 @@ interface Props {
   onReplace: (d: AppData) => Promise<void>;
   onExported: (date: string) => void;
   onClose: () => void;
+  /** après une restauration réussie (sinon : onClose) */
+  onDone?: () => void;
 }
 
 /** Sauvegarde chiffrée : créer un fichier, ou restaurer depuis un fichier (nouveau téléphone, perte) */
-export function BackupScreen({ mode = 'all', data, today, onReplace, onExported, onClose }: Props) {
+export function BackupScreen({ mode = 'all', data, today, onReplace, onExported, onClose, onDone }: Props) {
   const insets = useSafeAreaInsets();
   const c = useColors(); const st = useStyles(makeStyles);
   // export
@@ -154,7 +156,7 @@ export function BackupScreen({ mode = 'all', data, today, onReplace, onExported,
           })()}
           {step.k === 'done' && <>
             <Notice icon="check-circle">Données restaurées. Pensez à réactiver le verrouillage et les rappels dans les réglages de ce téléphone si besoin.</Notice>
-            <Button label="Ouvrir mon budget" onPress={onClose} />
+            <Button label="Ouvrir mon budget" onPress={onDone ?? onClose} />
           </>}
           {restoreErr && <Notice icon="alert-circle" tone="warn">{restoreErr}</Notice>}
         </Card>

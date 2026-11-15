@@ -155,7 +155,7 @@ function ChargesStep({ draft, setDraft }: { draft: Draft; setDraft: (f: (d: Draf
   );
 }
 
-export function OnboardingScreen({ initial, onDone }: { initial: Profile | null; onDone: (p: Profile) => void }) {
+export function OnboardingScreen({ initial, onDone, onRestore }: { initial: Profile | null; onDone: (p: Profile) => void; /** premier lancement : restaurer une sauvegarde (nouveau téléphone) */ onRestore?: () => void }) {
   const colors = useColors(); const st = useStyles(makeStyles);
   const insets = useSafeAreaInsets();
   const [step, setStep] = useState(0);
@@ -188,6 +188,11 @@ export function OnboardingScreen({ initial, onDone }: { initial: Profile | null;
             <View style={st.art}><Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.artK}>残</Text></View>
             <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.h1}>Le kakeibo,{'\n'}sans le carnet.</Text>
             <Text style={st.p}>Quelques questions, une minute, et votre mois se calcule tout seul : ce qui tombe, quand, et ce qu’il vous reste vraiment. Tout reste sur votre téléphone.</Text>
+            {!initial && onRestore && (
+              <Pressable onPress={onRestore} style={st.restore} accessibilityRole="button" accessibilityLabel="J’ai déjà une sauvegarde Nokori">
+                <Text style={st.restoreTxt}>J’ai déjà une sauvegarde Nokori</Text>
+              </Pressable>
+            )}
             {Platform.OS === 'web' && (
               <View style={st.webNote} accessibilityRole="text">
                 <Text style={st.webNoteT}>Version de test dans le navigateur</Text>
@@ -245,6 +250,8 @@ export function OnboardingScreen({ initial, onDone }: { initial: Profile | null;
 }
 
 const makeStyles = (colors: Palette) => StyleSheet.create({
+  restore: { marginTop: 18, alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' },
+  restoreTxt: { fontFamily: font.semibold, fontSize: 15, color: colors.ink, textDecorationLine: 'underline' },
   webNote: { marginTop: 20, padding: 14, borderRadius: 14, backgroundColor: colors.fill, gap: 4 },
   webNoteT: { fontFamily: font.semibold, fontSize: 14, color: colors.ink },
   webNoteS: { fontFamily: font.regular, fontSize: 13, lineHeight: 18, color: colors.ink2 },

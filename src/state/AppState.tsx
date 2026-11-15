@@ -34,7 +34,8 @@ interface AppState extends AppData {
   saveProfile(p: Profile, today?: Date): Promise<void>;
   addExpense(e: Expense): Promise<void>;
   updateExpense(e: Expense): Promise<void>;
-  removeExpense(id: string): Promise<void>;
+  /** `undoable` : propose « Annuler » ensuite (false pour annuler un ajout) */
+  removeExpense(id: string, undoable?: boolean): Promise<void>;
   /** dernière dépense ajoutée, pour la confirmation et « Annuler » */
   lastAdded: Expense | null;
   clearLastAdded(): void;
@@ -137,12 +138,12 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       setLastAdded(e);
     },
     updateExpense: e => commit({ ...latest.current, expenses: latest.current.expenses.map(x => (x.id === e.id ? e : x)) }),
-    removeExpense: async id => {
+    removeExpense: async (id, undoable = true) => {
       const gone = latest.current.expenses.find(x => x.id === id);
       if (!gone) return;
       await commit({ ...latest.current, expenses: latest.current.expenses.filter(x => x.id !== id) });
       setLastAdded(l => (l?.id === id ? null : l));
-      setLastRemoved(gone);
+      if (undoable) setLastRemoved(gone);
     },
     lastAdded, clearLastAdded: () => setLastAdded(null),
     lastRemoved, clearLastRemoved: () => setLastRemoved(null),

@@ -54,7 +54,7 @@ export function Button({ label, onPress, variant = 'primary', icon, disabled, co
         accessibilityRole="button" accessibilityLabel={a11yLabel ?? label} accessibilityState={{ disabled: !!off, busy }}
         style={[st.btn, small && st.btnSm, { backgroundColor: bg }, disabled && st.off]}>
         {busy ? <ActivityIndicator color={fg} size="small" /> : <>
-          {icon && <Feather name={icon} size={small ? 15 : 17} color={fg} />}
+          {icon && <View aria-hidden><Feather name={icon} size={small ? 15 : 17} color={fg} /></View>}
           <Text style={[small ? st.btnTxtSm : st.btnTxt, { color: fg }]} numberOfLines={1}>{label}</Text>
         </>}
       </Pressable>
@@ -103,11 +103,11 @@ export function Card({ children, style, padded = true }: { children: ReactNode; 
 }
 
 /** Titre de section, avec une valeur ou une action à droite */
-export function SectionHeader({ title, right }: { title: string; right?: ReactNode }) {
+export function SectionHeader({ title, right, plain }: { title: string; right?: ReactNode; /** sans majuscules (dates, noms) */ plain?: boolean }) {
   const st = useStyles(makeStyles);
   return (
     <View style={st.section}>
-      <Text style={st.sectionTitle} accessibilityRole="header">{title}</Text>
+      <Text style={plain ? st.sectionPlain : st.sectionTitle} accessibilityRole="header">{title}</Text>
       {typeof right === 'string' ? <Text style={st.sectionRight}>{right}</Text> : right}
     </View>
   );
@@ -127,12 +127,12 @@ export function Row({ title, subtitle, right, left, onPress, a11yLabel, first, d
         {!!subtitle && <Text style={st.rowSub} numberOfLines={2}>{subtitle}</Text>}
       </View>
       {typeof right === 'string' ? <Text style={st.rowRight}>{right}</Text> : right}
-      {chevron && <Feather name="chevron-right" size={18} color={c.ink3} />}
+      {chevron && <View aria-hidden><Feather name="chevron-right" size={18} color={c.ink3} /></View>}
     </>
   );
   const style = [st.row, !first && st.rowSep];
   return onPress
-    ? <Pressable onPress={onPress} style={({ pressed }) => [style, pressed && { opacity: 0.6 }]} accessibilityRole="button" accessibilityLabel={a11yLabel}>{body}</Pressable>
+    ? <Pressable onPress={onPress} style={({ pressed }) => [style, pressed && { opacity: 0.6 }]} accessibilityRole="button" accessibilityLabel={a11yLabel ?? (subtitle ? `${title}, ${subtitle}` : title)}>{body}</Pressable>
     : <View style={style} accessible={!!a11yLabel} accessibilityLabel={a11yLabel}>{body}</View>;
 }
 
@@ -154,7 +154,7 @@ export function Chip({ label, selected, onPress, color, a11yLabel, icon }: { lab
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityState={{ selected }} accessibilityLabel={a11yLabel}
       style={[st.chip, { backgroundColor: selected ? on : color ? tint(color, 0.11) : c.fill }]}>
-      {icon && <Feather name={icon} size={14} color={selected ? fg : color ?? c.ink2} />}
+      {icon && <View aria-hidden><Feather name={icon} size={14} color={selected ? fg : color ?? c.ink2} /></View>}
       <Text style={[st.chipTxt, { color: fg }]}>{label}</Text>
     </Pressable>
   );
@@ -185,7 +185,7 @@ export function EmptyState({ icon, title, text, action }: { icon: IconName; titl
   const c = useColors(); const st = useStyles(makeStyles);
   return (
     <View style={st.empty}>
-      <View style={st.emptyIcon}><Feather name={icon} size={22} color={c.ink2} /></View>
+      <View style={st.emptyIcon} aria-hidden><Feather name={icon} size={22} color={c.ink2} /></View>
       <Text style={st.emptyTitle}>{title}</Text>
       <Text style={st.emptyTxt}>{text}</Text>
       {action && <View style={{ marginTop: space.md, alignSelf: 'stretch' }}>{action}</View>}
@@ -214,7 +214,7 @@ export function Confirm({ question, confirmLabel, onConfirm, onCancel, a11yConfi
   const st = useStyles(makeStyles);
   return (
     <View style={st.confirm} accessibilityLiveRegion="polite">
-      <Text style={st.confirmQ}>{question}</Text>
+      {!!question && <Text style={st.confirmQ}>{question}</Text>}
       <View style={st.confirmBtns}>
         <Button label="Annuler" variant="secondary" small onPress={onCancel} />
         <Button label={confirmLabel} variant="danger" small onPress={onConfirm} a11yLabel={a11yConfirm} />
@@ -234,7 +234,7 @@ export function Notice({ icon = 'info', children, tone = 'neutral' }: { icon?: I
   const c = useColors(); const st = useStyles(makeStyles);
   return (
     <View style={[st.notice, tone === 'warn' && { backgroundColor: tint(c.vermilion, 0.1) }]}>
-      <Feather name={icon} size={16} color={tone === 'warn' ? c.vermilion : c.ink2} style={{ marginTop: 2 }} />
+      <View aria-hidden style={{ marginTop: 2 }}><Feather name={icon} size={16} color={tone === 'warn' ? c.vermilion : c.ink2} /></View>
       <Text style={st.noticeTxt}>{children}</Text>
     </View>
   );
@@ -255,7 +255,8 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   cardPad: { paddingHorizontal: space.lg },
   section: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginHorizontal: space.gutter + space.sm, marginTop: space.xl, marginBottom: space.sm },
   sectionTitle: { ...t.overline, color: c.ink2 },
-  sectionRight: { ...t.footnote, color: c.ink2 },
+  sectionPlain: { ...t.footnote, fontFamily: font.semibold, color: c.ink2 },
+  sectionRight: { ...t.footnote, ...tabular, color: c.ink2 },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.md, minHeight: 56 },
   rowSep: { borderTopWidth: StyleSheet.hairlineWidth * 2, borderTopColor: c.hair },
   rowTitle: { ...t.bodyStrong, color: c.ink },
@@ -281,4 +282,41 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   amountBig: { ...t.display, color: c.ink },
   notice: { flexDirection: 'row', gap: space.sm, padding: space.md, borderRadius: radius.md, backgroundColor: c.fill },
   noticeTxt: { ...t.footnote, color: c.ink2, flex: 1 },
+});
+
+/**
+ * Confirmation flottante en bas de l'écran (« Dépense ajoutée · Annuler »).
+ * Apparaît en fondu, disparaît seule après 5 secondes.
+ */
+export function Toast({ message, actionLabel, actionA11y, onAction, onHide, bottom, icon = 'check' }: {
+  message: string; actionLabel?: string; actionA11y?: string; onAction?: () => void; onHide: () => void; bottom: number; icon?: IconName;
+}) {
+  const c = useColors(); const st = useStyles(makeToast);
+  const reduced = useReducedMotion();
+  const [a] = useState(() => new Animated.Value(reduced ? 1 : 0));
+  useEffect(() => {
+    if (!reduced) Animated.timing(a, { toValue: 1, duration: motion.base, useNativeDriver: true }).start();
+    const timer = setTimeout(onHide, 5000);
+    return () => clearTimeout(timer);
+  }, [a, reduced, onHide, message]);
+  return (
+    <Animated.View style={[st.toast, { bottom, opacity: a, transform: [{ translateY: a.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }] }]}
+      accessibilityLiveRegion="polite" accessibilityRole="alert">
+      <View style={st.icon} aria-hidden><Feather name={icon} size={14} color={c.onBtn} /></View>
+      <Text style={st.txt} numberOfLines={2}>{message}</Text>
+      {actionLabel && onAction && (
+        <Pressable onPress={onAction} hitSlop={10} accessibilityRole="button" accessibilityLabel={actionA11y ?? actionLabel}>
+          <Text style={st.action}>{actionLabel}</Text>
+        </Pressable>
+      )}
+    </Animated.View>
+  );
+}
+
+const makeToast = (c: Palette) => StyleSheet.create({
+  toast: { position: 'absolute', left: space.gutter, right: space.gutter, backgroundColor: c.btn, borderRadius: radius.lg, paddingHorizontal: space.lg, paddingVertical: space.md + 2, flexDirection: 'row', alignItems: 'center', gap: space.md,
+    shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 16, shadowOffset: { width: 0, height: 6 }, elevation: 6 },
+  icon: { width: 22, height: 22, borderRadius: 11, backgroundColor: tint(c.dark ? '#000000' : '#FFFFFF', 0.18), alignItems: 'center', justifyContent: 'center' },
+  txt: { ...t.callout, flex: 1, color: c.onBtn },
+  action: { ...t.callout, fontFamily: font.semibold, color: c.dark ? '#A3361A' : '#F4B08F' },
 });

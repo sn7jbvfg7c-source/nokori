@@ -1,61 +1,65 @@
 import { useEffect, useState } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import type { PillarState } from '../domain/budget';
-import { formatEurosRound } from '../domain/money';
 import type { PillarId } from '../domain/types';
-import { font, tint } from '../theme/tokens';
-import type { Palette } from '../theme/tokens';
 import { useColors, useStyles } from '../theme/theme';
+import type { Palette } from '../theme/tokens';
+import { radius, space, tabular, tint, type as t } from '../theme/tokens';
+import { useReducedMotion } from './a11y';
+import { Badge, Card, ProgressBar, SectionHeader, type IconName } from './kit';
+import { useMoney } from './money';
 
-const GLYPH: Record<string, string> = { besoins: '⌂', envies: '♡', culture: '❖', imprevus: '☂' };
+export const PILLAR_ICON: Record<PillarId, IconName> = { besoins: 'home', envies: 'heart', culture: 'book-open', imprevus: 'umbrella' };
 
 /** Bref éclat de la couleur du pilier quand une dépense vient d'y être ajoutée */
 function Flash({ color, run }: { color: string; run: unknown }) {
+  const reduced = useReducedMotion();
   const [a] = useState(() => new Animated.Value(0));
   useEffect(() => {
-    if (!run) return;
+    if (!run || reduced) return;
     a.setValue(1);
-    Animated.timing(a, { toValue: 0, duration: 1400, useNativeDriver: false }).start();
-  }, [run, a]);
-  return <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { borderRadius: 14, backgroundColor: tint(color, 0.16), opacity: a }]} />;
+    Animated.timing(a, { toValue: 0, duration: 1200, useNativeDriver: true }).start();
+  }, [run, a, reduced]);
+  return <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { borderRadius: radius.md, backgroundColor: tint(color, 0.14), opacity: a }]} />;
 }
 
-export function PillarList({ pillars, hideAmounts = false, highlight }: { pillars: PillarState[]; hideAmounts?: boolean; highlight?: PillarId }) {
-  const colors = useColors(); const st = useStyles(makeStyles);
-  const money = (v: number) => (hideAmounts ? '•••' : formatEurosRound(v));
+/** Les quatre piliers kakeibo : ce qui reste, ce qui a été dépensé, et la part du budget consommée */
+export function PillarList({ pillars, highlight }: { pillars: PillarState[]; highlight?: PillarId }) {
+  const c = useColors(); const st = useStyles(makeStyles);
+  const m = useMoney();
   return (
     <View>
-      <View style={st.head}><Text style={st.h3}>Les quatre piliers</Text><Text style={st.mono}>reste</Text></View>
-      <View style={st.list}>
-        {pillars.map((p, i) => (
-          <View key={p.id} style={[st.row, i > 0 && st.sep]} accessible accessibilityLabel={`${p.name} : il reste ${money(p.left)} sur ${money(p.budget)}`}>
-            <Flash color={colors.pillar[p.id]} run={highlight === p.id ? p.spent : 0} />
-            <View style={[st.chip, { backgroundColor: tint(colors.pillar[p.id], 0.12) }]}>
-              <Text style={[st.glyph, { color: colors.pillar[p.id] }]}>{GLYPH[p.id]}</Text>
+      <SectionHeader title="Les quatre piliers" right="reste" />
+      <Card>
+        {pillars.map((p, i) => {
+          const color = c.pillar[p.id];
+          const over = p.left < 0;
+          return (
+            <View key={p.id} style={[st.row, i > 0 && st.sep]} accessible accessibilityLabel={`${p.name} : il reste ${m.spoken(p.left)} sur ${m.spoken(p.budget)}`}>
+              <Flash color={color} run={highlight === p.id ? p.spent : 0} />
+              <Badge color={color} icon={PILLAR_ICON[p.id]} />
+              <View style={st.body}>
+                <View style={st.line}>
+                  <Text style={st.name}>{p.name}</Text>
+                  <Text style={[st.left, over && { color: c.vermilion }]}>{m.round(p.left)}</Text>
+                </View>
+                <ProgressBar value={p.budget > 0 ? p.spent / p.budget : p.spent > 0 ? 1 : 0} color={over ? c.vermilion : color} height={4} />
+                <Text style={st.detail}>{m.round(p.spent)} dépensés sur {m.round(p.budget)} · {p.hint}</Text>
+              </View>
             </View>
-            <View style={st.text}>
-              <Text style={st.name}>{p.name}</Text>
-              <Text style={st.detail}>{money(p.spent)} dépensés sur {money(p.budget)}</Text>
-            </View>
-            <Text style={[st.left, p.left < 0 && { color: colors.vermilion }]}>{money(p.left)}</Text>
-          </View>
-        ))}
-      </View>
+          );
+        })}
+      </Card>
     </View>
   );
 }
 
-const makeStyles = (colors: Palette) => StyleSheet.create({
-  head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', paddingHorizontal: 24, paddingTop: 26, paddingBottom: 8 },
-  h3: { fontFamily: font.semibold, fontSize: 14, color: colors.ink },
-  mono: { fontFamily: font.regular, fontSize: 12, color: colors.ink2 },
-  list: { marginHorizontal: 16, backgroundColor: colors.surface, borderRadius: 24, paddingHorizontal: 18 },
-  row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 13, gap: 12 },
-  sep: { borderTopWidth: 1, borderTopColor: colors.hair },
-  chip: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  glyph: { fontSize: 17 },
-  text: { flex: 1 },
-  name: { fontFamily: font.semibold, fontSize: 16, color: colors.ink },
-  detail: { fontFamily: font.regular, fontSize: 13, color: colors.ink2, marginTop: 2 },
-  left: { fontFamily: font.semibold, fontSize: 17, color: colors.ink, letterSpacing: -0.4 },
+const makeStyles = (c: Palette) => StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'center', paddingVertical: space.md + 2, gap: space.md },
+  sep: { borderTopWidth: StyleSheet.hairlineWidth * 2, borderTopColor: c.hair },
+  body: { flex: 1, gap: 6 },
+  line: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
+  name: { ...t.bodyStrong, color: c.ink },
+  left: { ...t.headline, ...tabular, color: c.ink },
+  detail: { ...t.caption, color: c.ink2 },
 });

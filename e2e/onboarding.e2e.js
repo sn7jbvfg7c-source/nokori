@@ -109,11 +109,15 @@ const eq = (a, b, what) => { if (a !== b) throw new Error(`${what} : « ${a} » 
     await p.getByRole('button', { name: '10 décembre, 1 charge fixe' }).click(); await W(300);
     await p.getByText('Salle de sport').waitFor(); await p.getByText('charge fixe, prévue').waitFor(); await shot('c2');
   });
-  await t('calendrier : de octobre (clos) à février au plus', async () => {
+  await t('calendrier : navigation libre (un an en avant), retour à aujourd’hui, octobre clos', async () => {
     for (let i = 0; i < 2; i++) await p.getByRole('button', { name: 'Mois suivant' }).click();
     await p.getByText('Février 2027').waitFor();
-    if (!(await p.getByRole('button', { name: 'Mois suivant' }).isDisabled())) throw new Error('au-delà de +3 mois');
-    for (let i = 0; i < 4; i++) await p.getByRole('button', { name: 'Mois précédent' }).click();
+    for (let i = 0; i < 9; i++) await p.getByRole('button', { name: 'Mois suivant' }).click();
+    await p.getByText('Novembre 2027').waitFor();
+    if (!(await p.getByRole('button', { name: 'Mois suivant' }).isDisabled())) throw new Error('au-delà de +12 mois');
+    await p.getByRole('button', { name: 'Revenir au mois en cours' }).click(); await W(300);
+    await p.getByText('Novembre 2026').waitFor();
+    await p.getByRole('button', { name: 'Mois précédent' }).click(); await W(300);
     await p.getByText('Octobre 2026').waitFor(); await p.getByText('clos', { exact: true }).waitFor();
   });
   await t('aucun débordement horizontal sur téléphone', async () => {

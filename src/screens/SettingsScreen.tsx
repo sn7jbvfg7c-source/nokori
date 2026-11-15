@@ -1,22 +1,30 @@
+import Feather from '@expo/vector-icons/Feather';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useState } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { askPermission, notificationsSupported } from '../data/notify';
 import type { Prefs } from '../data/persist';
+import { MONTH_NAMES } from '../domain/months';
 import type { ThemePref } from '../theme/theme';
 import { useColors, useStyles } from '../theme/theme';
 import type { Palette } from '../theme/tokens';
-import { font, onColor } from '../theme/tokens';
+import { space, type as t } from '../theme/tokens';
+import { Badge, Card, Confirm, IconButton, Notice, Row, ScreenHeader, SectionHeader, Segmented, type IconName } from '../ui/kit';
 
-interface Props { prefs: Prefs; onChange: (p: Partial<Prefs>) => void; onClose: () => void; onEditAnswers: () => void; onWipe: () => void }
+interface Props { prefs: Prefs; today?: Date; onChange: (p: Partial<Prefs>) => void; onClose: () => void; onEditAnswers: () => void; onBackup: () => void; onWipe: () => void }
 
-export function SettingsScreen({ prefs, onChange, onClose, onEditAnswers, onWipe }: Props) {
+/** Une sauvegarde de plus d'un mois mérite un rappel */
+export const BACKUP_REMINDER_DAYS = 30;
+const longDate = (iso: string) => { const [y, m, d] = iso.split('-').map(Number); return `${d} ${MONTH_NAMES[m - 1]} ${y}`; };
+
+export function SettingsScreen({ prefs, today = new Date(), onChange, onClose, onEditAnswers, onBackup, onWipe }: Props) {
   const insets = useSafeAreaInsets();
-  const colors = useColors(); const st = useStyles(makeStyles);
+  const c = useColors(); const st = useStyles(makeStyles);
   const [msg, setMsg] = useState<string | null>(null);
   const [confirm, setConfirm] = useState(false);
   const web = Platform.OS === 'web';
+  const backupAge = prefs.lastBackup ? Math.round((Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) - Date.parse(prefs.lastBackup + 'T00:00:00Z')) / 86_400_000) : null;
 
   const toggleLock = async (on: boolean) => {
     setMsg(null);
@@ -32,94 +40,77 @@ export function SettingsScreen({ prefs, onChange, onClose, onEditAnswers, onWipe
     else setMsg('Notifications refusées : autorisez-les dans les réglages du téléphone.');
   };
 
-  const row = (title: string, sub: string, value: boolean, onToggle: (v: boolean) => void, disabled = false) => (
-    <View style={st.row}>
-      <View style={{ flex: 1 }}><Text style={[st.rowT, disabled && { color: colors.ink2 }]}>{title}</Text><Text style={st.rowS}>{sub}</Text></View>
-      <Switch value={value} onValueChange={onToggle} disabled={disabled} accessibilityLabel={title}
-        trackColor={{ false: colors.fill2, true: colors.teal }} thumbColor="#FFFFFF" />
-    </View>
+  const toggle = (icon: IconName, color: string, title: string, sub: string, value: boolean, onToggle: (v: boolean) => void, disabled = false, first = false) => (
+    <Row first={first} title={title} subtitle={sub} left={<Badge color={color} icon={icon} size={34} />}
+      right={<Switch value={value} onValueChange={onToggle} disabled={disabled} accessibilityLabel={title} trackColor={{ false: c.fill2, true: c.teal }} thumbColor="#FFFFFF" />} />
   );
 
   return (
-    <ScrollView style={st.screen} contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: insets.bottom + 40 }}>
-      <View style={st.head}>
-        <Text style={st.title}>Réglages</Text>
-        <Pressable onPress={onClose} style={st.close} accessibilityRole="button" accessibilityLabel="Fermer les réglages"><Text style={st.closeTxt}>×</Text></Pressable>
-      </View>
+    <ScrollView style={st.screen} contentContainerStyle={{ paddingTop: insets.top + space.md, paddingBottom: insets.bottom + 48 }}>
+      <ScreenHeader title="Réglages" right={<IconButton icon="x" label="Fermer les réglages" onPress={onClose} small />} />
 
-      <Text style={st.sec}>Affichage</Text>
-      <View style={st.card}>
+      <SectionHeader title="Affichage" />
+      <Card style={st.pad}>
         <Text style={st.rowT}>Thème</Text>
-        <View style={st.seg} accessibilityRole="radiogroup">
-          {([['auto', 'Auto'], ['clair', 'Clair'], ['sombre', 'Sombre']] as [ThemePref, string][]).map(([k, l]) => (
-            <Pressable key={k} onPress={() => onChange({ theme: k })} style={[st.segBtn, prefs.theme === k && st.segOn]} accessibilityRole="radio" aria-checked={prefs.theme === k} accessibilityLabel={`Thème ${l}`}>
-              <Text style={[st.segTxt, prefs.theme === k && { color: colors.ink }]}>{l}</Text>
-            </Pressable>
-          ))}
-        </View>
+        <Segmented role="radio" label="Thème" value={prefs.theme} onChange={(k: ThemePref) => onChange({ theme: k })}
+          options={[{ key: 'auto', label: 'Auto', a11y: 'Thème Auto' }, { key: 'clair', label: 'Clair', a11y: 'Thème Clair' }, { key: 'sombre', label: 'Sombre', a11y: 'Thème Sombre' }]} />
         <Text style={st.rowS}>« Auto » suit le réglage du téléphone.</Text>
-        <View style={st.sep} />
-        {row('Masquer les montants', 'Pour ouvrir l’app en public : budget et comptes floutés', prefs.hideAmounts, v => onChange({ hideAmounts: v }))}
-      </View>
+      </Card>
+      <Card style={{ marginTop: space.sm }}>
+        {toggle('eye-off', c.ink2, 'Masquer les montants', 'Pour ouvrir l’app en public : tous les montants sont remplacés par •••', prefs.hideAmounts, v => onChange({ hideAmounts: v }), false, true)}
+      </Card>
 
-      <Text style={st.sec}>Sécurité</Text>
-      <View style={st.card}>
-        {row('Verrouillage Face ID', web ? 'Indisponible dans le navigateur' : 'À l’ouverture et après 1 minute en arrière-plan', prefs.lock, toggleLock, web)}
-      </View>
+      <SectionHeader title="Sécurité et rappels" />
+      <Card>
+        {toggle('lock', c.vermilion, 'Verrouillage Face ID', web ? 'Indisponible dans le navigateur' : 'À l’ouverture et après 1 minute en arrière-plan', prefs.lock, toggleLock, web, true)}
+        {toggle('bell', c.teal, 'Avant chaque prélèvement', notificationsSupported ? 'Une notification 3 jours avant, sans montant affiché' : 'Indisponible dans le navigateur', prefs.alerts, toggleAlerts, !notificationsSupported)}
+      </Card>
+      {msg && <View style={st.msg}><Notice icon="alert-circle" tone="warn">{msg}</Notice></View>}
 
-      <Text style={st.sec}>Rappels</Text>
-      <View style={st.card}>
-        {row('Avant chaque prélèvement', notificationsSupported ? 'Une notification 3 jours avant, sans montant affiché' : 'Indisponible dans le navigateur', prefs.alerts, toggleAlerts, !notificationsSupported)}
-      </View>
-      {msg && <Text style={st.msg} accessibilityLiveRegion="polite">{msg}</Text>}
+      <SectionHeader title="Mon budget" />
+      <Card>
+        <Row first title="Modifier mes réponses" subtitle="Revenu, jour de paie, épargne, charges fixes" left={<Badge color={c.pillar.culture} icon="sliders" size={34} />} onPress={onEditAnswers} chevron />
+      </Card>
 
-      <Text style={st.sec}>Mon budget</Text>
-      <View style={st.card}>
-        <Pressable onPress={onEditAnswers} style={st.link} accessibilityRole="button"><Text style={st.rowT}>Modifier mes réponses</Text><Text style={st.chev}>›</Text></Pressable>
-      </View>
-
-      <Text style={st.sec}>Vos données</Text>
-      <View style={st.card}>
-        <Text style={st.rowS}>{web
-          ? 'Version de test : tout est enregistré dans ce navigateur, sans chiffrement. Nokori n’a pas de serveur et ne se connecte à aucune banque. L’app pour téléphone chiffre tout.'
-          : 'Tout est enregistré sur ce téléphone, dans une base chiffrée. Nokori n’a pas de serveur et ne se connecte à aucune banque.'}</Text>
-        <View style={st.sep} />
-        {confirm ? (
-          <View style={{ gap: 10 }}>
-            <Text style={[st.rowT, { color: colors.vermilion }]}>{web ? 'Tout effacer de ce navigateur ?' : 'Tout effacer de ce téléphone ?'}</Text>
-            <Text style={st.rowS}>Dépenses, charges, comptes, objectifs et bilans seront supprimés. C’est définitif.</Text>
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              <Pressable onPress={() => setConfirm(false)} style={[st.btn, { backgroundColor: colors.fill }]} accessibilityRole="button"><Text style={st.btnTxt}>Annuler</Text></Pressable>
-              <Pressable onPress={onWipe} style={[st.btn, { backgroundColor: colors.vermilion }]} accessibilityRole="button" accessibilityLabel="Confirmer : tout effacer"><Text style={[st.btnTxt, { color: onColor(colors.vermilion) }]}>Tout effacer</Text></Pressable>
+      <SectionHeader title="Vos données" />
+      {(backupAge === null || backupAge > BACKUP_REMINDER_DAYS) && (
+        <View style={st.msg}><Notice icon="alert-triangle" tone="warn">
+          {backupAge === null ? 'Aucune sauvegarde pour l’instant. Si ce téléphone est perdu ou changé, vos données le seront aussi.' : `Dernière sauvegarde il y a ${backupAge} jours. Pensez à en refaire une.`}
+        </Notice></View>
+      )}
+      <Card style={{ marginTop: space.sm }}>
+        <Row first title="Sauvegarde et restauration" subtitle={prefs.lastBackup ? `Dernière sauvegarde : ${longDate(prefs.lastBackup)}` : 'Fichier chiffré, pour changer de téléphone'}
+          left={<Badge color={c.teal} icon="shield" size={34} />} onPress={onBackup} chevron />
+        <View style={st.privacy}>
+          <Feather name={web ? 'globe' : 'smartphone'} size={15} color={c.ink2} style={{ marginTop: 2 }} />
+          <Text style={st.rowS}>{web
+            ? 'Version de test : tout est enregistré dans ce navigateur, sans chiffrement. Nokori n’a pas de serveur et ne se connecte à aucune banque. L’app pour téléphone chiffre tout.'
+            : 'Tout est enregistré sur ce téléphone, dans une base chiffrée. Nokori n’a pas de serveur et ne se connecte à aucune banque.'}</Text>
+        </View>
+        <View style={st.sep}>
+          {confirm ? (
+            <View style={{ paddingTop: space.md }}>
+              <Text style={[st.rowT, { color: c.vermilion }]}>{web ? 'Tout effacer de ce navigateur ?' : 'Tout effacer de ce téléphone ?'}</Text>
+              <Text style={[st.rowS, { marginBottom: space.sm }]}>Dépenses, charges, comptes, objectifs et bilans seront supprimés. C’est définitif. Une sauvegarde faite avant reste utilisable.</Text>
+              <Confirm question="" confirmLabel="Tout effacer" a11yConfirm="Confirmer : tout effacer" onCancel={() => setConfirm(false)} onConfirm={onWipe} />
             </View>
-          </View>
-        ) : (
-          <Pressable onPress={() => setConfirm(true)} style={st.link} accessibilityRole="button" accessibilityLabel="Tout effacer"><Text style={[st.rowT, { color: colors.vermilion }]}>Tout effacer</Text></Pressable>
-        )}
-      </View>
+          ) : (
+            <Row first title="Tout effacer" danger left={<Badge color={c.vermilion} icon="trash-2" size={34} />} onPress={() => setConfirm(true)} a11yLabel="Tout effacer" />
+          )}
+        </View>
+      </Card>
+      <Text style={st.version}>Nokori · version 1.0 · aucune donnée collectée</Text>
     </ScrollView>
   );
 }
 
-const makeStyles = (colors: Palette) => StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.paper },
-  head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20 },
-  title: { fontFamily: font.semibold, fontSize: 22, color: colors.ink },
-  close: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.fill, alignItems: 'center', justifyContent: 'center' },
-  closeTxt: { fontSize: 22, lineHeight: 24, color: colors.ink },
-  sec: { fontFamily: font.medium, fontSize: 12, letterSpacing: 0.8, textTransform: 'uppercase', color: colors.ink2, marginHorizontal: 24, marginTop: 22, marginBottom: 8 },
-  card: { marginHorizontal: 16, backgroundColor: colors.surface, borderRadius: 20, padding: 14, gap: 8 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  rowT: { fontFamily: font.semibold, fontSize: 15, color: colors.ink },
-  rowS: { fontFamily: font.regular, fontSize: 13, lineHeight: 18, color: colors.ink2, marginTop: 2 },
-  seg: { flexDirection: 'row', backgroundColor: colors.fill, borderRadius: 12, padding: 3, marginTop: 4 },
-  segBtn: { flex: 1, paddingVertical: 8, borderRadius: 9, alignItems: 'center' },
-  segOn: { backgroundColor: colors.surface },
-  segTxt: { fontFamily: font.semibold, fontSize: 14, color: colors.ink2 },
-  sep: { height: 1, backgroundColor: colors.hair, marginVertical: 4 },
-  msg: { fontFamily: font.medium, fontSize: 13, color: colors.vermilion, marginHorizontal: 24, marginTop: 8 },
-  link: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 4 },
-  chev: { fontSize: 22, color: colors.ink2 },
-  btn: { flex: 1, height: 42, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  btnTxt: { fontFamily: font.semibold, fontSize: 14, color: colors.ink },
+const makeStyles = (c: Palette) => StyleSheet.create({
+  screen: { flex: 1, backgroundColor: c.paper },
+  pad: { paddingVertical: space.lg, gap: space.sm + 2 },
+  rowT: { ...t.bodyStrong, color: c.ink },
+  rowS: { ...t.footnote, color: c.ink2, flex: 1 },
+  msg: { marginHorizontal: space.gutter, marginTop: space.sm },
+  privacy: { flexDirection: 'row', gap: space.sm, paddingVertical: space.md, borderTopWidth: StyleSheet.hairlineWidth * 2, borderTopColor: c.hair },
+  sep: { borderTopWidth: StyleSheet.hairlineWidth * 2, borderTopColor: c.hair },
+  version: { ...t.caption, color: c.ink2, textAlign: 'center', marginTop: space.xl },
 });

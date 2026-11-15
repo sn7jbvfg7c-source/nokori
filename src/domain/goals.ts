@@ -8,7 +8,23 @@ import { MONTH_NAMES } from './months';
 import type { Expense, Profile } from './types';
 
 export type GoalType = 'voyage' | 'voiture' | 'maison' | 'precaution' | 'etudes' | 'autre';
-export interface Goal { id: string; name: string; type: GoalType; target: Cents; saved: Cents; monthly: Cents }
+/** Un versement noté par l'utilisateur (après l'avoir fait dans sa banque) */
+export interface Deposit { date: string; amount: Cents }
+export interface Goal { id: string; name: string; type: GoalType; target: Cents; saved: Cents; monthly: Cents; /** versements notés, du plus récent au plus ancien (100 au plus) */ deposits?: Deposit[] }
+
+/** Note un versement : ajoute au total et à l'historique */
+export function addDeposit(g: Goal, amount: Cents, date: string): Goal {
+  return { ...g, saved: Math.min(g.saved + amount, 10_000_000_000), deposits: [{ date, amount }, ...(g.deposits ?? [])].slice(0, 100) };
+}
+
+/** Total versé pendant un mois (AAAA-MM) */
+export const depositedIn = (g: Goal, month: string): Cents => (g.deposits ?? []).filter(d => d.date.startsWith(month)).reduce((a, d) => a + d.amount, 0);
+
+/** Palier atteint : 25, 50, 75 ou 100 %, ou null */
+export function milestone(g: Goal): 25 | 50 | 75 | 100 | null {
+  const p = g.target > 0 ? g.saved / g.target : 0;
+  return p >= 1 ? 100 : p >= 0.75 ? 75 : p >= 0.5 ? 50 : p >= 0.25 ? 25 : null;
+}
 
 export const GOAL_TYPES: { id: GoalType; name: string; icon: string; color: string }[] = [
   { id: 'voyage', name: 'Voyage', icon: 'globe', color: '#B84E27' },

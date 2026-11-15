@@ -9,6 +9,8 @@ export default function Sauvegarde() {
   const { profile, history, expenses, dismissed, accounts, goals, notes, prefs } = state;
   return (
     <BackupScreen
+      mode={profile ? 'all' : 'restore'}
+      onDone={() => { if (router.canDismiss()) router.dismissAll(); router.replace('/'); }}
       data={{ profile, history, expenses, dismissed, accounts, goals, notes, prefs }} today={new Date()}
       onReplace={d => state.replaceAll(forRestore(d))}
       onExported={date => state.savePrefs({ lastBackup: date })}

@@ -1,6 +1,6 @@
 import Feather from '@expo/vector-icons/Feather';
 import { Redirect, Tabs } from 'expo-router';
-import { Text, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppState } from '../../state/AppState';
 import { useColors } from '../../theme/theme';
@@ -8,15 +8,10 @@ import { font } from '../../theme/tokens';
 
 /** Barre d'onglets ; sans profil, on part vers l'accueil */
 export default function TabsLayout() {
-  const { ready, profile, error } = useAppState();
+  const { ready, profile } = useAppState();
   const insets = useSafeAreaInsets();
   const colors = useColors();
-  if (!ready) return <View style={{ flex: 1, backgroundColor: colors.paper }} />;
-  if (error && !profile) return (
-    <View style={{ flex: 1, backgroundColor: colors.paper, justifyContent: 'center', padding: 32 }}>
-      <Text style={{ fontFamily: font.semibold, fontSize: 18, color: colors.ink }}>{error}</Text>
-    </View>
-  );
+  if (!ready) return <View style={{ flex: 1, backgroundColor: colors.paper, alignItems: 'center', justifyContent: 'center' }}><ActivityIndicator color={colors.ink2} accessibilityLabel="Chargement" /></View>;
   if (!profile) return <Redirect href="/accueil" />;
   return (
     <Tabs screenOptions={{

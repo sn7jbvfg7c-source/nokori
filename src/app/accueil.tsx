@@ -8,6 +8,7 @@ export default function Accueil() {
   return (
     <OnboardingScreen
       initial={profile}
+      onRestore={() => router.push('/sauvegarde')}
       onDone={async p => { await saveProfile(p); if (router.canGoBack()) router.back(); else router.replace('/'); }}
     />
   );
