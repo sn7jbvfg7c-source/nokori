@@ -14,6 +14,7 @@ import { font, light, radius, space } from '../theme/tokens';
 import { DataProblem } from '../ui/DataProblem';
 import { LockGate } from '../ui/LockGate';
 import { MoneyProvider } from '../ui/money';
+import { WebFrame } from '../ui/WebFrame';
 
 /** Bandeau en haut de l'écran quand un enregistrement a échoué */
 function SaveError() {
@@ -67,7 +68,9 @@ function Themed() {
   return (
     <ThemeProvider pref={prefs.theme}>
       <MoneyProvider hidden={prefs.hideAmounts}>
-        <Shell />
+        <WebFrame>
+          <Shell />
+        </WebFrame>
       </MoneyProvider>
     </ThemeProvider>
   );

@@ -1,7 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import * as Crypto from 'expo-crypto';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CATEGORIES, PILLARS } from '../domain/budget';
 import { KEYS, press, toCents } from '../domain/keypad';
@@ -33,6 +33,8 @@ const daysBetween = (a: Date, b: Date) => Math.round((Date.UTC(a.getFullYear(), 
 export function AddExpenseScreen({ today, initial, onSave, onClose }: { today: Date; initial?: Expense; onSave: (e: Expense) => unknown; onClose: () => void }) {
   const c = useColors(); const st = useStyles(makeStyles);
   const insets = useSafeAreaInsets();
+  // petits écrans (iPhone SE, fenêtre de navigateur peu haute) : pavé et montant plus compacts
+  const compact = useWindowDimensions().height < 820;
   const [amount, setAmount] = useState(initial ? toKeypad(initial.amount) : '0');
   const [cat, setCat] = useState<string | null>(initial?.categoryId ?? null);
   const category = CATEGORIES.find(x => x.id === cat);
@@ -59,7 +61,7 @@ export function AddExpenseScreen({ today, initial, onSave, onClose }: { today: D
       </View>
 
       <ScrollView style={st.top} contentContainerStyle={{ paddingBottom: space.sm }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-        <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={[st.amount, cents === 0 && { color: c.ink3 }]} accessibilityLabel={`Montant : ${formatEuros(cents)}`} accessibilityLiveRegion="polite">
+        <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={[st.amount, compact && st.amountSm, cents === 0 && { color: c.ink3 }]} accessibilityLabel={`Montant : ${formatEuros(cents)}`} accessibilityLiveRegion="polite">
           {amount}<Text style={st.cur}> €</Text>
         </Text>
         {cents >= UNUSUAL && <View style={st.warn}><Notice icon="alert-circle" tone="warn">Montant inhabituel : {formatEuros(cents)}. Vérifiez la virgule.</Notice></View>}
@@ -99,7 +101,7 @@ export function AddExpenseScreen({ today, initial, onSave, onClose }: { today: D
 
       <View style={st.keys}>
         {KEYS.map(k => (
-          <Pressable key={k} onPress={() => setAmount(a => press(a, k))} style={({ pressed }) => [st.key, pressed && { backgroundColor: c.fill2 }]}
+          <Pressable key={k} onPress={() => setAmount(a => press(a, k))} style={({ pressed }) => [st.key, compact && st.keySm, pressed && { backgroundColor: c.fill2 }]}
             accessibilityRole="button" accessibilityLabel={k === '⌫' ? 'Effacer' : k === ',' ? 'Virgule' : k}>
             {k === '⌫' ? <Feather name="delete" size={22} color={c.ink} /> : <Text style={st.keyTxt}>{k}</Text>}
           </Pressable>
@@ -116,6 +118,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   title: { ...t.headline, color: c.ink },
   top: { flexGrow: 0, flexShrink: 1 },
   amount: { ...t.display, ...tabular, fontSize: 60, lineHeight: 70, color: c.ink, textAlign: 'center', marginTop: space.xs },
+  amountSm: { fontSize: 46, lineHeight: 54 },
   cur: { fontSize: 32, color: c.ink2, letterSpacing: 0 },
   warn: { marginBottom: space.sm },
   group: { marginTop: space.sm + 2 },
@@ -129,6 +132,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   stepBtn: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
   stepTxt: { ...t.callout, fontFamily: font.semibold, color: c.onBtn, minWidth: 92, textAlign: 'center' },
   keys: { flexDirection: 'row', flexWrap: 'wrap', marginTop: space.sm, rowGap: 6 },
+  keySm: { height: 44 },
   key: { width: '33.33%', height: 54, alignItems: 'center', justifyContent: 'center', borderRadius: radius.md },
   keyTxt: { ...t.title, ...tabular, fontFamily: font.medium, fontSize: 26, color: c.ink },
 });
