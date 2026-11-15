@@ -1,3 +1,4 @@
+import { activityFor } from '../activity';
 import { parseBalance } from '../accounts';
 import { addDeposit, parseDayFr, type Goal } from '../goals';
 import { parseEuros, toInputText } from '../money';
@@ -40,7 +41,6 @@ describe('date d’un versement', () => {
   });
 });
 
-import { activityFor } from '../activity';
 describe('recherche dans l’activité : les charges fixes aussi (bug signalé)', () => {
   const p = { income: 200000, extraIncome: 0, payday: 1, savePct: 0.1, charges: [
     { id: 'loyer', name: 'Loyer', group: 'logement' as const, amount: 70000, day: 5, freq: 'mois' as const },
