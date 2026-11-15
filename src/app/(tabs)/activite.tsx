@@ -2,8 +2,11 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback } from 'react';
 import { ActivityScreen } from '../../screens/ActivityScreen';
 import { useAppState } from '../../state/AppState';
+import { useToday } from '../../ui/useToday';
+import { TabScene } from '../../ui/TabScene';
 
 export default function Activite() {
+  const today = useToday();
   const s = useAppState();
   const router = useRouter();
   const { pilier, t } = useLocalSearchParams<{ pilier?: string; t?: string }>();
@@ -12,12 +15,14 @@ export default function Activite() {
   const profileAt = useCallback((y: number, m: number) => profileFor(y, m)!, [profileFor]);
   if (!s.profile) return null;
   return (
-    <ActivityScreen
-      profile={s.profile} profileAt={profileAt} expenses={s.expenses} dismissed={s.dismissed} today={new Date()}
-      onAdd={() => router.push('/depense')} onEdit={id => router.push({ pathname: '/depense', params: { id } })} onDelete={id => s.removeExpense(id)}
-      onIgnore={s.dismissSuggestion} onAccept={sg => s.acceptSuggestion(sg, new Date())}
-      linkFilter={linkFilter} linkKey={t}
-      lastRemoved={s.lastRemoved} onUndoRemove={s.undoRemove} onClearRemoved={s.clearLastRemoved}
-    />
+    <TabScene>
+      <ActivityScreen
+        profile={s.profile} profileAt={profileAt} expenses={s.expenses} dismissed={s.dismissed} today={today}
+        onAdd={() => router.push('/depense')} onEdit={id => router.push({ pathname: '/depense', params: { id } })} onDelete={id => s.removeExpense(id)}
+        onIgnore={s.dismissSuggestion} onAccept={sg => s.acceptSuggestion(sg, today)}
+        linkFilter={linkFilter} linkKey={t}
+        lastRemoved={s.lastRemoved} onUndoRemove={s.undoRemove} onClearRemoved={s.clearLastRemoved}
+      />
+    </TabScene>
   );
 }

@@ -1,5 +1,5 @@
 import Feather from '@expo/vector-icons/Feather';
-import { useMemo, useState } from 'react';
+import { useDeferredValue, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { activityFor, firstMonth } from '../domain/activity';
@@ -39,9 +39,11 @@ export function ActivityScreen({ profile, profileAt, expenses, dismissed, today,
   const minOffset = (first.year * 12 + first.month) - (today.getFullYear() * 12 + today.getMonth());
   const shown = new Date(today.getFullYear(), today.getMonth() + offset, 1);
   const y = shown.getFullYear(), mo = shown.getMonth();
-  const searching = query.trim().length >= 2;
-  const res = useMemo(() => activityFor(profile, expenses, today, { year: y, month: mo, filter, query: searching ? query : '', profileAt }),
-    [profile, expenses, today, y, mo, filter, query, searching, profileAt]);
+  // la liste suit la frappe sans la bloquer : chaque touche s'affiche tout de suite, le filtrage suit
+  const deferredQuery = useDeferredValue(query);
+  const searching = deferredQuery.trim().length >= 2;
+  const res = useMemo(() => activityFor(profile, expenses, today, { year: y, month: mo, filter, query: searching ? deferredQuery : '', profileAt }),
+    [profile, expenses, today, y, mo, filter, deferredQuery, searching, profileAt]);
   const sugg = useMemo(() => detectRecurring(expenses, profile.charges, today, dismissed)[0], [expenses, profile.charges, today, dismissed]);
 
   return (
@@ -78,7 +80,7 @@ export function ActivityScreen({ profile, profileAt, expenses, dismissed, today,
             <IconButton icon="chevron-right" label="Activité : mois d’après" small onPress={() => setOffset(o => o + 1)} disabled={offset >= 0} />
           </View>
         )}
-        {searching && <Text style={st.results} accessibilityLiveRegion="polite">{res.count ? `${res.count} résultat${res.count > 1 ? 's' : ''} · ${m$.round(res.spent)}` : 'Aucun résultat'}</Text>}
+        {searching && <Text style={st.results} accessibilityLiveRegion="polite">{res.count ? `${res.count} résultat${res.count > 1 ? 's' : ''}${res.spent ? ` · ${m$.round(res.spent)} de dépenses` : ''}${res.fixed ? ` · ${m$.round(res.fixed)} de charges fixes` : ''}` : 'Aucun résultat'}</Text>}
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={st.filters}>
           <Chip label="Tout" selected={filter === null} onPress={() => setFilter(null)} />

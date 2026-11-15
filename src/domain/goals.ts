@@ -57,28 +57,44 @@ export function monthSurplus(p: Profile, expenses: Expense[], today: Date): Cent
 
 export const progress = (g: Goal) => (g.target > 0 ? Math.min(1, g.saved / g.target) : 0);
 
-/** Semaine en cours (lundi → dimanche) sans dépense d'envies ; null = jour pas encore arrivé */
+const isoDay = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+/** Premier jour suivi : la première dépense saisie. Avant, on ne sait rien : un défi ne se gagne pas sans données. */
+export const firstTrackedDay = (expenses: Expense[]): string | null => expenses.reduce<string | null>((m, e) => (m === null || e.date < m ? e.date : m), null);
+
+/**
+ * Semaine en cours (lundi → dimanche) sans dépense d'envies.
+ * null = jour pas encore arrivé, ou antérieur à la première dépense saisie (pas de données : ni réussi ni raté).
+ */
 export function weekWithoutWants(expenses: Expense[], today: Date): (boolean | null)[] {
   const monday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - ((today.getDay() + 6) % 7));
   const wants = new Set(CATEGORIES.filter(c => c.pillar === 'envies').map(c => c.id));
+  const first = firstTrackedDay(expenses);
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i);
-    if (d > today) return null;
-    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const iso = isoDay(d);
+    if (d > today || first === null || iso < first) return null;
     return !expenses.some(e => e.date === iso && wants.has(e.categoryId));
   });
 }
 
-/** Jours d'affilée, jusqu'à aujourd'hui, où les dépenses courantes restent sous le budget du jour */
+/**
+ * Jours d'affilée, jusqu'à aujourd'hui, où les dépenses courantes restent sous le budget du jour.
+ * Le budget de chaque jour est celui connu le matin même (dépenses des jours d'avant seulement),
+ * et seuls les jours depuis la première dépense comptent.
+ */
 export function streakUnderDailyBudget(p: Profile, expenses: Expense[], today: Date): { days: number; perDay: Cents } {
-  const perDay = buildMonth(p, expenses, today).perDay;
+  const perDay = buildMonth(p, expenses.filter(e => e.date < isoDay(today)), today).perDay;
+  const first = firstTrackedDay(expenses);
   let days = 0;
+  if (first === null) return { days, perDay };
   for (let k = 0; k < 31; k++) {
     const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - k);
-    if (d.getMonth() !== today.getMonth()) break;
-    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    const spent = expenses.filter(e => e.date === iso).reduce((a, e) => a + e.amount, 0);
-    if (perDay <= 0 || spent > perDay) break;
+    const iso = isoDay(d);
+    if (d.getMonth() !== today.getMonth() || iso < first) break;
+    const morning = buildMonth(p, expenses.filter(e => e.date < iso), d).perDay;
+    const spent = expenses.filter(e => e.date === iso && CATEGORIES.some(c => c.id === e.categoryId)).reduce((a, e) => a + e.amount, 0);
+    if (morning <= 0 || spent > morning) break;
     days++;
   }
   return { days, perDay };

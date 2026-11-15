@@ -109,12 +109,12 @@ const eq = (a, b, what) => { if (a !== b) throw new Error(`${what} : « ${a} » 
     await p.getByText('Novembre 2026').waitFor(); await p.getByText('en cours').waitFor();
     await p.getByText('Café', { exact: true }).waitFor(); await shot('c1');
   });
-  await t('calendrier : décembre prévu, la salle de sport le 10, budget libre 1 129 €', async () => {
+  await t('calendrier : décembre prévu, la salle de sport le 12 (« prochain le 12 » saisi le 14 = 12 décembre), budget libre 1 129 €', async () => {
     await p.getByRole('button', { name: 'Mois suivant' }).click(); await W(400);
     await p.getByText('Décembre 2026').waitFor(); await p.getByText('prévu', { exact: true }).waitFor();
     await p.getByText('pin, la couleur de décembre').waitFor();
     await p.getByLabel('Budget libre 1 129 €').waitFor();
-    await p.getByRole('button', { name: '10 décembre, 1 charge fixe' }).click(); await W(300);
+    await p.getByRole('button', { name: '12 décembre, 1 charge fixe' }).click(); await W(300);
     await p.getByText('Salle de sport').waitFor(); await p.getByText('charge fixe, prévue').waitFor(); await shot('c2');
   });
   await t('calendrier : navigation libre (un an en avant), retour à aujourd’hui, octobre clos', async () => {
@@ -123,7 +123,7 @@ const eq = (a, b, what) => { if (a !== b) throw new Error(`${what} : « ${a} » 
     for (let i = 0; i < 9; i++) await p.getByRole('button', { name: 'Mois suivant' }).click();
     await p.getByText('Novembre 2027').waitFor();
     if (!(await p.getByRole('button', { name: 'Mois suivant' }).isDisabled())) throw new Error('au-delà de +12 mois');
-    await p.getByRole('button', { name: 'Revenir au mois en cours' }).click(); await W(300);
+    await p.getByRole('button', { name: 'Revenir à aujourd’hui' }).click(); await W(300);
     await p.getByText('Novembre 2026').waitFor();
     await p.getByRole('button', { name: 'Mois précédent' }).click(); await W(300);
     await p.getByText('Octobre 2026').waitFor(); await p.getByText('clos', { exact: true }).waitFor();

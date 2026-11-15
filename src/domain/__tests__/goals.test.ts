@@ -34,7 +34,8 @@ describe('objectifs', () => {
 describe('défis', () => {
   test('semaine sans envies : lundi 9 au dimanche 15, une envie mercredi', () => {
     const w = weekWithoutWants([e('a', '2026-11-11', 'restos', 1800), e('b', '2026-11-12', 'courses', 4000)], nov14);
-    expect(w).toEqual([true, true, false, true, true, true, null]);
+    // lundi et mardi : avant la première dépense (mercredi), pas de données, donc ni réussis ni ratés
+    expect(w).toEqual([null, null, false, true, true, true, null]);
   });
   test('série sous le budget du jour', () => {
     const { days, perDay } = streakUnderDailyBudget(p, [e('a', '2026-11-14', 'courses', 500), e('b', '2026-11-12', 'courses', 20000)], nov14);
@@ -42,6 +43,19 @@ describe('défis', () => {
     expect(days).toBe(2); // 14 et 13 ; le 12 dépasse
   });
   test('la série s’arrête au début du mois', () => {
-    expect(streakUnderDailyBudget(p, [], new Date(2026, 10, 3)).days).toBe(3);
+    expect(streakUnderDailyBudget(p, [e('a', '2026-10-20', 'courses', 100)], new Date(2026, 10, 3)).days).toBe(3);
+  });
+  test('sans aucune dépense, aucun défi n’est gagné (bug trouvé par les tests)', () => {
+    expect(streakUnderDailyBudget(p, [], nov14).days).toBe(0);
+    expect(weekWithoutWants([], nov14).every(v => v === null)).toBe(true);
+  });
+  test('la série ne remonte pas avant la première dépense', () => {
+    expect(streakUnderDailyBudget(p, [e('a', '2026-11-12', 'courses', 100)], nov14).days).toBe(3);
+  });
+  test('le budget du jour est celui du matin : la dépense du jour ne l’abaisse pas après coup', () => {
+    const before = streakUnderDailyBudget(p, [e('a', '2026-11-01', 'courses', 100)], nov14).perDay;
+    const r = streakUnderDailyBudget(p, [e('a', '2026-11-01', 'courses', 100), e('b', '2026-11-14', 'courses', before)], nov14);
+    expect(r.perDay).toBe(before);
+    expect(r.days).toBeGreaterThan(0);
   });
 });

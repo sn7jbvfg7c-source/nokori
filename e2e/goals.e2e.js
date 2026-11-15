@@ -33,7 +33,7 @@ const SEED = {
   await t('onglet Objectifs, état vide et défis', async () => {
     await p.getByRole('tab', { name: /Objectifs/ }).click(); await W(500);
     await p.getByText('Un projet en tête ?').waitFor();
-    await p.getByLabel('Semaine sans envies : 5 jours sur 7').waitFor();
+    await p.getByLabel('Semaine sans envies : 3 jours sur 7').waitFor(); // lundi et mardi : avant la première dépense, ils ne comptent plus
     await p.getByLabel('Série : 3 jours sur 3').waitFor();
   });
   await t('montant visé invalide : « Enregistrer » bloqué', async () => {

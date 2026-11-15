@@ -14,7 +14,7 @@ const RELOCK_AFTER_MS = 60_000;
  * Quand l'app passe en arrière-plan, son contenu est masqué (aperçu du sélecteur d'apps).
  * Le web n'a pas de biométrie : le verrou n'y est pas proposé.
  */
-export function LockGate({ enabled, ready = true, children }: { enabled: boolean; ready?: boolean; children: ReactNode }) {
+export function LockGate({ enabled, ready = true, onUnavailable, children }: { enabled: boolean; ready?: boolean; /** plus aucun moyen de déverrouiller (biométrie et code retirés) */ onUnavailable?: () => void; children: ReactNode }) {
   const active = enabled && Platform.OS !== 'web';
   const [locked, setLocked] = useState(active);
   // Les réglages se lisent après le premier affichage : le verrou doit s'enclencher dès qu'on sait qu'il est activé,
@@ -28,9 +28,11 @@ export function LockGate({ enabled, ready = true, children }: { enabled: boolean
 
   const unlock = useCallback(async () => {
     const r = await LocalAuthentication.authenticateAsync({ promptMessage: 'Déverrouiller Nokori', cancelLabel: 'Annuler', disableDeviceFallback: false });
+    // le téléphone n'a plus ni biométrie ni code : le verrou ne peut plus rien protéger, et garderait l'utilisateur dehors
+    if (!r.success && (r.error === 'not_enrolled' || r.error === 'passcode_not_set' || r.error === 'not_available')) { setLocked(false); onUnavailable?.(); return; }
     setFailed(!r.success);
     if (r.success) setLocked(false);
-  }, []);
+  }, [onUnavailable]);
 
   useEffect(() => {
     if (!active) return;
@@ -55,7 +57,9 @@ export function LockGate({ enabled, ready = true, children }: { enabled: boolean
 
   return (
     <View style={{ flex: 1 }}>
-      {children}
+      <View style={{ flex: 1 }} importantForAccessibility={active && (locked || hidden || !armed) ? 'no-hide-descendants' : 'auto'} accessibilityElementsHidden={active && (locked || hidden || !armed)}>
+        {children}
+      </View>
       {active && (locked || hidden || !armed) && (
         <View style={st.cover} accessibilityViewIsModal accessibilityLabel="Nokori est verrouillée">
           <View style={st.icon}><Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.k}>残</Text></View>

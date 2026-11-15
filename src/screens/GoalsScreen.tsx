@@ -1,6 +1,6 @@
 import Feather from '@expo/vector-icons/Feather';
 import * as Crypto from 'expo-crypto';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { parseBalance } from '../domain/accounts';
@@ -75,9 +75,10 @@ export function GoalsScreen({ goals, profile, expenses, today, onSave, onRemove 
   const insets = useSafeAreaInsets();
   const [draft, setDraft] = useState<Draft | null>(null);
   const [deposit, setDeposit] = useState<{ id: string; value: string; date: string | null } | null>(null);
-  const surplus = monthSurplus(profile, expenses, today);
-  const week = weekWithoutWants(expenses, today), okWeek = week.filter(Boolean).length;
-  const streak = streakUnderDailyBudget(profile, expenses, today);
+  // calculs sur toutes les dépenses : refaits seulement quand elles changent (pas à chaque frappe dans un champ)
+  const surplus = useMemo(() => monthSurplus(profile, expenses, today), [profile, expenses, today]);
+  const week = useMemo(() => weekWithoutWants(expenses, today), [expenses, today]), okWeek = week.filter(Boolean).length;
+  const streak = useMemo(() => streakUnderDailyBudget(profile, expenses, today), [profile, expenses, today]);
   const thisMonth = isoOf(today).slice(0, 7);
   const save = () => {
     if (!draft) return;
@@ -177,12 +178,12 @@ export function GoalsScreen({ goals, profile, expenses, today, onSave, onRemove 
             <ProgressBar value={progress(lead)} color={leadType.color} height={8} />
             <Text style={st.meta}>{m$.round(lead.saved)} sur {m$.round(lead.target)}{lead.target > lead.saved ? ` · encore ${m$.round(lead.target - lead.saved)}` : ''}</Text>
             {leadMs && <View style={st.msRow}><Feather name={leadMs === 100 ? 'award' : 'flag'} size={14} color={leadType.color} /><Text style={st.ms}>{MILESTONE[leadMs]}</Text></View>}
-            <View style={[st.eta, { backgroundColor: tint(leadType.color, 0.08) }]}>
+            {progress(lead) < 1 && <View style={[st.eta, { backgroundColor: tint(leadType.color, 0.08) }]}>
               <Text style={st.etaMain}>{etaText(lead)}</Text>
               {!eta(lead.target, lead.saved, 0, today).reached && surplus > 0 && leadWith?.label && (
                 <Text style={st.etaSub} accessibilityLabel="Date avec le reste du mois">En y ajoutant ce qui restera fin {MONTH_NAMES[today.getMonth()]} (≈ {m$.round(surplus)}) : {leadWith.label}. Recalculé à chaque dépense.</Text>
               )}
-            </View>
+            </View>}
             {monthLine(lead)}
             {depositRow(lead)}
             {!!lead.deposits?.length && (
@@ -238,7 +239,7 @@ export function GoalsScreen({ goals, profile, expenses, today, onSave, onRemove 
 
       <SectionHeader title="Défis kakeibo" right="cette semaine" />
       <Card style={st.chal}>
-        <View style={st.rowBetween}><Text style={st.name}>Une semaine sans envies</Text><Text style={st.score} accessibilityLabel={`Semaine sans envies : ${okWeek} jours sur 7`}>{okWeek} / 7</Text></View>
+        <View style={st.rowBetween}><Text style={st.name}>Une semaine sans envies</Text><Text style={st.score} accessibilityLabel={`Semaine sans envies : ${okWeek} jour${okWeek > 1 ? 's' : ''} sur 7`}>{okWeek} / 7</Text></View>
         <View style={st.days}>
           {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((l, i) => {
             const v = week[i];
@@ -249,12 +250,12 @@ export function GoalsScreen({ goals, profile, expenses, today, onSave, onRemove 
             );
           })}
         </View>
-        <Text style={st.meta}>{week.includes(false) ? 'Une envie s’est glissée cette semaine : on repart lundi.' : `Encore ${7 - okWeek} jour${7 - okWeek > 1 ? 's' : ''} sans resto, shopping ni loisirs.`}</Text>
+        <Text style={st.meta}>{!expenses.length ? 'Le défi commence avec votre première dépense notée.' : week.includes(false) ? 'Une envie s’est glissée cette semaine : on repart lundi.' : `Encore ${week.filter(v => v === null).length} jour${week.filter(v => v === null).length > 1 ? 's' : ''} à tenir sans resto, shopping ni loisirs.`}</Text>
       </Card>
       <Card style={[st.chal, { marginTop: space.sm }]}>
-        <View style={st.rowBetween}><Text style={st.name}>3 jours sous le budget du jour</Text><Text style={st.score} accessibilityLabel={`Série : ${Math.min(3, streak.days)} jours sur 3`}>{Math.min(3, streak.days)} / 3</Text></View>
+        <View style={st.rowBetween}><Text style={st.name}>3 jours sous le budget du jour</Text><Text style={st.score} accessibilityLabel={`Série : ${Math.min(3, streak.days)} jour${streak.days > 1 ? 's' : ''} sur 3`}>{Math.min(3, streak.days)} / 3</Text></View>
         <View style={st.flames} aria-hidden>{[0, 1, 2].map(i => <View key={i} style={[st.flame, i < streak.days && { backgroundColor: c.vermilion }]} />)}</View>
-        <Text style={st.meta}>{streak.perDay <= 0 ? 'Le budget du jour est épuisé ce mois-ci.' : streak.days >= 3 ? `Réussi : ${streak.days} jours d’affilée sous ${m$.round(streak.perDay)}.` : `${streak.days} jour${streak.days > 1 ? 's' : ''} d’affilée sous ${m$.round(streak.perDay)}. Encore ${3 - streak.days}.`}</Text>
+        <Text style={st.meta}>{!expenses.length ? 'La série commence avec votre première dépense notée.' : streak.perDay <= 0 ? 'Le budget du jour est épuisé ce mois-ci.' : streak.days >= 3 ? `Réussi : ${streak.days} jours d’affilée sous ${m$.round(streak.perDay)}.` : `${streak.days} jour${streak.days > 1 ? 's' : ''} d’affilée sous ${m$.round(streak.perDay)}. Encore ${3 - streak.days} jour${3 - streak.days > 1 ? 's' : ''}.`}</Text>
       </Card>
       <Text style={st.note}>Nokori ne déplace pas d’argent : notez un versement après l’avoir fait dans votre banque.</Text>
     </ScrollView>

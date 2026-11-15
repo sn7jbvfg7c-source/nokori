@@ -40,13 +40,18 @@ export function Button({ label, onPress, variant = 'primary', icon, disabled, co
   const bg = variant === 'primary' ? (color ?? c.btn) : variant === 'danger' ? c.vermilion : variant === 'secondary' ? c.fill : 'transparent';
   const fg = variant === 'primary' ? (color ? onColor(color) : c.onBtn) : variant === 'danger' ? onColor(c.vermilion) : variant === 'ghost' ? c.ink2 : c.ink;
   const off = disabled || busy;
+  // verrou immédiat : plusieurs appuis dans le même instant (avant que l'état ne change) ne lancent qu'une action
+  const running = useRef(false);
   const run = async () => {
-    if (off || !onPress) return;
-    const r = onPress();
-    if (r && typeof (r as Promise<unknown>).then === 'function') {
-      setBusy(true);
-      try { await r; } finally { if (alive.current) setBusy(false); }
-    }
+    if (off || !onPress || running.current) return;
+    running.current = true;
+    try {
+      const r = onPress();
+      if (r && typeof (r as Promise<unknown>).then === 'function') {
+        setBusy(true);
+        try { await r; } finally { if (alive.current) setBusy(false); }
+      }
+    } finally { running.current = false; }
   };
   return (
     <Animated.View style={[press.style, style]}>
@@ -89,7 +94,7 @@ export function ScreenHeader({ title, right, overline }: { title: string; right?
     <View style={st.header}>
       <View style={{ flex: 1 }}>
         {overline && <Text style={st.overline}>{overline}</Text>}
-        <Text style={st.title} accessibilityRole="header" numberOfLines={1}>{title}</Text>
+        <Text style={st.title} accessibilityRole="header" {...({ 'aria-level': 1 } as object)}>{title}</Text>
       </View>
       {right && <View style={st.headerRight}>{right}</View>}
     </View>
@@ -107,7 +112,7 @@ export function SectionHeader({ title, right, plain }: { title: string; right?: 
   const st = useStyles(makeStyles);
   return (
     <View style={st.section}>
-      <Text style={plain ? st.sectionPlain : st.sectionTitle} accessibilityRole="header">{title}</Text>
+      <Text style={plain ? st.sectionPlain : st.sectionTitle} accessibilityRole="header" {...({ 'aria-level': 2 } as object)}>{title}</Text>
       {typeof right === 'string' ? <Text style={st.sectionRight}>{right}</Text> : right}
     </View>
   );
@@ -123,8 +128,8 @@ export function Row({ title, subtitle, right, left, onPress, a11yLabel, first, d
     <>
       {left}
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Text style={[st.rowTitle, danger && { color: c.vermilion }]} numberOfLines={1}>{title}</Text>
-        {!!subtitle && <Text style={st.rowSub} numberOfLines={2}>{subtitle}</Text>}
+        <Text style={[st.rowTitle, danger && { color: c.vermilion }]} numberOfLines={2}>{title}</Text>
+        {!!subtitle && <Text style={st.rowSub}>{subtitle}</Text>}
       </View>
       {typeof right === 'string' ? <Text style={st.rowRight}>{right}</Text> : right}
       {chevron && <View aria-hidden><Feather name="chevron-right" size={18} color={c.ink3} /></View>}

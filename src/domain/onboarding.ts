@@ -51,7 +51,12 @@ export function toFixedCharge(d: DraftCharge, today: Date): FixedCharge | null {
   const y = today.getFullYear(), m = today.getMonth();
   const c: FixedCharge = { id: d.id, name: cleanName(d.name).trim() || 'Charge', group: d.group, amount: d.amount, day: Math.min(31, Math.max(1, d.day)), freq: d.freq };
   const kept = d.saved && d.saved.freq === d.freq ? d.saved : undefined;
-  if (d.freq === '4sem') c.anchor = kept?.anchor && kept.day === c.day ? kept.anchor : iso(y, m, Math.min(c.day, daysInMonth(y, m)));
+  if (d.freq === '4sem') {
+    // « prochain le 1 » saisi le 14 : c'est le 1er du mois PROCHAIN, pas une date déjà passée
+    const next = c.day < today.getDate() ? new Date(y, m + 1, 1) : new Date(y, m, 1);
+    const ny = next.getFullYear(), nm = next.getMonth();
+    c.anchor = kept?.anchor && kept.day === c.day ? kept.anchor : iso(ny, nm, Math.min(c.day, daysInMonth(ny, nm)));
+  }
   // une charge annuelle garde son mois (une assurance de mars reste en mars, même modifiée en novembre)
   if (d.freq === 'an') c.month = kept?.month ?? m;
   return c;
@@ -83,3 +88,6 @@ export function draftFromProfile(p: Profile): Draft {
     charges: p.charges.map(c => ({ id: c.id, name: c.name, group: c.group, amount: c.amount, day: c.day, freq: c.freq, custom: !CATALOG.some(i => i.id === c.id), saved: { freq: c.freq, day: c.day, anchor: c.anchor, month: c.month } })),
   };
 }
+
+/** Charges cochées dont le montant n'est pas encore saisi (elles ne seraient pas comptées) */
+export const missingAmounts = (d: Draft): DraftCharge[] => d.charges.filter(c => c.amount === null || c.amount <= 0);

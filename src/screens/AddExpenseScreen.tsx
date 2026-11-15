@@ -1,6 +1,6 @@
 import Feather from '@expo/vector-icons/Feather';
 import * as Crypto from 'expo-crypto';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CATEGORIES, PILLARS } from '../domain/budget';
@@ -40,7 +40,11 @@ export function AddExpenseScreen({ today, initial, onSave, onClose }: { today: D
   const category = CATEGORIES.find(x => x.id === cat);
   const [label, setLabel] = useState(initial && initial.label !== category?.name ? initial.label : '');
   const initialBack = initial ? Math.max(0, daysBetween(today, new Date(initial.date + 'T12:00:00'))) : 0;
-  const [back, setBack] = useState(initialBack);
+  const [back, setBackState] = useState(initialBack);
+  // modification : la date d'origine est gardée telle quelle tant qu'on ne touche pas au jour (même hors des 62 jours ou dans le futur)
+  const [dateTouched, setDateTouched] = useState(false);
+  const setBack: typeof setBackState = v => { setDateTouched(true); setBackState(v); };
+  const saving = useRef(false);
   const cents = toCents(amount);
   const ok = cents > 0 && cat !== null;
   const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() - back);
@@ -49,8 +53,10 @@ export function AddExpenseScreen({ today, initial, onSave, onClose }: { today: D
 
   const goLabel = ok && pillar ? `${initial ? 'Enregistrer' : 'Ajouter'} ${formatEuros(cents)} en ${pillar.name}` : cents === 0 ? 'Tapez un montant' : 'Choisissez une catégorie';
   const save = () => {
-    if (!ok || !category) return;
-    return onSave({ id: initial?.id ?? Crypto.randomUUID(), date: iso(date), label: cleanName(label).trim() || category.name, categoryId: category.id, amount: cents });
+    if (!ok || !category || saving.current) return;
+    saving.current = true;
+    const day = initial && !dateTouched ? initial.date : iso(date);
+    return onSave({ id: initial?.id ?? Crypto.randomUUID(), date: day, label: cleanName(label).trim() || category.name, categoryId: category.id, amount: cents });
   };
 
   return (

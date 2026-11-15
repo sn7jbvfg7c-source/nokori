@@ -47,7 +47,7 @@ export function CalendarView({ profile, history = [], expenses, today }: { profi
         <IconButton icon="chevron-right" label="Mois suivant" variant="surface" onPress={() => setOffset(o => Math.min(CAL_MAX, o + 1))} disabled={offset >= CAL_MAX} />
       </View>
       {offset !== 0 && (
-        <Pressable onPress={() => setOffset(0)} style={st.today} accessibilityRole="button" accessibilityLabel="Revenir au mois en cours">
+        <Pressable onPress={() => setOffset(0)} style={st.today} accessibilityRole="button" accessibilityLabel="Revenir à aujourd’hui">
           <Feather name="rotate-ccw" size={13} color={c.ink2} /><Text style={st.todayTxt}>Revenir à aujourd’hui</Text>
         </Pressable>
       )}
@@ -101,7 +101,7 @@ function Stat({ label, value, color, a11y }: { label: string; value: string; col
   return (
     <View style={st.box}>
       <Text style={st.boxL}>{label}</Text>
-      <Text style={[st.boxV, color ? { color } : null]} accessibilityLabel={a11y} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
+      <Text style={[st.boxV, color ? { color } : null]} accessibilityLabel={a11y}>{value}</Text>
     </View>
   );
 }
@@ -118,7 +118,7 @@ function Line({ name, sub, amount, color, first }: { name: string; sub: string; 
 
 const makeStyles = (c: Palette) => StyleSheet.create({
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: space.gutter, marginTop: space.lg },
-  titleWrap: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  titleWrap: { flex: 1, flexShrink: 1, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: space.sm, paddingHorizontal: space.xs },
   title: { ...t.headline, fontSize: 19, color: c.ink },
   status: { paddingHorizontal: space.sm, paddingVertical: 3, borderRadius: radius.pill },
   statusTxt: { ...t.caption, fontFamily: font.semibold, color: c.ink },

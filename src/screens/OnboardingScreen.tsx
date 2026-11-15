@@ -3,7 +3,7 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GROUP_NAME } from '../domain/charges';
 import { formatEuros, formatEurosRound, parseEuros, toInputText } from '../domain/money';
-import { buildProfile, cleanName, draftFromProfile, emptyDraft, PAYDAYS, SAVE_STEPS, searchCatalog, summary, type CatalogItem, type Draft, type DraftCharge } from '../domain/onboarding';
+import { buildProfile, cleanName, missingAmounts, draftFromProfile, emptyDraft, PAYDAYS, SAVE_STEPS, searchCatalog, summary, type CatalogItem, type Draft, type DraftCharge } from '../domain/onboarding';
 import type { ChargeGroup, Frequency, Profile } from '../domain/types';
 import { font } from '../theme/tokens';
 import type { Palette } from '../theme/tokens';
@@ -107,7 +107,7 @@ function ChargesStep({ draft, setDraft }: { draft: Draft; setDraft: (f: (d: Draf
           <Text style={st.rowName}>{name}</Text>
           <Text style={[st.rowSub, c && { color: colors.vermilion }]}>{c ? (c.amount ? `${formatEuros(c.amount)}, ${freqText(c)}` : 'montant à saisir') : groupName}</Text>
         </View>
-        <Pressable onPress={onToggle} style={[st.tg, c && st.tgOn]} accessibilityRole="checkbox" accessibilityState={{ checked: !!c }} accessibilityLabel={(c ? 'Retirer ' : 'Ajouter ') + name}>
+        <Pressable onPress={onToggle} style={[st.tg, c && st.tgOn]} accessibilityRole="checkbox" accessibilityState={{ checked: !!c }} aria-checked={!!c} accessibilityLabel={(c ? 'Retirer ' : 'Ajouter ') + name}>
           <Text style={[st.tgTxt, c && { color: '#fff' }]}>{c ? '✓' : '+'}</Text>
         </Pressable>
       </Pressable>
@@ -174,7 +174,9 @@ export function OnboardingScreen({ initial, onDone, onRestore }: { initial: Prof
     done.current = true;
     onDone(buildProfile(draft, today, initial));
   };
-  const canGo = step !== 1 || incomeOk;
+  const missing = missingAmounts(draft);
+  // une charge cochée sans montant ne doit jamais disparaître en silence
+  const canGo = (step !== 1 || incomeOk) && ((step !== 3 && step !== 4) || missing.length === 0);
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.paper }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -230,6 +232,11 @@ export function OnboardingScreen({ initial, onDone, onRestore }: { initial: Prof
           </View>
         )}
         {step === 3 && <ChargesStep draft={draft} setDraft={setDraft} />}
+        {(step === 3 || step === 4) && missing.length > 0 && (
+          <Text style={st.err} accessibilityLiveRegion="polite">
+            Montant à saisir pour {missing.map(c => c.name).join(', ')} : indiquez-le, ou retirez {missing.length > 1 ? 'ces charges' : 'cette charge'}.
+          </Text>
+        )}
         {step === 4 && (
           <View>
             <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.h2}>Votre mois, en un coup d’œil</Text>

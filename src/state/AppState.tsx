@@ -9,6 +9,8 @@ import type { Expense, Profile } from '../domain/types';
 
 /** Copie du contenu illisible, gardée avant toute décision de l'utilisateur */
 export const UNREADABLE_KEY = 'state.illisible';
+/** Copie de l'état d'origine quand des éléments abîmés ont été écartés à la lecture */
+export const CLEANED_KEY = 'state.avant-nettoyage';
 export const EMPTY_DATA = EMPTY;
 
 /**
@@ -22,6 +24,8 @@ export type LoadStatus = 'chargement' | 'ok' | 'erreur' | 'illisible';
 interface AppState extends AppData {
   ready: boolean;
   status: LoadStatus;
+  /** illisible : « fichier » (abîmé, version future) ou « cle » (clé de chiffrement absente sur ce téléphone) */
+  unreadableReason: 'fichier' | 'cle';
   /** dernier problème d'enregistrement, à afficher */
   error: string | null;
   retryLoad(): void;
@@ -70,6 +74,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [lastAdded, setLastAdded] = useState<Expense | null>(null);
   const [lastRemoved, setLastRemoved] = useState<Expense | null>(null);
   const [attempt, setAttempt] = useState(0);
+  const [reason, setReason] = useState<'fichier' | 'cle'>('fichier');
   const latest = useRef<AppData>(EMPTY);
   const writable = useRef(false);
   // les écritures passent l'une après l'autre, dans l'ordre
@@ -81,13 +86,28 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     (async () => {
       let raw: string | null;
       try { raw = await kv.get(STATE_KEY); }
-      catch { if (alive) setStatus('erreur'); return; }
+      catch (e) {
+        if (!alive) return;
+        if ((e as { code?: string })?.code === 'KEY_LOST') { setReason('cle'); setStatus('illisible'); } else setStatus('erreur');
+        return;
+      }
       const d = decodeState(raw);
       if (!alive) return;
       if (d.status === 'illisible') {
-        try { if (raw && (await kv.get(UNREADABLE_KEY)) !== raw) await kv.set(UNREADABLE_KEY, raw); } catch { /* la copie reste dans la base d'origine, non écrasée */ }
-        if (alive) setStatus('illisible');
+        try {
+          const prev = await kv.get(UNREADABLE_KEY);
+          if (raw && prev !== raw) {
+            if (prev) await kv.set(UNREADABLE_KEY + '.ancien', prev); // la copie précédente n'est pas perdue
+            await kv.set(UNREADABLE_KEY, raw);
+          }
+        } catch { /* la copie reste dans la base d'origine, non écrasée */ }
+        if (alive) { setReason('fichier'); setStatus('illisible'); }
         return;
+      }
+      if (d.status === 'ok' && d.dropped > 0 && raw) {
+        // des éléments abîmés ont été écartés : l'original est gardé de côté avant toute réécriture
+        try { if ((await kv.get(CLEANED_KEY)) !== raw) await kv.set(CLEANED_KEY, raw); } catch { /* sans effet sur la suite */ }
+        if (!alive) return;
       }
       latest.current = d.data;
       setData(d.data);
@@ -96,6 +116,12 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     })();
     return () => { alive = false; };
   }, [attempt]);
+
+  // version web : un autre onglet a enregistré, on reprend ses données (sinon la prochaine écriture les effacerait)
+  useEffect(() => kv.subscribe?.(STATE_KEY, raw => {
+    const d = decodeState(raw);
+    if (d.status === 'ok' && writable.current) { latest.current = d.data; setData(d.data); }
+  }), []);
 
   const commit = useCallback((next: AppData): Promise<void> => {
     if (!writable.current) {
@@ -113,10 +139,12 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<AppState>(() => ({
-    ...data, ready: status !== 'chargement', status, error,
+    ...data, ready: status !== 'chargement', status, unreadableReason: reason, error,
     retryLoad: () => { setStatus('chargement'); setAttempt(a => a + 1); },
     startFresh: async () => {
       if (status !== 'illisible') return;
+      // clé perdue : la base illisible et l'ancienne clé sont supprimées, une nouvelle base chiffrée est créée
+      if (reason === 'cle') { try { await kv.wipe(); } catch { /* la prochaine écriture le signalera */ } }
       writable.current = true;
       setStatus('ok');
       await commit(EMPTY);
@@ -172,12 +200,17 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       });
     },
     wipeAll: async () => {
-      await queue.current;
-      await kv.wipe();
-      latest.current = EMPTY; setData(EMPTY); setLastAdded(null); setLastRemoved(null);
-      writable.current = true; setStatus('ok'); setError(null);
+      // plus aucune écriture pendant l'effacement : rien ne peut recréer de données derrière
+      writable.current = false;
+      try {
+        await queue.current;
+        await kv.wipe();
+      } finally {
+        latest.current = EMPTY; setData(EMPTY); setLastAdded(null); setLastRemoved(null);
+        writable.current = true; setStatus('ok'); setError(null);
+      }
     },
-  }), [data, status, error, commit, lastAdded, lastRemoved]);
+  }), [data, status, reason, error, commit, lastAdded, lastRemoved]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

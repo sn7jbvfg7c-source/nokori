@@ -17,7 +17,7 @@ export function dayTitle(date: string, today: Date): string {
   const diff = Math.round((t - x) / 86_400_000);
   if (diff === 0) return 'Aujourd’hui';
   if (diff === 1) return 'Hier';
-  return `${DOW[new Date(x).getUTCDay()]} ${d} ${MON[m - 1]}${y !== today.getFullYear() ? ` ${y}` : ''}`;
+  return `${DOW[new Date(x).getUTCDay()]} ${d === 1 ? '1er' : d} ${MON[m - 1]}${y !== today.getFullYear() ? ` ${y}` : ''}`;
 }
 
 export function activity(p: Profile, expenses: Expense[], today: Date, filter: PillarId | null = null): ActivityDay[] {
@@ -45,7 +45,11 @@ export function activity(p: Profile, expenses: Expense[], today: Date, filter: P
   return [...byDate].map(([date, list]) => ({ date, title: dayTitle(date, today), total: list.reduce((a, i) => a + i.amount, 0), items: list }));
 }
 
-const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+/** Libellés déjà normalisés, par dépense : la recherche ne refait pas ce travail à chaque touche (une dépense ne change pas d'objet tant qu'on ne la modifie pas) */
+const normCache = new WeakMap<Expense, string>();
+const normLabel = (e: Expense) => { let v = normCache.get(e); if (v === undefined) { v = norm(e.label); normCache.set(e, v); } return v; };
+const CATEGORY_BY_ID = new Map(CATEGORIES.map(c => [c.id, { ...c, norm: norm(c.name) }]));
 
 export interface ActivityQuery {
   /** mois affiché (hors recherche) */
@@ -68,9 +72,9 @@ export function activityFor(p: Profile, expenses: Expense[], today: Date, q: Act
   for (const e of expenses) {
     if (e.date > todayIso) continue;
     if (!search && !e.date.startsWith(prefix)) continue;
-    const cat = CATEGORIES.find(c => c.id === e.categoryId);
+    const cat = CATEGORY_BY_ID.get(e.categoryId);
     if (!cat) continue;
-    if (search && !norm(e.label).includes(search) && !norm(cat.name).includes(search)) continue;
+    if (search && !normLabel(e).includes(search) && !cat.norm.includes(search)) continue;
     items.push({ key: 'e' + e.id, date: e.date, kind: 'depense', id: e.id, label: e.label, sub: cat.name, amount: e.amount, pillar: cat.pillar });
   }
   // charges fixes déjà passées : le mois affiché, ou en recherche tous les mois depuis la première dépense

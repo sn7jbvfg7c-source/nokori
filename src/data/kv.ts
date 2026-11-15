@@ -8,6 +8,8 @@ export interface KV {
   set(key: string, value: string): Promise<void>;
   /** efface toutes les données et la clé de chiffrement */
   wipe(): Promise<void>;
+  /** web : prévient quand un autre onglet a modifié une valeur */
+  subscribe?(key: string, cb: (value: string | null) => void): () => void;
 }
 
 const PREFIX = 'nokori:';
@@ -17,7 +19,15 @@ export const kv: KV = {
     try { return globalThis.localStorage?.getItem(PREFIX + key) ?? null; } catch { return null; }
   },
   async set(key, value) {
-    try { globalThis.localStorage?.setItem(PREFIX + key, value); } catch { /* stockage indisponible : on garde en mémoire */ }
+    // stockage plein ou bloqué : l'erreur remonte, l'app affiche « Impossible d'enregistrer » (au lieu de faire croire que c'est fait)
+    globalThis.localStorage?.setItem(PREFIX + key, value);
+  },
+  subscribe(key, cb) {
+    const w = globalThis as unknown as { addEventListener?: (t: string, f: (e: StorageEvent) => void) => void; removeEventListener?: (t: string, f: (e: StorageEvent) => void) => void };
+    if (!w.addEventListener) return () => {};
+    const f = (e: StorageEvent) => { if (e.key === PREFIX + key) cb(e.newValue); };
+    w.addEventListener('storage', f);
+    return () => w.removeEventListener?.('storage', f);
   },
   async wipe() {
     try {

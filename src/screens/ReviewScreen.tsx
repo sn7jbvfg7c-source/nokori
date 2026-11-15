@@ -33,9 +33,9 @@ export function ReviewScreen({ profile, profileAt, expenses, notes, today, onSav
   const d = new Date(today.getFullYear(), today.getMonth() + offset, 1);
   const y = d.getFullYear(), mo = d.getMonth();
   const prof = profileAt ? profileAt(y, mo) : profile;
-  const r = review(prof, expenses, y, mo, today);
-  const cats = byCategory(expenses, y, mo, today);
-  const cmp = compareWithPrevious(expenses, y, mo, today);
+  const r = useMemo(() => review(prof, expenses, y, mo, today), [prof, expenses, y, mo, today]);
+  const cats = useMemo(() => byCategory(expenses, y, mo, today), [expenses, y, mo, today]);
+  const cmp = useMemo(() => compareWithPrevious(expenses, y, mo, today), [expenses, y, mo, today]);
   const col = MONTH_COLORS[mo], name = MONTH_NAMES[mo], prevName = MONTH_NAMES[(mo + 11) % 12];
   const key = monthKey(y, mo);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
@@ -57,7 +57,7 @@ export function ReviewScreen({ profile, profileAt, expenses, notes, today, onSav
         <View style={st.row}><Text style={st.heroM}>{capitalize(name)}, {r.closed ? 'clos' : 'en cours'}</Text><View style={st.tag}><Text style={st.tagTxt}>{col.kanji} {col.name}</Text></View></View>
         <Text style={st.heroLabel}>{r.closed ? 'Épargné' : 'Épargne prévue'}</Text>
         <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.big} accessibilityLabel={`${m$.round(r.savedTotal)} épargnés`}>{m$.round(r.savedTotal)}</Text>
-        <Text style={st.sub}>{r.closed ? `${Math.round(r.savedPct * 100)} % du revenu${r.left > 0 ? ', non-dépensé compris' : ''}` : `${Math.round(prof.savePct * 100)} % du revenu, prévus dès la paie`}</Text>
+        <Text style={st.sub}>{r.closed ? `${Math.round(r.savedPct * 100)} % du revenu${r.left > 0 ? ', non dépensé compris' : ''}` : `${Math.round(prof.savePct * 100)} % du revenu, prévus dès la paie`}</Text>
         <View style={st.split} aria-hidden>
           <View style={{ flex: r.spent / total, backgroundColor: 'rgba(255,255,255,0.45)' }} />
           {r.left > 0 && <View style={{ flex: r.left / total, backgroundColor: 'rgba(255,255,255,0.25)' }} />}
@@ -84,7 +84,7 @@ export function ReviewScreen({ profile, profileAt, expenses, notes, today, onSav
               : cmp.diff === 0 ? 'Autant de dépenses courantes.'
               : `${cmp.diff < 0 ? '−' : '+'}${Math.abs(Math.round(cmp.pct * 100))} % de dépenses courantes`}
           </Text>
-          <Text style={st.muted}>{cmp.sameDay ? `Du 1er au ${today.getDate()} de chaque mois, hors charges fixes.` : 'Mois complets, hors charges fixes.'}</Text>
+          <Text style={st.muted}>{cmp.sameDay ? (today.getDate() === 1 ? 'Le 1er de chaque mois, hors charges fixes.' : `Du 1er au ${today.getDate()} de chaque mois, hors charges fixes.`) : 'Mois complets, hors charges fixes.'}</Text>
           <Bars rows={[[capitalize(prevName), cmp.before, c.fill2], [capitalize(name), cmp.now, col.light]]} />
         </>}
       </Card>
@@ -184,7 +184,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   barRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm + 2 },
   barLabel: { ...t.caption, color: c.ink2, width: 78 },
   barTrack: { flex: 1, height: 10, borderRadius: 5, backgroundColor: c.fill, overflow: 'hidden' },
-  barVal: { ...t.footnote, ...tabular, fontFamily: font.semibold, color: c.ink, width: 72, textAlign: 'right' },
+  barVal: { ...t.footnote, ...tabular, fontFamily: font.semibold, color: c.ink, minWidth: 72, textAlign: 'right' },
   catRow: { paddingVertical: space.md, gap: 6 },
   catTop: { flexDirection: 'row', justifyContent: 'space-between', gap: space.sm },
   catName: { ...t.bodyStrong, color: c.ink, flex: 1 },

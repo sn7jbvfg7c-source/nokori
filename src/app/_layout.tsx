@@ -31,27 +31,33 @@ function SaveError() {
 
 function Shell() {
   const c = useColors();
-  const { prefs, profile, ready, status, retryLoad, startFresh, replaceAll } = useAppState();
+  const { prefs, profile, ready, status, retryLoad, startFresh, replaceAll, unreadableReason, savePrefs } = useAppState();
   const [restoring, setRestoring] = useState(false);
   // rappels : reprogrammés à chaque changement du profil ou du réglage
   useEffect(() => {
     if (status !== 'ok' || !notificationsSupported) return;
-    if (prefs.alerts && profile) scheduleReminders(reminders(profile, new Date())).catch(() => {});
+    // montants masqués : les rappels ne disent même pas quelle charge arrive (écran verrouillé visible par d'autres)
+    if (prefs.alerts && profile) scheduleReminders(reminders(profile, new Date(), 3, 62, prefs.hideAmounts)).catch(() => {});
     else cancelReminders().catch(() => {});
-  }, [status, prefs.alerts, profile]);
+  }, [status, prefs.alerts, prefs.hideAmounts, profile]);
+
+  // tant que les données ne sont pas lues, aucun écran : un lien direct (/depense?id=…) ne doit pas démarrer sur un état vide
+  if (!ready) return <View style={{ flex: 1, backgroundColor: c.paper }} />;
 
   if (status === 'erreur' || status === 'illisible') {
     return (
+      <LockGate enabled={prefs.lock} ready onUnavailable={() => savePrefs({ lock: false })}>
       <View style={{ flex: 1, backgroundColor: c.paper }}>
         {restoring
           ? <BackupScreen mode="restore" data={EMPTY_DATA} today={new Date()} onReplace={d => replaceAll(forRestore(d))} onExported={() => {}} onClose={() => setRestoring(false)} />
-          : <DataProblem status={status} onRetry={retryLoad} onStartFresh={startFresh} onRestore={status === 'illisible' ? () => setRestoring(true) : undefined} />}
+          : <DataProblem status={status} reason={unreadableReason} onRetry={retryLoad} onStartFresh={startFresh} onRestore={status === 'illisible' ? () => setRestoring(true) : undefined} />}
         <StatusBar style={c.dark ? 'light' : 'dark'} />
       </View>
+      </LockGate>
     );
   }
   return (
-    <LockGate enabled={ready && prefs.lock} ready={ready}>
+    <LockGate enabled={ready && prefs.lock} ready={ready} onUnavailable={() => savePrefs({ lock: false })}>
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.paper } }}>
         <Stack.Screen name="depense" options={{ presentation: 'modal' }} />
         <Stack.Screen name="reglages" options={{ presentation: 'modal' }} />

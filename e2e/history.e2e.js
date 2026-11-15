@@ -33,7 +33,7 @@ const SEED = {
   const state = () => p.evaluate(() => JSON.parse(localStorage.getItem('nokori:state')));
 
   await t('budget : le grand chiffre est le disponible, prélèvements déduits', async () => {
-    await p.locator('[aria-label*="disponibles, prélèvements à venir déduits"]').waitFor();
+    await p.locator('[aria-label*=", prélèvements à venir déduits"]').waitFor();
   });
   await t('activité : mois en cours, puis octobre, puis septembre (historique complet)', async () => {
     await tab('Activité').click(); await W(500);

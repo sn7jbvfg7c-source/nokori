@@ -11,7 +11,8 @@ export interface Reminder { id: string; date: Date; title: string; body: string 
 /** iOS garde au plus 64 notifications programmées par app : on reste en dessous */
 export const MAX_REMINDERS = 60;
 
-export function reminders(p: Profile, now: Date, lead = 3, horizonDays = 62): Reminder[] {
+/** `discreet` : sans le nom de la charge (montants masqués), seulement « un prélèvement » */
+export function reminders(p: Profile, now: Date, lead = 3, horizonDays = 62, discreet = false): Reminder[] {
   const out: Reminder[] = [];
   const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + horizonDays);
   for (let k = 0; k <= 3; k++) {
@@ -25,7 +26,7 @@ export function reminders(p: Profile, now: Date, lead = 3, horizonDays = 62): Re
         id: `${c.id}-${due.getFullYear()}-${due.getMonth() + 1}-${d}`,
         date: at,
         title: lead === 0 ? 'Prélèvement aujourd’hui' : `Prélèvement dans ${lead} jour${lead > 1 ? 's' : ''}`,
-        body: `${c.name} sera prélevé le ${d} ${MONTH_NAMES[due.getMonth()]}. Déjà compté dans votre budget.`,
+        body: discreet ? `Un prélèvement est prévu le ${d} ${MONTH_NAMES[due.getMonth()]}. Déjà compté dans votre budget.` : `${c.name} sera prélevé le ${d} ${MONTH_NAMES[due.getMonth()]}. Déjà compté dans votre budget.`,
       });
     }
   }

@@ -84,10 +84,17 @@ describe('sauvegarde : rien ne part sans l’utilisateur', () => {
 });
 
 describe('base restaurée sans sa clé', () => {
-  test('une nouvelle clé efface d’abord l’ancienne base illisible (sauvegarde iCloud sur un autre iPhone)', () => {
+  test('clé absente alors qu’une base existe : rien n’est supprimé d’office, l’utilisateur choisit', () => {
     const src = fs.readFileSync(path.join(__dirname, '../data/kv.native.ts'), 'utf8');
-    const open = src.slice(src.indexOf('async function open()'));
-    expect(open).toMatch(/if \(fresh\) \{ try \{ await SQLite\.deleteDatabaseAsync\(DB_NAME\)/);
-    expect(open.indexOf('deleteDatabaseAsync')).toBeLessThan(open.indexOf('openDatabaseAsync'));
+    const key = src.slice(src.indexOf('async function databaseKey()'), src.indexOf('let dbPromise'));
+    expect(key).toMatch(/if \(databaseExists\(\)\) throw new KeyLostError\(\)/);
+    expect(key.indexOf('KeyLostError')).toBeLessThan(key.indexOf('setItemAsync')); // pas de nouvelle clé avant ce choix
+    const open = src.slice(src.indexOf('async function open()'), src.indexOf('const db = () =>'));
+    expect(open).not.toMatch(/deleteDatabaseAsync/);
+    expect(open).toMatch(/catch \{[^]*throw new KeyLostError\(\)/); // clé qui n'ouvre pas la base
+  });
+  test('en cas de doute sur l’existence de la base, on considère qu’elle existe', () => {
+    const src = fs.readFileSync(path.join(__dirname, '../data/kv.native.ts'), 'utf8');
+    expect(src).toMatch(/catch \{ return true; \}/);
   });
 });

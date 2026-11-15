@@ -74,7 +74,9 @@ export function AccountsScreen({ accounts, today, onSave, onRemove }: { accounts
     if (!draft) return;
     const bal = parseBalance(draft.balance);
     if (bal === null || !draft.name.trim()) return;
-    onSave({ id: draft.id ?? Crypto.randomUUID(), name: draft.name.trim(), kind: draft.kind, balance: bal, updated: isoOf(today) });
+    const prev = accounts.find(a => a.id === draft.id);
+    // renommer un compte ne le marque pas « mis à jour » : seule une modification du solde compte
+    onSave({ id: draft.id ?? Crypto.randomUUID(), name: draft.name.trim(), kind: draft.kind, balance: bal, updated: prev && prev.balance === bal ? prev.updated : isoOf(today) });
     setDraft(null);
   };
 
@@ -87,7 +89,7 @@ export function AccountsScreen({ accounts, today, onSave, onRemove }: { accounts
           <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={[st.total, tot.total < 0 && !m$.hidden && { color: c.vermilion }]} numberOfLines={1} adjustsFontSizeToFit
             accessibilityLabel={m$.hidden ? 'Total masqué' : `Total de vos comptes : ${formatEuros(tot.total)}`}>{m$.eur(tot.total)}</Text>
           {tot.byKind.length > 1 && posSum > 1 && (
-            <View style={st.dist} accessible accessibilityLabel={`Répartition : ${tot.byKind.map((k, i) => `${k.plural} ${Math.round((positive[i] / posSum) * 100)} %`).join(', ')}`}>
+            <View style={st.dist} accessible accessibilityRole="image" accessibilityLabel={`Répartition : ${tot.byKind.map((k, i) => `${k.plural} ${Math.round((positive[i] / posSum) * 100)} %`).join(', ')}`}>
               {tot.byKind.map((k, i) => positive[i] > 0 && <View key={k.id} style={{ flex: positive[i] / posSum, backgroundColor: kindColor[k.id] }} />)}
             </View>
           )}
@@ -140,10 +142,10 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   editor: { gap: space.md, paddingVertical: space.lg },
   input: { ...t.body, height: 46, borderRadius: radius.md, backgroundColor: c.fill, paddingHorizontal: space.md, color: c.ink },
   kinds: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  balRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  balRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.md },
   lbl: { ...t.callout, color: c.ink },
-  balBox: { flexDirection: 'row', alignItems: 'center', width: 180, height: 46, borderRadius: radius.md, backgroundColor: c.fill, paddingHorizontal: space.md },
-  balInput: { ...t.headline, ...tabular, flex: 1, color: c.ink, textAlign: 'right' },
+  balBox: { flexDirection: 'row', alignItems: 'center', flex: 1, maxWidth: 200, minWidth: 0, height: 46, borderRadius: radius.md, backgroundColor: c.fill, paddingHorizontal: space.md },
+  balInput: { ...t.headline, ...tabular, flex: 1, minWidth: 0, width: '100%', color: c.ink, textAlign: 'right' },
   euro: { ...t.body, color: c.ink2, marginLeft: 6 },
   err: { ...t.footnote, color: c.vermilion },
   btns: { flexDirection: 'row', alignItems: 'center', gap: space.sm },

@@ -1,5 +1,5 @@
 import Feather from '@expo/vector-icons/Feather';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { buildMonth, CATEGORIES, PILLARS } from '../domain/budget';
@@ -23,7 +23,7 @@ interface Props {
 export function BudgetScreen({ profile, history = [], expenses, today, onAdd, onEdit, onSettings, onPillar, lastAdded, onUndo, onDismiss }: Props) {
   const c = useColors(); const st = useStyles(makeStyles);
   const m = useMoney();
-  const s = buildMonth(profile, expenses, today);
+  const s = useMemo(() => buildMonth(profile, expenses, today), [profile, expenses, today]);
   const insets = useSafeAreaInsets();
   const [view, setView] = useState<'mois' | 'cal'>('mois');
   const cat = lastAdded ? CATEGORIES.find(x => x.id === lastAdded.categoryId) : undefined;
@@ -47,7 +47,7 @@ export function BudgetScreen({ profile, history = [], expenses, today, onAdd, on
               <View style={st.seal}><Text style={st.sealText}>{Math.round(profile.savePct * 100)} %</Text></View>
               <View style={{ flex: 1 }}>
                 <Text style={st.saveTitle}>Épargne prévue ce mois-ci</Text>
-                <Text style={st.saveSub}>{m.round(s.saving)}, retirés du budget dès la paie. Le virement se fait dans votre banque.</Text>
+                <Text style={st.saveSub}>{m.round(s.saving)} sont retirés du budget dès la paie. Le virement se fait dans votre banque.</Text>
               </View>
             </Card>
             {onEdit && (

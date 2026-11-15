@@ -57,13 +57,13 @@ export function SettingsScreen({ prefs, today = new Date(), onChange, onClose, o
         <Text style={st.rowS}>« Auto » suit le réglage du téléphone.</Text>
       </Card>
       <Card style={{ marginTop: space.sm }}>
-        {toggle('eye-off', c.ink2, 'Masquer les montants', 'Pour ouvrir l’app en public : tous les montants sont remplacés par •••', prefs.hideAmounts, v => onChange({ hideAmounts: v }), false, true)}
+        {toggle('eye-off', c.ink2, 'Masquer les montants', 'Pour ouvrir l’app en public : les montants des écrans sont remplacés par •••. Ils restent visibles quand vous les saisissez ou les modifiez.', prefs.hideAmounts, v => onChange({ hideAmounts: v }), false, true)}
       </Card>
 
       <SectionHeader title="Sécurité et rappels" />
       <Card>
         {toggle('lock', c.vermilion, 'Verrouillage Face ID', web ? 'Indisponible dans le navigateur' : 'À l’ouverture et après 1 minute en arrière-plan', prefs.lock, toggleLock, web, true)}
-        {toggle('bell', c.teal, 'Avant chaque prélèvement', notificationsSupported ? 'Une notification 3 jours avant, sans montant affiché' : 'Indisponible dans le navigateur', prefs.alerts, toggleAlerts, !notificationsSupported)}
+        {toggle('bell', c.teal, 'Avant chaque prélèvement', notificationsSupported ? 'Une notification 3 jours avant, sans montant affiché' : 'Indisponible dans le navigateur', prefs.alerts && notificationsSupported, toggleAlerts, !notificationsSupported)}
       </Card>
       {msg && <View style={st.msg}><Notice icon="alert-circle" tone="warn">{msg}</Notice></View>}
 
@@ -75,7 +75,7 @@ export function SettingsScreen({ prefs, today = new Date(), onChange, onClose, o
       <SectionHeader title="Vos données" />
       {(backupAge === null || backupAge > BACKUP_REMINDER_DAYS) && (
         <View style={st.msg}><Notice icon="alert-triangle" tone="warn">
-          {backupAge === null ? 'Aucune sauvegarde pour l’instant. Si ce téléphone est perdu ou changé, vos données le seront aussi.' : `Dernière sauvegarde il y a ${backupAge} jours. Pensez à en refaire une.`}
+          {backupAge === null ? `Aucune sauvegarde pour l’instant. Si ${web ? 'ce navigateur est effacé' : 'ce téléphone est perdu ou changé'}, vos données le seront aussi.` : `Dernière sauvegarde il y a ${backupAge} jours. Pensez à en refaire une.`}
         </Notice></View>
       )}
       <Card style={{ marginTop: space.sm }}>

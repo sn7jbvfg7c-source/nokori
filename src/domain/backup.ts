@@ -129,8 +129,8 @@ export function readHeader(text: string): BackupHeader & { data: string } {
   if (o.v > BACKUP_VERSION) throw new BackupError('version-future');
   const kdf = o.kdf as Record<string, unknown> | undefined, cipher = o.cipher as Record<string, unknown> | undefined;
   const okNum = (x: unknown, min: number, max: number) => typeof x === 'number' && Number.isInteger(x) && x >= min && x <= max;
-  if (!kdf || kdf.name !== 'scrypt' || !okNum(kdf.N, 2 ** 10, 2 ** 16) || ((kdf.N as number) & ((kdf.N as number) - 1)) !== 0 || !okNum(kdf.r, 1, 8) || !okNum(kdf.p, 1, 4) || typeof kdf.salt !== 'string'
-    || !cipher || cipher.name !== 'aes-256-gcm' || typeof cipher.nonce !== 'string' || typeof o.data !== 'string' || typeof o.created !== 'string') throw new BackupError('pas-une-sauvegarde');
+  if (!kdf || kdf.name !== 'scrypt' || !okNum(kdf.N, 2 ** 10, 2 ** 16) || ((kdf.N as number) & ((kdf.N as number) - 1)) !== 0 || !okNum(kdf.r, 1, 8) || kdf.p !== 1 || typeof kdf.salt !== 'string'
+    || !cipher || cipher.name !== 'aes-256-gcm' || typeof cipher.nonce !== 'string' || typeof o.data !== 'string' || typeof o.created !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(o.created)) throw new BackupError('pas-une-sauvegarde');
   return o as unknown as BackupHeader & { data: string };
 }
 
@@ -144,7 +144,9 @@ export async function openBackup(text: string, pass: string, onProgress?: (f: nu
   try { plain = gcm(key, nonce, aad(h)).decrypt(sealed); }
   catch { throw new BackupError('phrase-ou-fichier'); }
   finally { key.fill(0); }
-  const d = decodeState(dec.decode(plain));
+  let json: string;
+  try { json = dec.decode(plain); } catch { throw new BackupError('contenu-illisible'); }
+  const d = decodeState(json);
   if (d.status !== 'ok') throw new BackupError('contenu-illisible');
   return d.data;
 }

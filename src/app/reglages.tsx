@@ -1,10 +1,11 @@
-import { useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { useAppState } from '../state/AppState';
 
 export default function Reglages() {
-  const { prefs, savePrefs, wipeAll } = useAppState();
+  const { prefs, savePrefs, wipeAll, profile } = useAppState();
   const router = useRouter();
+  if (!profile) return <Redirect href="/accueil" />;
   const close = () => (router.canGoBack() ? router.back() : router.replace('/'));
   return (
     <SettingsScreen

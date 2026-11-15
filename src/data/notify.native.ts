@@ -14,8 +14,14 @@ export async function askPermission(): Promise<boolean> {
   return (await Notifications.requestPermissionsAsync()).granted;
 }
 
+let chain: Promise<unknown> = Promise.resolve();
+/** Une seule programmation à la fois : deux changements rapprochés ne mélangent pas les rappels de deux profils */
+const serial = <T,>(f: () => Promise<T>): Promise<T> => { const r = chain.then(f, f); chain = r.catch(() => {}); return r; };
+
 /** Remplace tous les rappels programmés par la liste donnée ; renvoie le nombre programmé */
-export async function scheduleReminders(list: Reminder[]): Promise<number> {
+export function scheduleReminders(list: Reminder[]): Promise<number> { return serial(() => scheduleNow(list)); }
+
+async function scheduleNow(list: Reminder[]): Promise<number> {
   await Notifications.cancelAllScheduledNotificationsAsync();
   if (!(await Notifications.getPermissionsAsync()).granted) return 0;
   for (const r of list) {
@@ -28,6 +34,4 @@ export async function scheduleReminders(list: Reminder[]): Promise<number> {
   return list.length;
 }
 
-export async function cancelReminders(): Promise<void> {
-  await Notifications.cancelAllScheduledNotificationsAsync();
-}
+export function cancelReminders(): Promise<void> { return serial(() => Notifications.cancelAllScheduledNotificationsAsync()); }

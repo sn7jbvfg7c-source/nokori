@@ -26,10 +26,11 @@ describe('accueil', () => {
     const p = buildProfile({ ...emptyDraft(), income: 200000, charges: [{ id: 'edf', name: 'EDF', group: 'energie', amount: null, day: 5, freq: 'mois' }] }, nov14);
     expect(p.charges).toEqual([]);
   });
-  test('charge à 4 semaines ancrée sur ce mois-ci', () => {
+  test('charge à 4 semaines : « prochain le 12 » saisi le 14 = le 12 du mois prochain', () => {
     const c = toFixedCharge({ id: 'salle', name: 'Salle de sport', group: 'sport', amount: 2999, day: 12, freq: '4sem' }, nov14)!;
-    expect(c.anchor).toBe('2026-11-12');
-    expect(chargeDays(c, 2026, 11)).toEqual([10]);
+    expect(c.anchor).toBe('2026-12-12');
+    expect(chargeDays(c, 2026, 11)).toEqual([12]);
+    expect(chargeDays(c, 2026, 10)).toEqual([14]); // novembre : l'échéance 28 jours plus tôt
   });
   test('charge annuelle ancrée sur le mois de la saisie', () => {
     const c = toFixedCharge({ id: 'auto', name: 'Assurance auto', group: 'assurance', amount: 42000, day: 3, freq: 'an' }, nov14)!;
@@ -65,11 +66,13 @@ describe('données relues depuis le stockage', () => {
     expect(d.expenses).toHaveLength(1);
   });
   test('donnée abîmée, inconnue ou hostile : écartée sans planter', () => {
-    for (const raw of [null, '', '{', 'null', '[]', '{"v":99}', '{"v":1,"profile":{"income":-5}}', '{"v":1,"profile":{"income":1,"extraIncome":0,"payday":1,"savePct":9,"charges":[]}}', '{"__proto__":{"x":1},"v":1}']) {
+    for (const raw of [null, '', '{', 'null', '[]', '{"v":99}', '{"v":1,"profile":{"income":-5}}', '{"__proto__":{"x":1},"v":1}']) {
       const d = decode(raw);
       expect(d.profile).toBeNull();
       expect(Array.isArray(d.expenses)).toBe(true);
     }
+    // taux d'épargne hors bornes : ramené à 40 % au lieu de jeter tout le profil (et ses charges)
+    expect(decode('{"v":1,"profile":{"income":1,"extraIncome":0,"payday":1,"savePct":9,"charges":[]}}').profile?.savePct).toBe(0.4);
   });
   test('une charge invalide est retirée, les autres gardées', () => {
     const raw = encode({ profile: p, history: [], expenses: [], dismissed: [], accounts: [], goals: [], notes: {}, prefs: EMPTY_PREFS }).replace('"charges":[', '"charges":[{"id":"x","name":"","group":"pirate","amount":1e12,"day":99,"freq":"jour"},');

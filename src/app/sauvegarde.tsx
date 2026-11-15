@@ -1,17 +1,22 @@
+import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { BackupScreen } from '../screens/BackupScreen';
 import { forRestore, useAppState } from '../state/AppState';
+import { useToday } from '../ui/useToday';
 
 export default function Sauvegarde() {
+  const today = useToday();
   const state = useAppState();
   const router = useRouter();
+  // décidé à l'ouverture : après une restauration, l'écran ne bascule pas en mode « créer une sauvegarde »
+  const [mode] = useState<'all' | 'restore'>(state.profile ? 'all' : 'restore');
   const close = () => (router.canGoBack() ? router.back() : router.replace('/'));
   const { profile, history, expenses, dismissed, accounts, goals, notes, prefs } = state;
   return (
     <BackupScreen
-      mode={profile ? 'all' : 'restore'}
+      mode={mode}
       onDone={() => { if (router.canDismiss()) router.dismissAll(); router.replace('/'); }}
-      data={{ profile, history, expenses, dismissed, accounts, goals, notes, prefs }} today={new Date()}
+      data={{ profile, history, expenses, dismissed, accounts, goals, notes, prefs }} today={today}
       onReplace={d => state.replaceAll(forRestore(d))}
       onExported={date => state.savePrefs({ lastBackup: date })}
       onClose={close}

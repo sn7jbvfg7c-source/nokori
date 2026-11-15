@@ -48,7 +48,7 @@ const SEED = {
   await t('masquer les montants : budget et comptes', async () => {
     await openSettings(); await p.getByRole('switch', { name: 'Masquer les montants' }).click(); await W(300);
     await p.getByRole('button', { name: 'Fermer les réglages' }).click(); await W(400);
-    await p.getByLabel('Il reste montant masqué disponibles, prélèvements à venir déduits').waitFor();
+    await p.getByLabel('Disponible : montant masqué, prélèvements à venir déduits').waitFor();
     await p.getByRole('tab', { name: /Comptes/ }).click(); await W(400);
     await p.getByLabel('Total masqué').waitFor();
     if (await p.getByText('964,33', { exact: false }).count()) throw new Error('solde visible');

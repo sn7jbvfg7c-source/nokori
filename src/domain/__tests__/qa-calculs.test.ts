@@ -6,7 +6,7 @@ import { buildMonth, CATEGORIES, savingOf, share } from '../budget';
 import { calendarMonth } from '../calendar';
 import { addDeposit } from '../goals';
 import { formatEuros, formatEurosRound } from '../money';
-import { cleanName } from '../onboarding';
+import { buildProfile as bp, cleanName, missingAmounts } from '../onboarding';
 import { cleanNote, review } from '../review';
 import type { Expense, Profile } from '../types';
 
@@ -109,4 +109,16 @@ test('versement nul ou négatif ignoré', () => {
   const g = { id: 'g', name: 'J', type: 'voyage' as const, target: 1000, saved: 100, monthly: 0 };
   expect(addDeposit(g, -500, '2026-11-01')).toBe(g);
   expect(addDeposit(g, 0, '2026-11-01')).toBe(g);
+});
+
+test('parcours 3. charge à 4 semaines « prochain le 1 » saisie le 14 : premier prélèvement le 1er du mois prochain', () => {
+  const p = bp({ income: 200000, payday: 1, savePct: 0.1, charges: [{ id: 's', name: 'Spotify', group: 'abos', amount: 1199, day: 1, freq: '4sem' }] }, new Date(2026, 10, 14));
+  expect(p.charges[0].anchor).toBe('2026-12-01');
+  const later = bp({ income: 200000, payday: 1, savePct: 0.1, charges: [{ id: 's', name: 'Spotify', group: 'abos', amount: 1199, day: 20, freq: '4sem' }] }, new Date(2026, 10, 14));
+  expect(later.charges[0].anchor).toBe('2026-11-20');
+  const dec = bp({ income: 200000, payday: 1, savePct: 0.1, charges: [{ id: 's', name: 'S', group: 'abos', amount: 1199, day: 3, freq: '4sem' }] }, new Date(2026, 11, 20));
+  expect(dec.charges[0].anchor).toBe('2027-01-03');
+});
+test('parcours 4. une charge cochée sans montant est signalée', () => {
+  expect(missingAmounts({ income: 1, payday: 1, savePct: 0, charges: [{ id: 'e', name: 'EDF', group: 'energie', amount: null, day: 5, freq: 'mois' }] }).map(c => c.name)).toEqual(['EDF']);
 });
