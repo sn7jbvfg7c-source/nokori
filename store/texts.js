@@ -37,14 +37,14 @@ LE BILAN DU MOIS
 • Le mois écoulé se revoit en story, en cinq écrans.
 
 VOS DONNÉES RESTENT SUR VOTRE TÉLÉPHONE
-• Aucun compte à créer, aucune banque à connecter, aucun serveur.
+• Aucun compte à créer, aucune banque à connecter, aucun serveur : vos données ne quittent pas le téléphone.
 • Tout est enregistré dans une base chiffrée, sur votre téléphone uniquement.
 • Verrouillage par Face ID, Touch ID ou empreinte, et montants masquables pour ouvrir l’app en public.
 • Une sauvegarde chiffrée par une phrase secrète, pour changer de téléphone sans rien perdre.
 • Sans publicité et sans pistage.
 • Des rappels avant chaque prélèvement, sans aucun montant dans la notification.
 
-Mode clair et mode sombre. Compatible avec VoiceOver, TalkBack et les grandes tailles de texte.
+Mode clair et mode sombre. Libellés pour les lecteurs d’écran (VoiceOver, TalkBack), contrastes vérifiés et texte qui suit la taille choisie dans le téléphone.
 
 Nokori ne déplace jamais d’argent et ne donne pas de conseil financier : c’est un carnet de comptes, pas une banque.`;
 

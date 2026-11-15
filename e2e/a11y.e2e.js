@@ -70,7 +70,15 @@ const SEED = theme => ({
     await audit('réglages');
     await p.getByRole('button', { name: /^Sauvegarde et restauration/ }).click(); await W(700);
     await audit('sauvegarde'); await p.getByRole('button', { name: 'Fermer la sauvegarde' }).click(); await W(500);
+    await p.getByRole('button', { name: /^Mentions légales/ }).click(); await W(700);
+    await audit('mentions légales'); await p.keyboard.press('Escape'); await W(500);
     await p.getByRole('button', { name: 'Fermer les réglages' }).click(); await W(500);
+    await p.evaluate(() => localStorage.setItem('nokori:test-traceur', '1')); await p.goto('http://localhost:8092/'); await W(1800);
+    await audit('bandeau de consentement');
+    await p.getByRole('button', { name: 'Personnaliser', exact: true }).click(); await W(300);
+    await audit('bandeau personnalisé');
+    await p.getByRole('button', { name: 'Tout refuser', exact: true }).click(); await W(300);
+    await p.evaluate(() => localStorage.removeItem('nokori:test-traceur'));
     await p.getByRole('button', { name: /Ajouter une dépense/ }).first().click(); await W(700);
     await audit('dépense');
     await p.context().close();

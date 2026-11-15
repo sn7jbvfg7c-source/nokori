@@ -4,6 +4,7 @@ import { useColors } from '../theme/theme';
 import { Button, EmptyState } from '../ui/kit';
 import { AddExpenseScreen } from '../screens/AddExpenseScreen';
 import { useAppState } from '../state/AppState';
+import { useEscapeToClose } from '../ui/useEscapeToClose';
 import { useToday } from '../ui/useToday';
 
 /** Nouvelle dépense, ou modification avec /depense?id=… */
@@ -14,6 +15,7 @@ export default function Depense() {
   const initial = id ? expenses.find(e => e.id === id) : undefined;
   const router = useRouter();
   const close = () => (router.canGoBack() ? router.back() : router.replace('/'));
+  useEscapeToClose(close);
   // pas encore de budget : on commence par les questions de départ
   if (!profile) return <Redirect href="/accueil" />;
   // lien vers une dépense qui n'existe plus (supprimée, autre appareil)

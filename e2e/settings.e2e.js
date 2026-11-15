@@ -58,7 +58,7 @@ const SEED = {
   await t('tout effacer : confirmation, puis retour à l’accueil, stockage vidé', async () => {
     await openSettings();
     await p.getByRole('button', { name: 'Tout effacer' }).click(); await W(200);
-    await p.getByText('Tout effacer de ce navigateur ?').waitFor();
+    await p.getByText('Supprimer toutes vos données de ce navigateur ?').waitFor();
     await p.getByRole('button', { name: 'Confirmer : tout effacer' }).click(); await W(1200);
     await p.getByText('sans le carnet.').waitFor();
     const keys = await p.evaluate(() => Object.keys(localStorage).filter(k => k.startsWith('nokori:')));

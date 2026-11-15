@@ -34,7 +34,7 @@ Nokori : budget kakeibo
 
 Ce qu’il vous reste à dépenser, au jour près. Vos données restent chez vous.
 
-## Description complète, commune aux deux stores (2702 caractères sur 4000)
+## Description complète, commune aux deux stores (2809 caractères sur 4000)
 
 Nokori vous dit ce qu’il vous reste vraiment à dépenser ce mois-ci, au jour près. Vos charges fixes et votre épargne sont déjà retirées : le chiffre que vous voyez est celui que vous pouvez dépenser.
 
@@ -71,13 +71,13 @@ LE BILAN DU MOIS
 • Le mois écoulé se revoit en story, en cinq écrans.
 
 VOS DONNÉES RESTENT SUR VOTRE TÉLÉPHONE
-• Aucun compte à créer, aucune banque à connecter, aucun serveur.
+• Aucun compte à créer, aucune banque à connecter, aucun serveur : vos données ne quittent pas le téléphone.
 • Tout est enregistré dans une base chiffrée, sur votre téléphone uniquement.
 • Verrouillage par Face ID, Touch ID ou empreinte, et montants masquables pour ouvrir l’app en public.
 • Une sauvegarde chiffrée par une phrase secrète, pour changer de téléphone sans rien perdre.
 • Sans publicité et sans pistage.
 • Des rappels avant chaque prélèvement, sans aucun montant dans la notification.
 
-Mode clair et mode sombre. Compatible avec VoiceOver, TalkBack et les grandes tailles de texte.
+Mode clair et mode sombre. Libellés pour les lecteurs d’écran (VoiceOver, TalkBack), contrastes vérifiés et texte qui suit la taille choisie dans le téléphone.
 
 Nokori ne déplace jamais d’argent et ne donne pas de conseil financier : c’est un carnet de comptes, pas une banque.

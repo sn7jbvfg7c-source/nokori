@@ -6,19 +6,20 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { askPermission, notificationsSupported } from '../data/notify';
 import type { Prefs } from '../data/persist';
 import { MONTH_NAMES } from '../domain/months';
+import { legalDocs, LEGAL_ORDER, type LegalDocId } from '../legal/documents';
 import type { ThemePref } from '../theme/theme';
 import { useColors, useStyles } from '../theme/theme';
 import type { Palette } from '../theme/tokens';
 import { space, type as t } from '../theme/tokens';
 import { Badge, Card, Confirm, IconButton, Notice, Row, ScreenHeader, SectionHeader, Segmented, type IconName } from '../ui/kit';
 
-interface Props { prefs: Prefs; today?: Date; onChange: (p: Partial<Prefs>) => void; onClose: () => void; onEditAnswers: () => void; onBackup: () => void; onWipe: () => void }
+interface Props { prefs: Prefs; today?: Date; onChange: (p: Partial<Prefs>) => void; onClose: () => void; onEditAnswers: () => void; onBackup: () => void; onWipe: () => void; onLegal?: (doc: LegalDocId) => void }
 
 /** Une sauvegarde de plus d'un mois mérite un rappel */
 export const BACKUP_REMINDER_DAYS = 30;
 const longDate = (iso: string) => { const [y, m, d] = iso.split('-').map(Number); return `${d} ${MONTH_NAMES[m - 1]} ${y}`; };
 
-export function SettingsScreen({ prefs, today = new Date(), onChange, onClose, onEditAnswers, onBackup, onWipe }: Props) {
+export function SettingsScreen({ prefs, today = new Date(), onChange, onClose, onEditAnswers, onBackup, onWipe, onLegal }: Props) {
   const insets = useSafeAreaInsets();
   const c = useColors(); const st = useStyles(makeStyles);
   const [msg, setMsg] = useState<string | null>(null);
@@ -84,22 +85,31 @@ export function SettingsScreen({ prefs, today = new Date(), onChange, onClose, o
         <View style={st.privacy}>
           <Feather name={web ? 'globe' : 'smartphone'} size={15} color={c.ink2} style={{ marginTop: 2 }} />
           <Text style={st.rowS}>{web
-            ? 'Version de test : tout est enregistré dans ce navigateur, sans chiffrement. Nokori n’a pas de serveur et ne se connecte à aucune banque. L’app pour téléphone chiffre tout.'
-            : 'Tout est enregistré sur ce téléphone, dans une base chiffrée. Nokori n’a pas de serveur et ne se connecte à aucune banque.'}</Text>
+            ? 'Version de test : tout est enregistré dans ce navigateur, sans chiffrement. Aucune donnée n’est envoyée à un serveur ni à une banque. L’app pour téléphone chiffre tout.'
+            : 'Tout est enregistré sur ce téléphone, dans une base chiffrée. Aucune donnée n’est envoyée à un serveur ni à une banque.'}</Text>
         </View>
         <View style={st.sep}>
           {confirm ? (
             <View style={{ paddingTop: space.md }}>
-              <Text style={[st.rowT, { color: c.vermilion }]}>{web ? 'Tout effacer de ce navigateur ?' : 'Tout effacer de ce téléphone ?'}</Text>
-              <Text style={[st.rowS, { marginBottom: space.sm }]}>Dépenses, charges, comptes, objectifs et bilans seront supprimés. C’est définitif. Une sauvegarde faite avant reste utilisable.</Text>
-              <Confirm question="" confirmLabel="Tout effacer" a11yConfirm="Confirmer : tout effacer" onCancel={() => setConfirm(false)} onConfirm={onWipe} />
+              <Text style={[st.rowT, { color: c.vermilion }]}>{web ? 'Supprimer toutes vos données de ce navigateur ?' : 'Supprimer toutes vos données de ce téléphone ?'}</Text>
+              <Text style={[st.rowS, { marginBottom: space.sm }]}>Dépenses, charges, comptes, objectifs, bilans et réglages seront supprimés, ainsi que la clé de chiffrement. C’est définitif. L’éditeur n’en a aucune copie : rien d’autre n’est à supprimer ailleurs. Les fichiers de sauvegarde que vous avez rangés vous-même (Fichiers, Drive…) ne sont pas touchés : supprimez-les à cet endroit si vous le souhaitez.</Text>
+              <Confirm question="" confirmLabel="Tout supprimer" a11yConfirm="Confirmer : tout effacer et supprimer mes données" onCancel={() => setConfirm(false)} onConfirm={onWipe} />
             </View>
           ) : (
-            <Row first title="Tout effacer" danger left={<Badge color={c.vermilion} icon="trash-2" size={34} />} onPress={() => setConfirm(true)} a11yLabel="Tout effacer" />
+            <Row first title="Supprimer toutes mes données" subtitle="Tout effacer de cet appareil, définitivement" danger left={<Badge color={c.vermilion} icon="trash-2" size={34} />} onPress={() => setConfirm(true)} />
           )}
         </View>
       </Card>
-      <Text style={st.version}>Nokori · version 1.0 · aucune donnée collectée</Text>
+      {onLegal && <>
+        <SectionHeader title="Informations légales" />
+        <Card>
+          {LEGAL_ORDER.map((id, i) => {
+            const d = legalDocs()[id];
+            return <Row key={id} first={i === 0} title={d.title} subtitle={d.short} onPress={() => onLegal(id)} chevron />;
+          })}
+        </Card>
+      </>}
+      <Text style={st.version}>Nokori · version 1.0 · aucune donnée collectée par l’éditeur</Text>
     </ScrollView>
   );
 }

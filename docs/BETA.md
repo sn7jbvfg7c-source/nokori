@@ -119,7 +119,7 @@ npx eas-cli@latest build --profile production --platform android
 
 ## 6. Ce que les stores demandent dès la bêta
 
-- **Politique de confidentialité** : une adresse web publique. Le texte est prêt dans `docs/confidentialite.md`. Complétez les champs entre crochets, puis publiez-le sur une page publique : un site perso, une page Notion publique, ou GitHub Pages depuis un dépôt public séparé (ce dépôt-ci est privé).
+- **Politique de confidentialité** : une adresse web publique. Le texte est prêt dans `docs/legal/confidentialite.md`. Renseignez d’abord `src/legal/config.ts` puis lancez `node scripts/legal-docs.js` ; publiez-le ensuite sur une page publique : un site perso, une page Notion publique, ou GitHub Pages depuis un dépôt public séparé (ce dépôt-ci est privé).
 - **Étiquette de confidentialité Apple** : « Données non collectées ».
 - **Sécurité des données Google Play** : aucune donnée collectée, aucune donnée partagée. Données chiffrées : oui, sur l’appareil. Suppression possible : oui, avec « Tout effacer » ou en désinstallant l’app.
 - **Questionnaire de classification du contenu** (Google) et **classification par âge** (Apple) : ni violence, ni achat, ni contenu généré par d’autres. On obtient « 4+ » ou « Tout public ».

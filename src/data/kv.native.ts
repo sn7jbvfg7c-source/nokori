@@ -85,3 +85,6 @@ export const kv: KV = {
     await SecureStore.deleteItemAsync(KEY_NAME, KEY_OPTS);
   },
 };
+
+/** Pas de drapeau de test sur téléphone */
+export const testFlag = (_name: string): string | null => null;

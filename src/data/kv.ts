@@ -37,3 +37,8 @@ export const kv: KV = {
     } catch { /* rien à effacer */ }
   },
 };
+
+/** Drapeau de test local (version web uniquement) : « nokori:<nom> » */
+export function testFlag(name: string): string | null {
+  try { return globalThis.localStorage?.getItem(PREFIX + name) ?? null; } catch { return null; }
+}

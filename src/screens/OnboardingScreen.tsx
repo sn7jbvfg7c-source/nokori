@@ -157,7 +157,12 @@ function ChargesStep({ draft, setDraft }: { draft: Draft; setDraft: (f: (d: Draf
   );
 }
 
-export function OnboardingScreen({ initial, onDone, onRestore }: { initial: Profile | null; onDone: (p: Profile) => void; /** premier lancement : restaurer une sauvegarde (nouveau téléphone) */ onRestore?: () => void }) {
+export function OnboardingScreen({ initial, onDone, onRestore, onLegal, deleted }: {
+  initial: Profile | null; onDone: (p: Profile) => void;
+  /** premier lancement : restaurer une sauvegarde (nouveau téléphone) */ onRestore?: () => void;
+  onLegal?: (doc: 'confidentialite' | 'conditions') => void;
+  /** on arrive ici juste après « Supprimer toutes mes données » : confirmation affichée */ deleted?: boolean;
+}) {
   const colors = useColors(); const st = useStyles(makeStyles);
   const insets = useSafeAreaInsets();
   const [step, setStep] = useState(0);
@@ -190,7 +195,13 @@ export function OnboardingScreen({ initial, onDone, onRestore }: { initial: Prof
       <ScrollView contentContainerStyle={st.body} keyboardShouldPersistTaps="handled">
         {step === 0 && (
           <View>
-            <View style={st.art}><Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.artK}>残</Text></View>
+            {deleted && step === 0 && (
+              <View style={st.deleted} accessibilityRole="alert" accessibilityLiveRegion="polite">
+                <Text style={st.deletedT}>Toutes vos données ont été supprimées</Text>
+                <Text style={st.deletedS}>Plus rien ne reste sur cet appareil. L’éditeur n’en détenait aucune copie.</Text>
+              </View>
+            )}
+            <View style={st.art} aria-hidden><Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.artK}>残</Text></View>
             <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.h1}>Le kakeibo,{'\n'}sans le carnet.</Text>
             <Text style={st.p}>Quelques questions, une minute, et votre mois se calcule tout seul : ce qui tombe, quand, et ce qu’il vous reste vraiment. Tout reste sur votre téléphone.</Text>
             {!initial && presentationAvailable && (
@@ -203,6 +214,14 @@ export function OnboardingScreen({ initial, onDone, onRestore }: { initial: Prof
               <Pressable onPress={onRestore} style={st.restore} accessibilityRole="button" accessibilityLabel="J’ai déjà une sauvegarde Nokori">
                 <Text style={st.restoreTxt}>J’ai déjà une sauvegarde Nokori</Text>
               </Pressable>
+            )}
+            {!initial && onLegal && (
+              <Text style={st.legal}>
+                Aucun compte, aucune donnée collectée.{' '}
+                <Text style={st.legalLink} onPress={() => onLegal('confidentialite')} accessibilityRole="link">Confidentialité</Text>
+                {' · '}
+                <Text style={st.legalLink} onPress={() => onLegal('conditions')} accessibilityRole="link">Conditions d’utilisation</Text>
+              </Text>
             )}
             {Platform.OS === 'web' && (
               <View style={st.webNote} accessibilityRole="text">
@@ -267,6 +286,11 @@ export function OnboardingScreen({ initial, onDone, onRestore }: { initial: Prof
 }
 
 const makeStyles = (colors: Palette) => StyleSheet.create({
+  deleted: { marginBottom: 20, padding: 14, borderRadius: 14, backgroundColor: colors.fill, gap: 4 },
+  deletedT: { fontFamily: font.semibold, fontSize: 15, color: colors.ink },
+  deletedS: { fontFamily: font.regular, fontSize: 13, lineHeight: 18, color: colors.ink2 },
+  legal: { marginTop: 16, fontFamily: font.regular, fontSize: 13, lineHeight: 20, color: colors.ink2 },
+  legalLink: { fontFamily: font.semibold, color: colors.ink, textDecorationLine: 'underline' },
   video: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 20, alignSelf: 'flex-start', minHeight: 44, paddingRight: 16, paddingLeft: 6, borderRadius: 999, backgroundColor: colors.fill },
   play: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.vermilion, alignItems: 'center', justifyContent: 'center', paddingLeft: 2 },
   videoTxt: { fontFamily: font.semibold, fontSize: 15, color: colors.ink },

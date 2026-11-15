@@ -1,6 +1,6 @@
 import { Geist_400Regular, Geist_500Medium, Geist_600SemiBold, Geist_700Bold, useFonts } from '@expo-google-fonts/geist';
 import Feather from '@expo/vector-icons/Feather';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -11,6 +11,9 @@ import { BackupScreen } from '../screens/BackupScreen';
 import { AppStateProvider, EMPTY_DATA, forRestore, useAppState } from '../state/AppState';
 import { ThemeProvider, useColors } from '../theme/theme';
 import { font, light, radius, space } from '../theme/tokens';
+import { needsConsent } from '../legal/consent';
+import { trackersForThisSession } from '../legal/sessionTrackers';
+import { ConsentBanner } from '../ui/ConsentBanner';
 import { DataProblem } from '../ui/DataProblem';
 import { LockGate } from '../ui/LockGate';
 import { MoneyProvider } from '../ui/money';
@@ -33,6 +36,9 @@ function Shell() {
   const c = useColors();
   const { prefs, profile, ready, status, retryLoad, startFresh, replaceAll, unreadableReason, savePrefs } = useAppState();
   const [restoring, setRestoring] = useState(false);
+  const router = useRouter();
+  // traceurs facultatifs : aucun aujourd'hui, donc pas de bandeau (voir src/legal/consent.ts)
+  const [trackers] = useState(trackersForThisSession);
   // rappels : reprogrammés à chaque changement du profil ou du réglage
   useEffect(() => {
     if (status !== 'ok' || !notificationsSupported) return;
@@ -62,7 +68,11 @@ function Shell() {
         <Stack.Screen name="depense" options={{ presentation: 'modal' }} />
         <Stack.Screen name="reglages" options={{ presentation: 'modal' }} />
         <Stack.Screen name="sauvegarde" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="legal/[doc]" options={{ presentation: 'modal' }} />
       </Stack>
+      {needsConsent(trackers, prefs.consent) && (
+        <ConsentBanner trackers={trackers} current={prefs.consent} onChoice={c => savePrefs({ consent: c })} onReadPolicy={() => router.push('/legal/cookies')} />
+      )}
       <SaveError />
       <StatusBar style={c.dark ? 'light' : 'dark'} />
     </LockGate>

@@ -34,7 +34,8 @@ npm run e2e        # parcours complets dans la version web : accueil, dépense, 
 | `src/screens` | Écrans |
 | `e2e` | Captures et tests dans la version web |
 | `store` | Fiches des stores (`texts.js`, `FICHES.md`), captures d’écran et leurs scripts |
-| `docs` | Guides de bêta et de publication, politique de confidentialité, conditions, page d’assistance |
+| `docs` | Guides de bêta et de publication, audit de conformité ([CONFORMITE.md](docs/CONFORMITE.md)), services tiers ([TIERS.md](docs/TIERS.md)), documents juridiques générés (`docs/legal/`), informations à fournir ([A-COMPLETER.md](docs/A-COMPLETER.md)), licences, page d’assistance |
+| `src/legal` | Source unique des documents juridiques : `config.ts` (identité de l’éditeur, à compléter), `documents.ts` (textes), `consent.ts` (traceurs facultatifs et consentement) |
 
 ## Règles du projet
 
@@ -93,4 +94,5 @@ Le chiffrement SQLCipher n'existe pas dans Expo Go : pour tester la vraie app, i
 - [x] 13 : audit complet ([docs/AUDIT.md](docs/AUDIT.md)) et corrections : plus aucun risque d’écrasement des données au démarrage, verrou Face ID au démarrage, montant disponible juste, historique du profil, masquage de tous les montants
 - [x] 14 : sauvegarde chiffrée (phrase secrète, scrypt + AES-256-GCM), restauration depuis les réglages ou dès l’accueil d’un nouveau téléphone
 - [x] 15 : refonte de l’interface (système de design, composants communs, icônes) et nouvelles fonctions : historique complet et recherche, modification d’une dépense, suppression annulable, calendrier libre, bilan comparé et par catégorie, historique des versements
+- [x] 16 : audit de conformité en 20 points ([docs/CONFORMITE.md](docs/CONFORMITE.md)) : mentions légales, confidentialité, conditions, remboursement, cookies et licences dans Réglages › Informations légales, bandeau de consentement prêt (masqué tant qu’aucun traceur facultatif n’existe), « Supprimer toutes mes données », Échap ne ferme que la fenêtre du dessus. `npm run legal:docs` régénère `docs/legal/`. **Ce n’est pas une attestation de conformité** : identité de l’éditeur à fournir et relecture par un juriste nécessaires
 - [ ] Sortie : comptes, pages publiques, envoi aux stores (à faire par vous, voir docs/PUBLICATION.md)

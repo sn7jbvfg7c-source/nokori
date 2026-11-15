@@ -6,6 +6,7 @@ import { MAX_BALANCE, type Account, type AccountKind } from '../domain/accounts'
 import { CATEGORIES } from '../domain/budget';
 import type { Goal, GoalType } from '../domain/goals';
 import type { ProfileEra } from '../domain/history';
+import type { ConsentChoice } from '../legal/consent';
 import type { ChargeGroup, Expense, FixedCharge, Frequency, Profile } from '../domain/types';
 
 export const STATE_KEY = 'state';
@@ -13,7 +14,7 @@ export const STATE_KEY = 'state';
 export const STATE_VERSION = 1;
 
 export interface AppData { profile: Profile | null; /** profils des mois passés, du plus ancien au plus récent */ history: ProfileEra[]; expenses: Expense[]; /** suggestions de charges ignorées */ dismissed: string[]; accounts: Account[]; goals: Goal[]; /** notes « comment faire mieux », par mois AAAA-MM */ notes: Record<string, string>; prefs: Prefs }
-export interface Prefs { theme: 'auto' | 'clair' | 'sombre'; lock: boolean; hideAmounts: boolean; alerts: boolean; /** date de la dernière sauvegarde exportée (AAAA-MM-JJ) */ lastBackup?: string }
+export interface Prefs { theme: 'auto' | 'clair' | 'sombre'; lock: boolean; hideAmounts: boolean; alerts: boolean; /** date de la dernière sauvegarde exportée (AAAA-MM-JJ) */ lastBackup?: string; /** choix sur les traceurs facultatifs (aucun aujourd'hui) */ consent?: ConsentChoice }
 export const DEFAULT_PREFS: Prefs = { theme: 'auto', lock: false, hideAmounts: false, alerts: false };
 export const EMPTY: AppData = { profile: null, history: [], expenses: [], dismissed: [], accounts: [], goals: [], notes: {}, prefs: DEFAULT_PREFS };
 
@@ -137,6 +138,11 @@ function parse(raw: string): { data: AppData; dropped: number } | null {
       lock: pr.lock === true, hideAmounts: pr.hideAmounts === true, alerts: pr.alerts === true,
     };
     if (isoDate(pr.lastBackup)) prefs.lastBackup = pr.lastBackup as string;
+    if (isObj(pr.consent) && typeof pr.consent.v === 'number' && isoDate(pr.consent.date) && isObj(pr.consent.allowed)) {
+      const allowed: Record<string, boolean> = {};
+      for (const [k, v] of Object.entries(pr.consent.allowed).slice(0, 50)) if (/^[a-z0-9-]{1,40}$/.test(k)) allowed[k] = v === true;
+      prefs.consent = { v: pr.consent.v, date: pr.consent.date, allowed };
+    }
     const prof = j.profile == null ? null : profile(j.profile);
     const len = (x: unknown) => (Array.isArray(x) ? x.length : 0);
     const dropped = (len(j.expenses) - expenses.length) + (len(j.accounts) - accounts.length) + (len(j.goals) - goals.length)

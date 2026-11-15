@@ -51,7 +51,8 @@
     "test": "jest",
     "typecheck": "tsc --noEmit",
     "lint": "expo lint",
-    "e2e": "expo export --platform web --output-dir dist && node e2e/onboarding.e2e.js && node e2e/activity.e2e.js && node e2e/accounts.e2e.js && node e2e/goals.e2e.js && node e2e/review.e2e.js && node e2e/settings.e2e.js && node e2e/history.e2e.js && node e2e/backup.e2e.js && node e2e/a11y.e2e.js"
+    "e2e": "expo export --platform web --output-dir dist && node e2e/onboarding.e2e.js && node e2e/activity.e2e.js && node e2e/accounts.e2e.js && node e2e/goals.e2e.js && node e2e/review.e2e.js && node e2e/settings.e2e.js && node e2e/history.e2e.js && node e2e/backup.e2e.js && node e2e/legal.e2e.js && node e2e/a11y.e2e.js",
+    "legal:docs": "node scripts/legal-docs.js"
   },
   "private": true,
   "jest": {
