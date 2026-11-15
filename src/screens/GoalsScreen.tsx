@@ -12,6 +12,7 @@ import type { Expense, Profile } from '../domain/types';
 import { font, tint, onColor } from '../theme/tokens';
 import type { Palette } from '../theme/tokens';
 import { useColors, useStyles } from '../theme/theme';
+import { BIG_TEXT_MAX_SCALE } from '../ui/a11y';
 
 const amount = (s: string) => { const v = parseBalance(s); return v !== null && v >= 0 ? v : null; };
 const txt = (c: number) => formatEuros(c).replace(/ €$/, '').replace(/ /g, ' ');
@@ -125,7 +126,7 @@ export function GoalsScreen({ goals, profile, expenses, today, onSave, onRemove 
       </View>
       {goals.length > 0 && (
         <View style={st.head}>
-          <Text style={st.total} accessibilityLabel={`${formatEurosRound(goals.reduce((a, g) => a + g.saved, 0))} épargnés`}>{formatEurosRound(goals.reduce((a, g) => a + g.saved, 0))}</Text>
+          <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.total} accessibilityLabel={`${formatEurosRound(goals.reduce((a, g) => a + g.saved, 0))} épargnés`}>{formatEurosRound(goals.reduce((a, g) => a + g.saved, 0))}</Text>
           <Text style={st.kick}>épargnés pour {goals.length} projet{goals.length > 1 ? 's' : ''}</Text>
         </View>
       )}
@@ -135,12 +136,12 @@ export function GoalsScreen({ goals, profile, expenses, today, onSave, onRemove 
         <View style={{ marginHorizontal: 16 }}><Editor d={draft} set={setDraft} onSave={save} onCancel={() => setDraft(null)} onDelete={() => { onRemove(lead.id); setDraft(null); }} /></View>
       ) : (
         <View style={st.leadCard}>
-          <Pressable onPress={() => edit(lead)} accessibilityRole="button" accessibilityLabel={`Modifier ${lead.name}`} style={[st.leadTop, { backgroundColor: leadType.color }]}>
+          <Pressable onPress={() => edit(lead)} accessibilityRole="button" accessibilityLabel={`${leadType.name} : modifier ${lead.name}`} style={[st.leadTop, { backgroundColor: leadType.color }]}>
             <Feather name={leadType.icon as 'globe'} size={26} color="#fff" />
             <Text style={st.leadType}>{leadType.name}</Text>
           </Pressable>
           <View style={st.leadBody}>
-            <View style={st.rowBetween}><Text style={st.leadName}>{lead.name}</Text><Text style={[st.pct, { color: leadType.color }]}>{Math.round(progress(lead) * 100)} %</Text></View>
+            <View style={st.rowBetween}><Text style={st.leadName}>{lead.name}</Text><Text style={st.pct}>{Math.round(progress(lead) * 100)} %</Text></View>
             <View style={[st.bar, { backgroundColor: tint(leadType.color, 0.14) }]}><View style={[st.fill, { width: `${progress(lead) * 100}%`, backgroundColor: leadType.color }]} /></View>
             <Text style={st.meta}>{formatEurosRound(lead.saved)} sur {formatEurosRound(lead.target)}</Text>
             <View style={st.eta}>
@@ -167,7 +168,7 @@ export function GoalsScreen({ goals, profile, expenses, today, onSave, onRemove 
                     <Pressable onPress={() => edit(g)} style={st.row} accessibilityRole="button" accessibilityLabel={`Modifier ${g.name}`}>
                       <View style={[st.icon, { backgroundColor: tint(t.color, 0.14) }]}><Feather name={t.icon as 'globe'} size={18} color={t.color} /></View>
                       <View style={{ flex: 1 }}>
-                        <View style={st.rowBetween}><Text style={st.name}>{g.name}</Text><Text style={[st.pctSmall, { color: t.color }]}>{Math.round(progress(g) * 100)} %</Text></View>
+                        <View style={st.rowBetween}><Text style={st.name}>{g.name}</Text><Text style={st.pctSmall}>{Math.round(progress(g) * 100)} %</Text></View>
                         <View style={[st.bar, { backgroundColor: tint(t.color, 0.14), marginTop: 6 }]}><View style={[st.fill, { width: `${progress(g) * 100}%`, backgroundColor: t.color }]} /></View>
                         <Text style={st.meta}>{formatEurosRound(g.saved)} sur {formatEurosRound(g.target)} · {etaText(g)}</Text>
                       </View>
@@ -224,7 +225,7 @@ const makeStyles = (colors: Palette) => StyleSheet.create({
   leadType: { color: '#fff', fontFamily: font.semibold, fontSize: 13 },
   leadBody: { padding: 16, gap: 8 },
   leadName: { fontFamily: font.semibold, fontSize: 18, color: colors.ink, flex: 1 },
-  pct: { fontFamily: font.bold, fontSize: 18 },
+  pct: { fontFamily: font.bold, fontSize: 18, color: colors.ink },
   rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
   bar: { height: 6, borderRadius: 6, overflow: 'hidden' },
   fill: { height: 6, borderRadius: 6 },
@@ -240,7 +241,7 @@ const makeStyles = (colors: Palette) => StyleSheet.create({
   row: { flexDirection: 'row', gap: 12 },
   icon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   name: { fontFamily: font.semibold, fontSize: 15, color: colors.ink, flexShrink: 1 },
-  pctSmall: { fontFamily: font.bold, fontSize: 14 },
+  pctSmall: { fontFamily: font.bold, fontSize: 14, color: colors.ink },
   editor: { marginVertical: 10, padding: 12, borderRadius: 16, backgroundColor: 'rgba(188,68,35,0.06)', gap: 10 },
   input: { minWidth: 0, width: '100%', height: 44, borderRadius: 12, backgroundColor: colors.surface, paddingHorizontal: 12, fontFamily: font.regular, fontSize: 15, color: colors.ink, borderWidth: 1.5, borderColor: colors.fill2 },
   types: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
@@ -269,7 +270,7 @@ const makeStyles = (colors: Palette) => StyleSheet.create({
   score: { fontFamily: font.bold, fontSize: 15, color: colors.vermilion },
   days: { flexDirection: 'row', gap: 6, marginTop: 10 },
   day: { flex: 1, height: 34, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.fill },
-  dayTxt: { fontFamily: font.bold, fontSize: 13, color: colors.ink3 },
+  dayTxt: { fontFamily: font.bold, fontSize: 13, color: colors.ink2 },
   flames: { flexDirection: 'row', gap: 8, marginTop: 10 },
   flame: { flex: 1, height: 10, borderRadius: 6, backgroundColor: colors.fill },
   note: { fontFamily: font.regular, fontSize: 12.5, lineHeight: 18, color: colors.ink2, marginHorizontal: 24, marginTop: 10 },

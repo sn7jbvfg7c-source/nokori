@@ -7,7 +7,7 @@ import type { Prefs } from '../data/persist';
 import type { ThemePref } from '../theme/theme';
 import { useColors, useStyles } from '../theme/theme';
 import type { Palette } from '../theme/tokens';
-import { font } from '../theme/tokens';
+import { font, onColor } from '../theme/tokens';
 
 interface Props { prefs: Prefs; onChange: (p: Partial<Prefs>) => void; onClose: () => void; onEditAnswers: () => void; onWipe: () => void }
 
@@ -34,7 +34,7 @@ export function SettingsScreen({ prefs, onChange, onClose, onEditAnswers, onWipe
 
   const row = (title: string, sub: string, value: boolean, onToggle: (v: boolean) => void, disabled = false) => (
     <View style={st.row}>
-      <View style={{ flex: 1 }}><Text style={[st.rowT, disabled && { color: colors.ink3 }]}>{title}</Text><Text style={st.rowS}>{sub}</Text></View>
+      <View style={{ flex: 1 }}><Text style={[st.rowT, disabled && { color: colors.ink2 }]}>{title}</Text><Text style={st.rowS}>{sub}</Text></View>
       <Switch value={value} onValueChange={onToggle} disabled={disabled} accessibilityLabel={title}
         trackColor={{ false: colors.fill2, true: colors.teal }} thumbColor="#FFFFFF" />
     </View>
@@ -52,7 +52,7 @@ export function SettingsScreen({ prefs, onChange, onClose, onEditAnswers, onWipe
         <Text style={st.rowT}>Thème</Text>
         <View style={st.seg} accessibilityRole="radiogroup">
           {([['auto', 'Auto'], ['clair', 'Clair'], ['sombre', 'Sombre']] as [ThemePref, string][]).map(([k, l]) => (
-            <Pressable key={k} onPress={() => onChange({ theme: k })} style={[st.segBtn, prefs.theme === k && st.segOn]} accessibilityRole="radio" accessibilityState={{ checked: prefs.theme === k }} accessibilityLabel={`Thème ${l}`}>
+            <Pressable key={k} onPress={() => onChange({ theme: k })} style={[st.segBtn, prefs.theme === k && st.segOn]} accessibilityRole="radio" aria-checked={prefs.theme === k} accessibilityLabel={`Thème ${l}`}>
               <Text style={[st.segTxt, prefs.theme === k && { color: colors.ink }]}>{l}</Text>
             </Pressable>
           ))}
@@ -88,7 +88,7 @@ export function SettingsScreen({ prefs, onChange, onClose, onEditAnswers, onWipe
             <Text style={st.rowS}>Dépenses, charges, comptes, objectifs et bilans seront supprimés. C’est définitif.</Text>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <Pressable onPress={() => setConfirm(false)} style={[st.btn, { backgroundColor: colors.fill }]} accessibilityRole="button"><Text style={st.btnTxt}>Annuler</Text></Pressable>
-              <Pressable onPress={onWipe} style={[st.btn, { backgroundColor: colors.vermilion }]} accessibilityRole="button" accessibilityLabel="Confirmer : tout effacer"><Text style={[st.btnTxt, { color: '#fff' }]}>Tout effacer</Text></Pressable>
+              <Pressable onPress={onWipe} style={[st.btn, { backgroundColor: colors.vermilion }]} accessibilityRole="button" accessibilityLabel="Confirmer : tout effacer"><Text style={[st.btnTxt, { color: onColor(colors.vermilion) }]}>Tout effacer</Text></Pressable>
             </View>
           </View>
         ) : (

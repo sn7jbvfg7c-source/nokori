@@ -38,7 +38,7 @@ export function ActivityScreen({ profile, expenses, dismissed, today, onAdd, onD
           <Text style={st.suggTxt}>{formatEuros(sugg.amount)} vers le {sugg.day}, {sugg.months} mois de suite. L’ajouter à vos charges fixes ? Elle sera prévue chaque mois dans le calendrier.</Text>
           <View style={st.suggBtns}>
             <Pressable onPress={() => onIgnore(sugg.key)} style={[st.sb, st.sbLight]} accessibilityRole="button" accessibilityLabel={`Ignorer ${sugg.label}`}><Text style={st.sbTxt}>Ignorer</Text></Pressable>
-            <Pressable onPress={() => onAccept(sugg)} style={[st.sb, st.sbDark]} accessibilityRole="button" accessibilityLabel={`Ajouter ${sugg.label} aux charges fixes`}><Text style={[st.sbTxt, { color: '#fff' }]}>Ajouter aux charges fixes</Text></Pressable>
+            <Pressable onPress={() => onAccept(sugg)} style={[st.sb, st.sbDark]} accessibilityRole="button" accessibilityLabel={`Ajouter ${sugg.label} aux charges fixes`}><Text style={[st.sbTxt, { color: onColor(colors.vermilion) }]}>Ajouter aux charges fixes</Text></Pressable>
           </View>
         </View>
       )}
@@ -58,8 +58,8 @@ export function ActivityScreen({ profile, expenses, dismissed, today, onAdd, onD
             {d.items.map((i, n) => (
               <View key={i.key} style={n > 0 && st.sep}>
                 <Pressable style={st.row} onPress={() => { if (i.kind === 'depense') { setOpen(open === i.key ? null : i.key); setConfirm(null); } }}
-                  accessibilityRole={i.kind === 'depense' ? 'button' : undefined} accessibilityLabel={`${i.label}, ${i.sub}, ${formatEuros(i.amount)}`}>
-                  <View style={[st.chip, { backgroundColor: tint(colors.pillar[i.pillar], 0.12) }]}><Text style={[st.chipTxt, { color: colors.pillar[i.pillar] }]}>{i.label.charAt(0).toUpperCase()}</Text></View>
+                  accessibilityRole={i.kind === 'depense' ? 'button' : undefined} accessibilityLabel={`${i.label}, ${i.sub}, −${formatEuros(i.amount)}`}>
+                  <View style={[st.chip, { backgroundColor: tint(colors.pillar[i.pillar], 0.12) }]} aria-hidden><Text style={[st.chipTxt, { color: colors.pillar[i.pillar] }]}>{i.label.charAt(0).toUpperCase()}</Text></View>
                   <View style={{ flex: 1 }}>
                     <Text style={st.name} numberOfLines={1}>{i.label}</Text>
                     <Text style={st.sub}>{i.sub}</Text>
@@ -71,7 +71,7 @@ export function ActivityScreen({ profile, expenses, dismissed, today, onAdd, onD
                     <View style={st.actions}>
                       <Text style={st.ask}>Supprimer cette dépense ?</Text>
                       <Pressable onPress={() => setConfirm(null)} style={[st.sb, st.sbLight]} accessibilityRole="button"><Text style={st.sbTxt}>Annuler</Text></Pressable>
-                      <Pressable onPress={() => { onDelete(i.id); setOpen(null); setConfirm(null); }} style={[st.sb, { backgroundColor: colors.vermilion }]} accessibilityRole="button" accessibilityLabel={`Confirmer la suppression de ${i.label}`}><Text style={[st.sbTxt, { color: '#fff' }]}>Supprimer</Text></Pressable>
+                      <Pressable onPress={() => { onDelete(i.id); setOpen(null); setConfirm(null); }} style={[st.sb, { backgroundColor: colors.vermilion }]} accessibilityRole="button" accessibilityLabel={`Confirmer la suppression de ${i.label}`}><Text style={[st.sbTxt, { color: onColor(colors.vermilion) }]}>Supprimer</Text></Pressable>
                     </View>
                   ) : (
                     <View style={st.actions}>

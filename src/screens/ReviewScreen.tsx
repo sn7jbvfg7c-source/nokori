@@ -10,6 +10,7 @@ import { font, tint } from '../theme/tokens';
 import type { Palette } from '../theme/tokens';
 import { useColors, useStyles } from '../theme/theme';
 import { MonthStory } from '../ui/MonthStory';
+import { BIG_TEXT_MAX_SCALE } from '../ui/a11y';
 
 interface Props { profile: Profile; expenses: Expense[]; notes: Record<string, string>; today: Date; onSaveNote: (month: string, text: string) => void }
 
@@ -42,7 +43,7 @@ export function ReviewScreen({ profile, expenses, notes, today, onSaveNote }: Pr
 
       <LinearGradient colors={[c.light, c.dark]} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={st.card}>
         <View style={st.row}><Text style={st.cardM}>{capitalize(name)}, {r.closed ? 'clos' : 'en cours'}</Text><View style={st.tag}><Text style={st.tagTxt}>{c.kanji} {c.name}</Text></View></View>
-        <Text style={st.big} accessibilityLabel={`${formatEurosRound(r.savedTotal)} épargnés`}>{formatEurosRound(r.savedTotal)}<Text style={st.bigSmall}> épargnés</Text></Text>
+        <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.big} accessibilityLabel={`${formatEurosRound(r.savedTotal)} épargnés`}>{formatEurosRound(r.savedTotal)}<Text style={st.bigSmall}> épargnés</Text></Text>
         <Text style={st.sub}>{r.closed ? `${Math.round(r.savedPct * 100)} % du revenu${r.left > 0 ? ', non-dépensé compris' : ''}` : `${Math.round(profile.savePct * 100)} % du revenu, prévus dès la paie`}</Text>
         <View style={st.split}>
           <View style={{ flex: r.spent / total, backgroundColor: 'rgba(255,255,255,0.35)' }} />
@@ -58,7 +59,7 @@ export function ReviewScreen({ profile, expenses, notes, today, onSaveNote }: Pr
 
       {r.closed && (
         <Pressable onPress={() => setStory(true)} style={[st.storyBtn, { backgroundColor: c.dark }]} accessibilityRole="button" accessibilityLabel={`Revoir ${name} en story`}>
-          <Text style={st.storyK}>{c.kanji}</Text><Text style={st.storyTxt}>Revoir {name} en story</Text><Text style={st.storyArrow}>›</Text>
+          <Text style={st.storyK} aria-hidden>{c.kanji}</Text><Text style={st.storyTxt}>Revoir {name} en story</Text><Text style={st.storyArrow} aria-hidden>›</Text>
         </Pressable>
       )}
 
@@ -133,10 +134,10 @@ const makeStyles = (colors: Palette) => StyleSheet.create({
   note: { minWidth: 0, width: '100%', minHeight: 70, marginTop: 10, borderRadius: 12, backgroundColor: colors.fill, padding: 10, fontFamily: font.regular, fontSize: 15, color: colors.ink, textAlignVertical: 'top' },
   saveNote: { alignSelf: 'flex-end', marginTop: 8, paddingHorizontal: 14, height: 36, borderRadius: 10, backgroundColor: colors.btn, justifyContent: 'center' },
   saveNoteTxt: { color: colors.onBtn, fontFamily: font.semibold, fontSize: 13 },
-  count: { fontFamily: font.regular, fontSize: 11.5, color: colors.ink3, textAlign: 'right', marginTop: 4 },
+  count: { fontFamily: font.regular, fontSize: 11.5, color: colors.ink2, textAlign: 'right', marginTop: 4 },
   pRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 13 },
   pName: { width: 80, fontFamily: font.medium, fontSize: 14, color: colors.ink },
   pBar: { flex: 1, height: 6, borderRadius: 6, overflow: 'hidden' },
   pVal: { width: 48, textAlign: 'right', fontFamily: font.semibold, fontSize: 13, color: colors.ink },
-  hint: { fontFamily: font.regular, fontSize: 12, color: colors.ink3, marginHorizontal: 24, marginTop: 12 },
+  hint: { fontFamily: font.regular, fontSize: 12, color: colors.ink2, marginHorizontal: 24, marginTop: 12 },
 });

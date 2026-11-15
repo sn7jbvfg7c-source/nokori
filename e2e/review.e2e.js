@@ -69,6 +69,17 @@ const SEED = {
     await p.getByText('Vous avez épargné').waitFor();
     await p.getByRole('button', { name: 'Fermer la story' }).click(); await W(400);
   });
+  await t('« Réduire les animations » : la story n’avance plus seule', async () => {
+    await p.emulateMedia({ reducedMotion: 'reduce' });
+    await p.getByRole('button', { name: 'Revoir octobre en story' }).click(); await W(600);
+    await p.getByText('Votre mois,', { exact: false }).waitFor();
+    await W(4500);
+    if (!(await p.getByText('Votre mois,', { exact: false }).isVisible())) throw new Error('la story a avancé');
+    await p.getByRole('button', { name: 'Écran suivant' }).click(); await W(300);
+    await p.getByText('Vous avez épargné').waitFor();
+    await p.getByRole('button', { name: 'Fermer la story' }).click(); await W(400);
+    await p.emulateMedia({ reducedMotion: 'no-preference' });
+  });
   await t('aucune erreur', async () => { if (errs.length) throw new Error(errs.slice(0, 2).join(' | ')); });
   await b.close(); srv.close();
   console.log(r.join('\n') + '\n' + (ko ? ko + ' échec(s)' : `tout ✓ (${r.length})`));

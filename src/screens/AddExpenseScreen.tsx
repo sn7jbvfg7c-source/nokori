@@ -10,6 +10,7 @@ import type { Expense } from '../domain/types';
 import { font, tint, onColor } from '../theme/tokens';
 import type { Palette } from '../theme/tokens';
 import { useColors, useStyles } from '../theme/theme';
+import { BIG_TEXT_MAX_SCALE } from '../ui/a11y';
 
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
@@ -37,7 +38,7 @@ export function AddExpenseScreen({ today, onSave, onClose }: { today: Date; onSa
         <Text style={st.title}>Nouvelle dépense</Text>
         <Pressable onPress={onClose} style={st.close} accessibilityRole="button" accessibilityLabel="Fermer"><Text style={st.closeTxt}>×</Text></Pressable>
       </View>
-      <Text style={st.amount} accessibilityLabel={`Montant : ${formatEuros(cents)}`} accessibilityLiveRegion="polite">{amount}<Text style={st.cur}> €</Text></Text>
+      <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.amount} accessibilityLabel={`Montant : ${formatEuros(cents)}`} accessibilityLiveRegion="polite">{amount}<Text style={st.cur}> €</Text></Text>
       <ScrollView style={{ flexGrow: 0 }} contentContainerStyle={st.groups}>
         {PILLARS.map(pl => (
           <View key={pl.id} style={st.group}>

@@ -33,7 +33,7 @@ const SEED = { v: 1, dismissed: [], expenses: [], accounts: [], profile: { incom
   });
   await t('total : 7 414,33 €', async () => { if ((await total()) !== 'Total de vos comptes : 7 414,33 €') throw new Error(await total()); await shot('k1'); });
   await t('solde invalide : message et « Enregistrer » bloqué', async () => {
-    await p.getByRole('button', { name: /^Compte courant, 964,33/ }).click(); await W(200);
+    await p.getByRole('button', { name: /^Compte courant, .*964,33/ }).click(); await W(200);
     await p.getByLabel('Solde du compte').fill('1,234');
     await p.getByText('Solde invalide').waitFor();
     if (!(await p.getByRole('button', { name: 'Enregistrer le compte' }).isDisabled())) throw new Error('bouton actif');
@@ -50,7 +50,7 @@ const SEED = { v: 1, dismissed: [], expenses: [], accounts: [], profile: { incom
     await p.getByText('Placements', { exact: true }).waitFor();
   });
   await t('suppression avec confirmation', async () => {
-    await p.getByRole('button', { name: /PEA, 4.870,00/ }).click(); await W(200);
+    await p.getByRole('button', { name: /PEA, .*4.870,00/ }).click(); await W(200);
     await p.getByRole('button', { name: /^Supprimer .*PEA$/ }).click(); await W(200);
     await p.getByText('Supprimer ce compte ?').waitFor();
     await p.getByRole('button', { name: /^Confirmer la suppression de .*PEA$/ }).click(); await W(300);

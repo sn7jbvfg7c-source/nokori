@@ -1,5 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
+import { BIG_TEXT_MAX_SCALE, useReducedMotion, useScreenReader } from './a11y';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { formatEurosRound } from '../domain/money';
@@ -9,30 +10,35 @@ import { font, pillarColor } from '../theme/tokens';
 
 const N = 5, SLIDE_MS = 4000;
 
-/** Le mois clos en 5 écrans : avance seule toutes les 4 s, touchez à gauche ou à droite pour naviguer */
+/**
+ * Le mois clos en 5 écrans : avance seule toutes les 4 s, touchez à gauche ou à droite pour naviguer.
+ * Avec VoiceOver / TalkBack ou « Réduire les animations », rien n'avance tout seul.
+ */
 export function MonthStory({ r, note, visible, onClose }: { r: Review; note: string; visible: boolean; onClose: () => void }) {
   const insets = useSafeAreaInsets();
+  const reduced = useReducedMotion(), reader = useScreenReader();
+  const autoplay = !reduced && !reader;
   const [i, setI] = useState(0);
   const [prevVisible, setPrevVisible] = useState(visible);
   if (visible !== prevVisible) { setPrevVisible(visible); if (visible) setI(0); } // repart du début à chaque ouverture
   useEffect(() => {
-    if (!visible || i >= N - 1) return;
+    if (!visible || !autoplay || i >= N - 1) return;
     const t = setTimeout(() => setI(x => Math.min(N - 1, x + 1)), SLIDE_MS);
     return () => clearTimeout(t);
-  }, [visible, i]);
+  }, [visible, autoplay, i]);
   const c = MONTH_COLORS[r.month], name = MONTH_NAMES[r.month], next = MONTH_NAMES[(r.month + 1) % 12];
   const max = Math.max(1, ...r.pillars.map(p => p.spent));
 
   const slides = [
-    <View key={0} style={st.slide}><Text style={st.kanji}>{c.kanji}</Text><Text style={st.small}>{capitalize(name)}, {c.name}</Text><Text style={st.h2}>Votre mois,{'\n'}en une minute.</Text></View>,
+    <View key={0} style={st.slide}><Text style={st.kanji}>{c.kanji}</Text><Text style={st.small}>{capitalize(name)}, {c.name}</Text><Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.h2}>Votre mois,{'\n'}en une minute.</Text></View>,
     <View key={1} style={st.slide}>
       <Text style={st.small}>Vous avez épargné</Text>
-      <Text style={st.big} accessibilityLabel={`Épargné : ${formatEurosRound(r.savedTotal)}`}>{formatEurosRound(r.savedTotal)}</Text>
+      <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.big} accessibilityLabel={`Épargné : ${formatEurosRound(r.savedTotal)}`}>{formatEurosRound(r.savedTotal)}</Text>
       <Text style={st.p}>{Math.round(r.savedPct * 100)} % du revenu. {r.left > 0 ? `Les ${formatEurosRound(r.left)} non dépensés comptent aussi comme épargne.` : r.left < 0 ? `Le budget a été dépassé de ${formatEurosRound(-r.left)}.` : ''}</Text>
     </View>,
     <View key={2} style={st.slide}>
       <Text style={st.small}>Le pilier qui a le plus pesé</Text>
-      <Text style={st.h2}>{r.top?.name ?? '—'}</Text>
+      <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.h2}>{r.top?.name ?? '—'}</Text>
       <View style={{ gap: 12, marginTop: 14 }}>
         {r.pillars.map(p => (
           <View key={p.id} style={st.pRow}>
@@ -58,7 +64,7 @@ export function MonthStory({ r, note, visible, onClose }: { r: Review; note: str
   ];
 
   return (
-    <Modal visible={visible} animationType="fade" onRequestClose={onClose} statusBarTranslucent>
+    <Modal visible={visible} animationType="fade" aria-label={`Bilan de ${name} en story`} onRequestClose={onClose} statusBarTranslucent>
       <LinearGradient colors={[c.light, c.dark, '#1E1712']} locations={[0, 0.6, 1]} style={[st.root, { paddingTop: insets.top + 10 }]} accessibilityViewIsModal accessibilityLabel={`Bilan de ${name} en story`}>
         <View style={st.bars}>{Array.from({ length: N }, (_, k) => <View key={k} style={st.barBg}><View style={[st.barFill, { width: k <= i ? '100%' : '0%', opacity: k < i ? 1 : k === i ? 0.95 : 0 }]} /></View>)}</View>
         <Pressable onPress={onClose} style={st.close} accessibilityRole="button" accessibilityLabel="Fermer la story"><Text style={st.closeTxt}>×</Text></Pressable>

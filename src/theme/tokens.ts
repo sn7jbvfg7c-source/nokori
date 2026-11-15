@@ -23,10 +23,10 @@ export interface Palette {
 
 export const light: Palette = {
   dark: false,
-  paper: '#F7F4EF', surface: '#FFFFFF', ink: '#141412', ink2: '#6E6A62', ink3: '#B4B0A7',
+  paper: '#F7F4EF', surface: '#FFFFFF', ink: '#141412', ink2: '#65615A', ink3: '#B4B0A7',
   hair: 'rgba(20,20,18,0.08)', fill: 'rgba(20,20,18,0.06)', fill2: 'rgba(20,20,18,0.14)',
-  vermilion: '#BC4423', teal: '#467A6B', btn: '#141412', onBtn: '#FFFFFF',
-  pillar: { besoins: '#26231F', envies: '#BC4423', culture: '#A27A26', imprevus: '#467A6B' },
+  vermilion: '#B54020', teal: '#467A6B', btn: '#141412', onBtn: '#FFFFFF',
+  pillar: { besoins: '#26231F', envies: '#B54020', culture: '#A27A26', imprevus: '#467A6B' },
 };
 
 export const dark: Palette = {

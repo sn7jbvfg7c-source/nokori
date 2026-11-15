@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { buildMonth, CATEGORIES, PILLARS } from '../domain/budget';
 import { formatEuros } from '../domain/money';
 import type { Expense, PillarId, Profile } from '../domain/types';
-import { font } from '../theme/tokens';
+import { font, light } from '../theme/tokens';
 import type { Palette } from '../theme/tokens';
 import { useStyles } from '../theme/theme';
 import { CalendarView } from '../ui/CalendarView';
@@ -104,7 +104,7 @@ const makeStyles = (colors: Palette) => StyleSheet.create({
   segTxt: { fontFamily: font.semibold, fontSize: 14, color: colors.ink2 },
   segTxtOn: { color: colors.ink },
   save: { flexDirection: 'row', alignItems: 'center', gap: 14, marginHorizontal: 16, marginTop: 10, backgroundColor: colors.surface, borderRadius: 22, padding: 16 },
-  seal: { width: 42, height: 42, borderRadius: 10, backgroundColor: colors.vermilion, alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '-4deg' }] },
+  seal: { width: 42, height: 42, borderRadius: 10, backgroundColor: light.vermilion, alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '-4deg' }] },
   sealText: { color: '#fff', fontFamily: font.bold, fontSize: 13 },
   saveTitle: { fontFamily: font.semibold, fontSize: 15, color: colors.ink },
   edit: { alignSelf: 'center', marginTop: 20, paddingVertical: 10, paddingHorizontal: 16 },

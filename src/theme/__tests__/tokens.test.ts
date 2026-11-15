@@ -12,7 +12,7 @@ describe('palettes', () => {
     expect(onColor('#141412')).toBe('#FFFFFF');
     expect(onColor('#F2EEE8')).toBe('#141412');
     expect(onColor('#D8D0C4')).toBe('#141412');
-    expect(onColor('#BC4423')).toBe('#FFFFFF');
+    expect(onColor('#B54020')).toBe('#FFFFFF');
   });
   test.each([['clair', light], ['sombre', dark]])('thème %s : contrastes WCAG AA du texte (4,5:1)', (_, p) => {
     expect(contrast(p.ink, p.paper)).toBeGreaterThanOrEqual(4.5);

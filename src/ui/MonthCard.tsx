@@ -4,6 +4,7 @@ import type { MonthState } from '../domain/budget';
 import { formatEurosRound } from '../domain/money';
 import { capitalize, MONTH_COLORS, MONTH_NAMES } from '../domain/months';
 import { font } from '../theme/tokens';
+import { BIG_TEXT_MAX_SCALE } from './a11y';
 
 /** La carte du mois : sa couleur de saison, ce qui reste, le montant par jour, la projection, les 4 piliers */
 export function MonthCard({ s, hideAmounts = false }: { s: MonthState; hideAmounts?: boolean }) {
@@ -16,7 +17,7 @@ export function MonthCard({ s, hideAmounts = false }: { s: MonthState; hideAmoun
         <Text style={st.month}>{capitalize(MONTH_NAMES[s.month])}</Text>
         <View style={st.tag}><Text style={st.tagText}>{c.kanji} {c.name}, la couleur du mois</Text></View>
       </View>
-      <Text style={st.big} accessibilityLabel={`Il reste ${money(s.left)} à dépenser`}>{money(s.left)}</Text>
+      <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.big} accessibilityLabel={`Il reste ${money(s.left)} à dépenser`}>{money(s.left)}</Text>
       <Text style={st.sub}>à dépenser, ≈ {money(s.perDay)} par jour d’ici le {s.length}</Text>
       <View style={st.eom}>
         <Text style={st.eomText}>

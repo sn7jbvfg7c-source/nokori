@@ -4,6 +4,7 @@ import { AppState, Platform, Pressable, StyleSheet, Text, View } from 'react-nat
 import type { Palette } from '../theme/tokens';
 import { font } from '../theme/tokens';
 import { useColors, useStyles } from '../theme/theme';
+import { BIG_TEXT_MAX_SCALE } from './a11y';
 
 const RELOCK_AFTER_MS = 60_000;
 
@@ -47,7 +48,7 @@ export function LockGate({ enabled, children }: { enabled: boolean; children: Re
       {children}
       {active && (locked || hidden) && (
         <View style={st.cover} accessibilityViewIsModal accessibilityLabel="Nokori est verrouillée">
-          <View style={st.icon}><Text style={st.k}>残</Text></View>
+          <View style={st.icon}><Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.k}>残</Text></View>
           {locked && <>
             <Text style={st.title}>Nokori est verrouillée</Text>
             <Text style={st.sub}>Vos montants restent masqués tant que vous n’êtes pas reconnu.</Text>

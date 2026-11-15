@@ -17,7 +17,7 @@ npm run android    # émulateur Android ou Expo Go
 npm test           # tests unitaires (moteur, accueil, données relues)
 npm run typecheck  # vérification des types
 npm run lint       # règles de code
-npm run e2e        # parcours complets dans la version web : accueil, dépense, calendrier, activité, comptes, objectifs, bilan, réglages (Playwright)
+npm run e2e        # parcours complets dans la version web : accueil, dépense, calendrier, activité, comptes, objectifs, bilan, réglages, puis audit d’accessibilité axe-core de 26 écrans en clair et en sombre (Playwright)
 ```
 
 ## Organisation
@@ -47,6 +47,25 @@ npm run e2e        # parcours complets dans la version web : accueil, dépense, 
 
 Le verrouillage Face ID et les rappels n'existent pas dans le navigateur : ils sont indiqués « indisponibles » dans la version web et se testent sur une version de développement.
 
+## Accessibilité
+
+Ce qui est vérifié automatiquement :
+
+- **Audit axe-core** (`e2e/a11y.e2e.js`) : chaque écran, en clair et en sombre. Il contrôle les contrastes, les noms des boutons, les rôles (onglets, interrupteurs, choix), la story et la barre de progression de l’accueil. Il vérifie aussi que le texte visible d’un bouton fait partie de son nom, pour la commande vocale.
+- **Contrastes des palettes** (`src/theme/__tests__/contrast.test.ts`) : le texte reste lisible (4,5:1 au moins) sur tous les fonds, les 12 couleurs de mois et les étiquettes d’objectif.
+
+Ce que l’app fait :
+
+- Avec VoiceOver ou TalkBack, ou avec « Réduire les animations », la story du mois n’avance plus toute seule.
+- Le texte suit la taille choisie dans le téléphone. Seuls les grands chiffres et les titres sont plafonnés (×1,3) pour ne pas casser la mise en page.
+- Chaque montant a un libellé lisible par le lecteur d’écran (« Il reste 1 234 € à dépenser ») et les montants masqués sont annoncés comme tels.
+
+À vérifier à la main sur un vrai téléphone, avant la bêta :
+
+1. iPhone, Réglages > Accessibilité > VoiceOver : faire le tour des 5 onglets, ajouter une dépense, ouvrir la story.
+2. Taille du texte au maximum (Réglages > Accessibilité > Affichage et taille du texte > Police plus grande) : rien ne doit être coupé ni se chevaucher.
+3. Android, TalkBack : même parcours que le point 1.
+
 ## Tester sur un téléphone
 
 Le chiffrement SQLCipher n'existe pas dans Expo Go : pour tester la vraie app, il faut une version de développement (`npx eas-cli@latest build --profile development`). Dans Expo Go, l'app fonctionne mais affiche un avertissement : base non chiffrée, réservé au développement.
@@ -66,5 +85,6 @@ Le chiffrement SQLCipher n'existe pas dans Expo Go : pour tester la vraie app, i
 - [x] 9. Bilan : mois en cours et mois précédent, épargné, répartition, quatre questions, note « comment faire mieux » par mois, piliers ; story du mois clos en 5 écrans
 - [x] 10. Réglages : thème auto, clair ou sombre (palettes vérifiées WCAG AA), masquer les montants, verrouillage Face ID, rappels locaux 3 jours avant chaque charge (sans montant), tout effacer
 - [x] 11a : revue de sécurité (voir [SECURITY.md](SECURITY.md)) : test automatique « aucun réseau, aucun code dynamique, aucun stockage en clair », pas de sauvegarde Android, permissions inutiles retirées, manifeste de confidentialité iOS
-- [ ] 11b et 11c : accessibilité, préparation de la bêta
+- [x] 11b : accessibilité : audit automatique de 26 écrans, contrastes renforcés (teintes de 7 mois, vermillon, texte secondaire), noms des boutons, story sans défilement automatique pour VoiceOver/TalkBack et « Réduire les animations », grands chiffres plafonnés
+- [ ] 11c : préparation de la bêta
 - [ ] 12 : publication

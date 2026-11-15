@@ -6,9 +6,10 @@ import { ACCOUNT_KINDS, parseBalance, totals, type Account, type AccountKind } f
 import { dayTitle } from '../domain/activity';
 import { formatEuros } from '../domain/money';
 import { cleanName } from '../domain/onboarding';
-import { font } from '../theme/tokens';
+import { font, onColor } from '../theme/tokens';
 import type { Palette } from '../theme/tokens';
 import { useColors, useStyles } from '../theme/theme';
+import { BIG_TEXT_MAX_SCALE } from '../ui/a11y';
 
 const isoOf = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const updatedText = (iso: string, today: Date) => {
@@ -46,7 +47,7 @@ function Editor({ draft, setDraft, onSave, onCancel, onDelete }: { draft: Draft;
         <View style={st.btns}>
           <Text style={st.ask}>Supprimer ce compte ?</Text>
           <Pressable onPress={() => setConfirm(false)} style={[st.btn, st.btnLight]} accessibilityRole="button"><Text style={st.btnTxt}>Annuler</Text></Pressable>
-          <Pressable onPress={onDelete} style={[st.btn, { backgroundColor: colors.vermilion }]} accessibilityRole="button" accessibilityLabel={`Confirmer la suppression de ${draft.name}`}><Text style={[st.btnTxt, { color: '#fff' }]}>Supprimer</Text></Pressable>
+          <Pressable onPress={onDelete} style={[st.btn, { backgroundColor: colors.vermilion }]} accessibilityRole="button" accessibilityLabel={`Confirmer la suppression de ${draft.name}`}><Text style={[st.btnTxt, { color: onColor(colors.vermilion) }]}>Supprimer</Text></Pressable>
         </View>
       ) : (
         <View style={st.btns}>
@@ -82,7 +83,7 @@ export function AccountsScreen({ accounts, today, onSave, onRemove, hideAmounts 
       {accounts.length > 0 && (
         <View style={st.head}>
           <Text style={st.kick}>Total de vos comptes</Text>
-          <Text style={[st.total, t.total < 0 && { color: colors.vermilion }]} accessibilityLabel={hideAmounts ? 'Total masqué' : `Total de vos comptes : ${formatEuros(t.total)}`}>{hideAmounts ? '•••' : formatEuros(t.total)}</Text>
+          <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={[st.total, t.total < 0 && { color: colors.vermilion }]} accessibilityLabel={hideAmounts ? 'Total masqué' : `Total de vos comptes : ${formatEuros(t.total)}`}>{hideAmounts ? '•••' : formatEuros(t.total)}</Text>
         </View>
       )}
       {draft && draft.id === null && <Editor draft={draft} setDraft={setDraft} onSave={save} onCancel={() => setDraft(null)} />}
@@ -95,7 +96,7 @@ export function AccountsScreen({ accounts, today, onSave, onRemove, hideAmounts 
                 {draft?.id === a.id ? (
                   <Editor draft={draft} setDraft={setDraft} onSave={save} onCancel={() => setDraft(null)} onDelete={() => { onRemove(a.id); setDraft(null); }} />
                 ) : (
-                  <Pressable style={st.row} onPress={() => setDraft({ id: a.id, name: a.name, kind: a.kind, balance: balanceText(a.balance) })} accessibilityRole="button" accessibilityLabel={`${a.name}, ${hideAmounts ? 'solde masqué' : formatEuros(a.balance)}, ${updatedText(a.updated, today)}`}>
+                  <Pressable style={st.row} onPress={() => setDraft({ id: a.id, name: a.name, kind: a.kind, balance: balanceText(a.balance) })} accessibilityRole="button" accessibilityLabel={`${a.name}, ${updatedText(a.updated, today)}, ${hideAmounts ? 'solde masqué' : formatEuros(a.balance)}`}>
                     <View style={{ flex: 1 }}>
                       <Text style={st.name}>{a.name}</Text>
                       <Text style={st.sub}>{updatedText(a.updated, today)}</Text>

@@ -11,7 +11,7 @@ export type GoalType = 'voyage' | 'voiture' | 'maison' | 'precaution' | 'etudes'
 export interface Goal { id: string; name: string; type: GoalType; target: Cents; saved: Cents; monthly: Cents }
 
 export const GOAL_TYPES: { id: GoalType; name: string; icon: string; color: string }[] = [
-  { id: 'voyage', name: 'Voyage', icon: 'globe', color: '#C9572C' },
+  { id: 'voyage', name: 'Voyage', icon: 'globe', color: '#B84E27' },
   { id: 'voiture', name: 'Voiture', icon: 'truck', color: '#467A6B' },
   { id: 'maison', name: 'Maison', icon: 'home', color: '#5B4287' },
   { id: 'precaution', name: 'Précaution', icon: 'shield', color: '#A27A26' },

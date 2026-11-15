@@ -29,6 +29,7 @@
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "@types/react": "~19.3.0",
+    "axe-core": "^4.14.0",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~58.0.4",
     "jest": "^30.5.2",
@@ -43,7 +44,7 @@
     "test": "jest",
     "typecheck": "tsc --noEmit",
     "lint": "expo lint",
-    "e2e": "expo export --platform web --output-dir dist && node e2e/onboarding.e2e.js && node e2e/activity.e2e.js && node e2e/accounts.e2e.js && node e2e/goals.e2e.js && node e2e/review.e2e.js && node e2e/settings.e2e.js"
+    "e2e": "expo export --platform web --output-dir dist && node e2e/onboarding.e2e.js && node e2e/activity.e2e.js && node e2e/accounts.e2e.js && node e2e/goals.e2e.js && node e2e/review.e2e.js && node e2e/settings.e2e.js && node e2e/a11y.e2e.js"
   },
   "private": true,
   "jest": {

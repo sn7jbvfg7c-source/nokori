@@ -8,6 +8,7 @@ import type { ChargeGroup, Frequency, Profile } from '../domain/types';
 import { font } from '../theme/tokens';
 import type { Palette } from '../theme/tokens';
 import { useColors, useStyles } from '../theme/theme';
+import { BIG_TEXT_MAX_SCALE } from '../ui/a11y';
 
 const STEPS = 5;
 const GROUPS = Object.keys(GROUP_NAME) as ChargeGroup[];
@@ -114,7 +115,7 @@ function ChargesStep({ draft, setDraft }: { draft: Draft; setDraft: (f: (d: Draf
 
   return (
     <View>
-      <Text style={st.h2}>Vos charges fixes</Text>
+      <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.h2}>Vos charges fixes</Text>
       <Text style={st.p}>Choisissez dans la liste ou ajoutez-les à la main. Elles tombent chaque mois dans le calendrier.</Text>
       <TextInput value={q} onChangeText={t => setQ(t.slice(0, 40))} maxLength={40} placeholder="Rechercher : loyer, EDF, Netflix…" placeholderTextColor={colors.ink3} accessibilityLabel="Rechercher une charge" style={st.search} />
       <Chips<string> items={[['tout', 'Tout'], ...GROUPS.map(g => [g, GROUP_NAME[g]] as [string, string])]} value={group ?? 'tout'} onChange={v => setGroup(v === 'tout' ? null : (v as ChargeGroup))} />
@@ -172,20 +173,20 @@ export function OnboardingScreen({ initial, onDone }: { initial: Profile | null;
         {step > 0
           ? <Pressable style={st.back} onPress={() => setStep(step - 1)} accessibilityRole="button" accessibilityLabel="Retour"><Text style={st.backTxt}>‹</Text></Pressable>
           : <View style={{ width: 36 }} />}
-        <View style={st.prog} accessibilityLabel={`Étape ${step + 1} sur ${STEPS}`}>{Array.from({ length: STEPS }, (_, i) => <View key={i} style={[st.progSeg, i <= step && st.progOn]} />)}</View>
+        <View style={st.prog} accessibilityRole="progressbar" accessibilityLabel={`Étape ${step + 1} sur ${STEPS}`} accessibilityValue={{ min: 1, max: STEPS, now: step + 1 }}>{Array.from({ length: STEPS }, (_, i) => <View key={i} style={[st.progSeg, i <= step && st.progOn]} />)}</View>
         <Pressable onPress={() => setStep(STEPS - 1)} accessibilityRole="button"><Text style={st.skip}>Passer</Text></Pressable>
       </View>
       <ScrollView contentContainerStyle={st.body} keyboardShouldPersistTaps="handled">
         {step === 0 && (
           <View>
-            <View style={st.art}><Text style={st.artK}>残</Text></View>
-            <Text style={st.h1}>Le kakeibo,{'\n'}sans le carnet.</Text>
+            <View style={st.art}><Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.artK}>残</Text></View>
+            <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.h1}>Le kakeibo,{'\n'}sans le carnet.</Text>
             <Text style={st.p}>Quelques questions, une minute, et votre mois se calcule tout seul : ce qui tombe, quand, et ce qu’il vous reste vraiment. Tout reste sur votre téléphone.</Text>
           </View>
         )}
         {step === 1 && (
           <View>
-            <Text style={st.h2}>Combien gagnez-vous par mois ?</Text>
+            <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.h2}>Combien gagnez-vous par mois ?</Text>
             <Text style={st.p}>Salaire net, après impôts. C’est la base du kakeibo.</Text>
             <AmountInput big value={draft.income} onChange={c => setDraft(d => ({ ...d, income: c }))} label="Revenu mensuel" />
             <Text style={st.h3}>Le jour de votre paie</Text>
@@ -194,9 +195,9 @@ export function OnboardingScreen({ initial, onDone }: { initial: Profile | null;
         )}
         {step === 2 && (
           <View>
-            <Text style={st.h2}>Combien voulez-vous épargner ?</Text>
+            <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.h2}>Combien voulez-vous épargner ?</Text>
             <Text style={st.p}>Le kakeibo commence par l’épargne : on la retire du budget dès la paie. Vous faites le virement dans votre banque, Nokori le compte.</Text>
-            <Text style={st.bigVal} accessibilityLabel={`Épargne : ${formatEurosRound(sum.saving)} par mois`}>{formatEurosRound(sum.saving)}</Text>
+            <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.bigVal} accessibilityLabel={`Épargne : ${formatEurosRound(sum.saving)} par mois`}>{formatEurosRound(sum.saving)}</Text>
             <Text style={[st.p, { textAlign: 'center' }]}>par mois, {Math.round(draft.savePct * 100)} % du revenu</Text>
             <Chips<number> items={SAVE_STEPS.map(v => [v, `${Math.round(v * 100)} %`])} value={draft.savePct} onChange={v => setDraft(d => ({ ...d, savePct: v }))} />
             <Text style={st.note}>{draft.savePct >= 0.2 ? 'Très bien : 20 % est la règle d’or du kakeibo.' : draft.savePct >= 0.1 ? 'Un bon début ; vous pourrez monter plus tard.' : 'Même un petit montant compte. Vous pourrez l’ajuster.'}</Text>
@@ -205,7 +206,7 @@ export function OnboardingScreen({ initial, onDone }: { initial: Profile | null;
         {step === 3 && <ChargesStep draft={draft} setDraft={setDraft} />}
         {step === 4 && (
           <View>
-            <Text style={st.h2}>Votre mois, en un coup d’œil</Text>
+            <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.h2}>Votre mois, en un coup d’œil</Text>
             <View style={st.list}>
               {([['Revenus', sum.income], ['Épargne', -sum.saving], ['Charges fixes', -sum.fixed], ['Reste à vivre', sum.free]] as [string, number][]).map(([l, v], i) => (
                 <View key={l} style={[st.sumRow, i > 0 && { borderTopWidth: 1, borderTopColor: colors.hair }, i === 3 && { paddingBottom: 16 }]}>
@@ -216,7 +217,7 @@ export function OnboardingScreen({ initial, onDone }: { initial: Profile | null;
             </View>
             <View style={st.perDay}>
               <Text style={st.p}>Sur un mois complet, vous pourrez dépenser environ</Text>
-              <Text style={st.bigVal} accessibilityLabel={`Environ ${formatEurosRound(sum.perDay)} par jour`}>{formatEurosRound(sum.perDay)}</Text>
+              <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.bigVal} accessibilityLabel={`Environ ${formatEurosRound(sum.perDay)} par jour`}>{formatEurosRound(sum.perDay)}</Text>
               <Text style={st.p}>par jour, sans toucher à votre épargne.</Text>
             </View>
             {!incomeOk && <Text style={st.err}>Revenu non renseigné : vous pourrez le saisir plus tard.</Text>}
