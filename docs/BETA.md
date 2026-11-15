@@ -106,10 +106,13 @@ npx eas-cli@latest build --profile production --platform android
 - **Sécurité des données Google Play** : aucune donnée collectée, aucune donnée partagée. Données chiffrées : oui, sur l’appareil. Suppression possible : oui, avec « Tout effacer » ou en désinstallant l’app.
 - **Questionnaire de classification du contenu** (Google) et **classification par âge** (Apple) : ni violence, ni achat, ni contenu généré par d’autres. On obtient « 4+ » ou « Tout public ».
 - **Catégorie** : Finance.
+- **URL d’assistance** (Apple) : une page publique avec vos coordonnées. Le texte est prêt dans `docs/assistance.md`.
 
 ## 7. Nouvelle version de la bêta
 
 Augmentez `version` dans `app.json` seulement pour une nouvelle version visible, par exemple 1.0.1. Le numéro de compilation augmente tout seul (`autoIncrement` dans `eas.json`). Relancez ensuite les commandes `build` et `submit` des étapes 4 et 5.
+
+Pour la sortie publique sur les stores, suivez ensuite [PUBLICATION.md](PUBLICATION.md).
 
 ---
 

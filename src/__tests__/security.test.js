@@ -63,3 +63,12 @@ describe('garde-fous de sécurité', () => {
     } finally { delete process.env.EAS_BUILD_PROFILE; }
   });
 });
+
+describe('base restaurée sans sa clé', () => {
+  test('une nouvelle clé efface d’abord l’ancienne base illisible (sauvegarde iCloud sur un autre iPhone)', () => {
+    const src = fs.readFileSync(path.join(__dirname, '../data/kv.native.ts'), 'utf8');
+    const open = src.slice(src.indexOf('async function open()'));
+    expect(open).toMatch(/if \(fresh\) \{ try \{ await SQLite\.deleteDatabaseAsync\(DB_NAME\)/);
+    expect(open.indexOf('deleteDatabaseAsync')).toBeLessThan(open.indexOf('openDatabaseAsync'));
+  });
+});

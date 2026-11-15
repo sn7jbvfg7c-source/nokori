@@ -1,0 +1,45 @@
+// Données d'exemple des captures d'écran : un mois de novembre 2026 crédible, figé au 14.
+module.exports = {
+  v: 1, dismissed: [], notes: { '2026-10': 'Cuisiner le dimanche pour la semaine' },
+  prefs: { theme: 'auto', lock: true, hideAmounts: false, alerts: true },
+  profile: {
+    income: 248000, extraIncome: 0, payday: 1, savePct: 0.15,
+    charges: [
+      { id: 'loyer', name: 'Loyer', group: 'logement', amount: 78000, day: 5, freq: 'mois' },
+      { id: 'edf', name: 'Électricité', group: 'energie', amount: 6400, day: 8, freq: 'mois' },
+      { id: 'box', name: 'Box internet', group: 'internet', amount: 2999, day: 12, freq: 'mois' },
+      { id: 'mobile', name: 'Forfait mobile', group: 'internet', amount: 1499, day: 18, freq: 'mois' },
+      { id: 'assur', name: 'Assurance habitation', group: 'assurance', amount: 1850, day: 20, freq: 'mois' },
+      { id: 'navigo', name: 'Pass transports', group: 'transports', amount: 8800, day: 25, freq: 'mois' },
+      { id: 'musique', name: 'Musique', group: 'abos', amount: 1199, day: 27, freq: 'mois' },
+    ],
+  },
+  expenses: [
+    { id: 'o1', date: '2026-10-03', label: 'Courses', categoryId: 'courses', amount: 8240 },
+    { id: 'o2', date: '2026-10-08', label: 'Pharmacie', categoryId: 'sante', amount: 1290 },
+    { id: 'o3', date: '2026-10-10', label: 'Courses', categoryId: 'courses', amount: 7615 },
+    { id: 'o4', date: '2026-10-12', label: 'Restaurant', categoryId: 'restos', amount: 4200 },
+    { id: 'o5', date: '2026-10-17', label: 'Courses', categoryId: 'courses', amount: 6980 },
+    { id: 'o6', date: '2026-10-18', label: 'Librairie', categoryId: 'culture', amount: 2390 },
+    { id: 'o7', date: '2026-10-22', label: 'Pull', categoryId: 'shopping', amount: 4500 },
+    { id: 'o8', date: '2026-10-24', label: 'Courses', categoryId: 'courses', amount: 7120 },
+    { id: 'o9', date: '2026-10-26', label: 'Cinéma', categoryId: 'culture', amount: 1150 },
+    { id: 'o10', date: '2026-10-29', label: 'Réparation vélo', categoryId: 'imprevus', amount: 3500 },
+    { id: 'n1', date: '2026-11-02', label: 'Courses', categoryId: 'courses', amount: 7840 },
+    { id: 'n2', date: '2026-11-04', label: 'Café avec Léa', categoryId: 'restos', amount: 760 },
+    { id: 'n3', date: '2026-11-07', label: 'Marché', categoryId: 'courses', amount: 2350 },
+    { id: 'n4', date: '2026-11-08', label: 'Expo photo', categoryId: 'culture', amount: 1400 },
+    { id: 'n5', date: '2026-11-09', label: 'Courses', categoryId: 'courses', amount: 6930 },
+    { id: 'n6', date: '2026-11-11', label: 'Restaurant', categoryId: 'restos', amount: 3800 },
+    { id: 'n7', date: '2026-11-13', label: 'Boulangerie', categoryId: 'courses', amount: 640 },
+  ],
+  accounts: [
+    { id: 'c', name: 'Compte courant', kind: 'courant', balance: 128640, updated: '2026-11-14' },
+    { id: 'l', name: 'Livret A', kind: 'livret', balance: 645000, updated: '2026-11-01' },
+    { id: 'p', name: 'PEA', kind: 'placement', balance: 487000, updated: '2026-10-31' },
+  ],
+  goals: [
+    { id: 'g1', name: 'Japon', type: 'voyage', target: 300000, saved: 132000, monthly: 25000 },
+    { id: 'g2', name: 'Épargne de précaution', type: 'precaution', target: 500000, saved: 410000, monthly: 15000 },
+  ],
+};

@@ -33,6 +33,8 @@ npm run e2e        # parcours complets dans la version web : accueil, dépense, 
 | `src/ui` | Composants : carte du mois, liste des piliers |
 | `src/screens` | Écrans |
 | `e2e` | Captures et tests dans la version web |
+| `store` | Fiches des stores (`texts.js`, `FICHES.md`), captures d’écran et leurs scripts |
+| `docs` | Guides de bêta et de publication, politique de confidentialité, conditions, page d’assistance |
 
 ## Règles du projet
 
@@ -68,7 +70,7 @@ Ce que l’app fait :
 
 ## Tester sur un téléphone
 
-Le chiffrement SQLCipher n'existe pas dans Expo Go : pour tester la vraie app, il faut une version de développement (`npx eas-cli@latest build --profile development`). Le pas à pas complet, jusqu’à TestFlight et Google Play, est dans [docs/BETA.md](docs/BETA.md). Dans Expo Go, l'app fonctionne mais affiche un avertissement : base non chiffrée, réservé au développement.
+Le chiffrement SQLCipher n'existe pas dans Expo Go : pour tester la vraie app, il faut une version de développement (`npx eas-cli@latest build --profile development`). Le pas à pas complet, jusqu’à TestFlight et Google Play, est dans [docs/BETA.md](docs/BETA.md), puis la sortie publique dans [docs/PUBLICATION.md](docs/PUBLICATION.md). Dans Expo Go, l'app fonctionne mais affiche un avertissement : base non chiffrée, réservé au développement.
 
 ## Avancement
 
@@ -87,4 +89,5 @@ Le chiffrement SQLCipher n'existe pas dans Expo Go : pour tester la vraie app, i
 - [x] 11a : revue de sécurité (voir [SECURITY.md](SECURITY.md)) : test automatique « aucun réseau, aucun code dynamique, aucun stockage en clair », pas de sauvegarde Android, permissions inutiles retirées, manifeste de confidentialité iOS
 - [x] 11b : accessibilité : audit automatique de 26 écrans, contrastes renforcés (teintes de 7 mois, vermillon, texte secondaire), noms des boutons, story sans défilement automatique pour VoiceOver/TalkBack et « Réduire les animations », grands chiffres plafonnés
 - [x] 11c : préparation de la bêta : `eas.json` (développement, bêta interne, stores), icône et écran de démarrage 残, permission Internet retirée des versions distribuées sur Android, politique de confidentialité et conditions ([docs/](docs)), guide [docs/BETA.md](docs/BETA.md)
-- [ ] 12 : publication
+- [x] 12 : publication préparée : textes des fiches App Store et Google Play (limites vérifiées par un test), fiche App Store envoyée par `eas metadata:push` (`store.config.js`), 6 captures iPhone et Android, image de présentation, page d’assistance, guide [docs/PUBLICATION.md](docs/PUBLICATION.md). App réglée pour iPhone seulement. Une base restaurée par iCloud sans sa clé ne bloque plus l’app
+- [ ] Sortie : comptes, pages publiques, envoi aux stores (à faire par vous, voir docs/PUBLICATION.md)

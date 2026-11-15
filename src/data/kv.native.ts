@@ -1,7 +1,8 @@
 /**
  * Stockage clé-valeur sur iPhone et Android : base SQLite chiffrée par SQLCipher.
  * La clé (256 bits, aléatoire) est rangée dans le trousseau / Keystore, liée à cet appareil :
- * elle ne part ni dans les sauvegardes iCloud ni sur un autre téléphone.
+ * elle ne part ni dans les sauvegardes iCloud ni sur un autre téléphone. Une base restaurée sans sa clé est donc illisible :
+ * elle est remplacée par une base vide (voir open()).
  *
  * SQLCipher demande une version compilée de l'app (EAS Build) : il n'existe pas dans Expo Go.
  * En développement, on accepte une base non chiffrée avec un avertissement ;
@@ -18,21 +19,26 @@ const KEY_OPTS: SecureStore.SecureStoreOptions = { keychainAccessible: SecureSto
 
 const toHex = (b: Uint8Array) => Array.from(b, x => x.toString(16).padStart(2, '0')).join('');
 
-async function databaseKey(): Promise<string> {
+async function databaseKey(): Promise<{ key: string; fresh: boolean }> {
   let key = await SecureStore.getItemAsync(KEY_NAME, KEY_OPTS);
+  const fresh = !key;
   if (!key) {
     key = toHex(Crypto.getRandomBytes(32));
     await SecureStore.setItemAsync(KEY_NAME, key, KEY_OPTS);
   }
   // la clé est insérée dans une instruction PRAGMA : on n'accepte que 64 caractères hexadécimaux
   if (!/^[0-9a-f]{64}$/.test(key)) throw new Error('Clé de chiffrement invalide');
-  return key;
+  return { key, fresh };
 }
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
 async function open(): Promise<SQLite.SQLiteDatabase> {
-  const key = await databaseKey();
+  const { key, fresh } = await databaseKey();
+  // Nouvelle clé alors qu'une base existe déjà : c'est une base restaurée d'une sauvegarde iCloud
+  // sur un autre iPhone (la clé, elle, reste sur l'ancien). Illisible sans sa clé : on repart d'une base vide,
+  // sinon plus rien ne pourrait être enregistré.
+  if (fresh) { try { await SQLite.deleteDatabaseAsync(DB_NAME); } catch { /* pas de base */ } }
   const db = await SQLite.openDatabaseAsync(DB_NAME);
   await db.execAsync(`PRAGMA key = "x'${key}'";`);
   const cipher = await db.getFirstAsync<{ cipher_version: string }>('PRAGMA cipher_version;');

@@ -42,3 +42,6 @@ yarn-error.*
 
 # captures locales
 e2e/*.png
+
+# captures brutes, régénérées par node store/raw.js
+store/raw/

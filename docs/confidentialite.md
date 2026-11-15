@@ -13,7 +13,7 @@ Nokori est une application de suivi de budget. Elle est éditée par **[votre no
 Vos revenus, charges fixes, dépenses, soldes de comptes, objectifs d’épargne, notes et réglages sont enregistrés **uniquement sur votre téléphone**, dans une base chiffrée (AES-256). La clé de chiffrement est conservée dans le trousseau sécurisé du téléphone et n’en sort jamais.
 
 - Ces données ne sont envoyées à aucun serveur : l’application ne communique pas avec Internet.
-- Elles ne sont pas incluses dans les sauvegardes iCloud ou Google. Si vous changez de téléphone, elles ne suivent pas.
+- La clé qui les déchiffre ne quitte jamais votre téléphone, ni dans les sauvegardes iCloud ou Google, ni ailleurs : une sauvegarde ne permet pas de les relire sur un autre appareil. Si vous changez de téléphone, elles ne suivent pas.
 - Nokori ne se connecte à aucune banque et ne déplace pas d’argent.
 
 ## Ce que nous ne faisons pas
