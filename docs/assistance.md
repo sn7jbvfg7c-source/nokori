@@ -14,7 +14,10 @@ Une question, un problème, une idée ? Écrivez à **[adresse e-mail de contact
 Non. Nokori n’a pas de serveur et ne se connecte à aucune banque. Tout reste sur votre téléphone, dans une base chiffrée.
 
 **J’ai changé de téléphone : comment retrouver mes données ?**
-Ce n’est pas possible dans cette version. Les données sont chiffrées avec une clé qui ne quitte jamais l’ancien téléphone : même une sauvegarde iCloud ou Google ne permet pas de les relire ailleurs. Il faut ressaisir son budget sur le nouveau téléphone, ce qui prend quelques minutes.
+Avec la sauvegarde chiffrée. Sur l’ancien téléphone : Réglages › Sauvegarde et restauration › Créer une sauvegarde, puis rangez le fichier (iCloud Drive, Google Drive, e-mail à vous-même…). Sur le nouveau : installez Nokori, touchez « J’ai déjà une sauvegarde Nokori », choisissez le fichier et entrez votre phrase secrète.
+
+**J’ai oublié ma phrase secrète.**
+Personne ne peut ouvrir la sauvegarde sans elle, pas même nous : c’est ce qui la protège. Créez une nouvelle sauvegarde depuis le téléphone qui a encore vos données.
 
 **Comment tout effacer ?**
 Réglages › Tout effacer. Désinstaller l’app efface aussi tout.

@@ -79,7 +79,9 @@ npx expo start --dev-client
 4. **VoiceOver / TalkBack** : faites le tour des 5 onglets, ajoutez une dépense, ouvrez la story du mois.
 5. **Texte très grand** : réglez la taille du texte au maximum. Rien ne doit être coupé ni se chevaucher.
 6. **Mode sombre** : passez le téléphone en sombre avec le thème « Auto ».
-7. **Tout effacer** : l’app revient à l’accueil, sans aucune donnée.
+7. **Sauvegarde** : Réglages › Sauvegarde et restauration › Créer une sauvegarde. La feuille de partage s’ouvre ; enregistrez le fichier dans Fichiers ou Drive.
+8. **Tout effacer** : l’app revient à l’accueil, sans aucune donnée.
+9. **Restauration** : à l’accueil, « J’ai déjà une sauvegarde Nokori », choisissez le fichier, entrez la phrase secrète. Tout revient. Faites-le aussi sur un second téléphone, si possible de l’autre système (iPhone vers Android).
 
 ## 4. Bêta iPhone avec TestFlight
 

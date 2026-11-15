@@ -31,7 +31,7 @@ const out = n => path.join(__dirname, 'raw', `${theme}-${n}.png`);
   await p.getByRole('tab', { name: /Objectifs/ }).click(); await W(600);
   await shot('4-objectifs');
   await p.getByRole('tab', { name: /Bilan/ }).click(); await W(500);
-  await p.getByRole('tab', { name: 'Octobre' }).click(); await W(500);
+  await p.getByRole('button', { name: 'Bilan : mois d’avant' }).click(); await W(500);
   await shot('5-bilan');
   await p.getByRole('tab', { name: /Comptes/ }).click(); await W(600);
   await shot('6-comptes');

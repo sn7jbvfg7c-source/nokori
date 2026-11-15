@@ -22,6 +22,21 @@ Nokori est une app de suivi de budget **manuelle** : elle ne se connecte à aucu
 | Notifications lues sur l’écran verrouillé | Les rappels de prélèvement ne contiennent **aucun montant**. |
 | Fuite par le réseau | L’app ne fait aucun appel réseau, un test le vérifie à chaque lancement. Sur Android, les versions distribuées n’ont même pas la permission Internet. |
 
+## Sauvegarde chiffrée
+
+- **Fichier** : créé seulement quand l’utilisateur le demande (Réglages › Sauvegarde et restauration), proposé par la feuille de partage du téléphone, puis effacé du cache de l’app. Nokori ne l’envoie nulle part.
+- **Chiffrement** : clé dérivée de la phrase secrète par scrypt (N = 2^15, r = 8, p = 1 ; sel aléatoire de 16 octets), données chiffrées en AES-256-GCM (nonce aléatoire de 12 octets). L’en-tête (version, paramètres, date) est authentifié : toute modification du fichier est détectée. Bibliothèques `@noble/hashes` et `@noble/ciphers` 2.4.0, versions figées, auditées par Cure53, sans dépendance ni code natif.
+- **Phrase secrète** : 8 caractères au moins, jamais enregistrée. Perdue, la sauvegarde ne peut plus être ouverte.
+- **Restauration** : le fichier est vérifié avant tout calcul (format, version, paramètres bornés pour éviter un épuisement de mémoire), puis chaque donnée est validée comme au démarrage. Un résumé est affiché et l’utilisateur confirme avant le remplacement. Le verrouillage et les rappels sont désactivés après restauration, car ils dépendent du téléphone.
+- **Tests** : `src/domain/__tests__/backup.test.ts` (13 tests : aller-retour, mauvaise phrase, octet modifié, en-tête trafiqué, faux fichier, version future, paramètres démesurés) et `e2e/backup.e2e.js` (parcours complet dans le navigateur).
+
+## Fiabilité des données
+
+- **Lecture** : trois cas distincts. Rien d’enregistré (premier lancement), données relues, ou données illisibles (fichier abîmé, version plus récente de l’app). Dans le dernier cas, rien n’est réécrit : une copie est gardée et l’utilisateur choisit (restaurer une sauvegarde, réessayer après une mise à jour, ou repartir de zéro après confirmation).
+- **Stockage indisponible** (trousseau verrouillé, erreur SQLite) : écran « Réessayer » au lieu du questionnaire de départ. Avant ce correctif, répondre au questionnaire pouvait écraser toutes les données.
+- **Écritures** : en file, dans l’ordre ; un échec affiche un bandeau. Double appui sans effet.
+- **SQLCipher** : `PRAGMA temp_store = MEMORY` (pas de fichier temporaire de tri sur le disque) et `PRAGMA secure_delete = ON` (le contenu effacé est réellement écrasé).
+
 ## Ce qui est vérifié automatiquement
 
 `src/__tests__/security.test.js` échoue si le code contient :
@@ -39,11 +54,13 @@ Il vérifie aussi la clé liée à l’appareil, le refus d’écrire sans chiff
 - **Dépendances** (`npm audit`) : 3 alertes modérées, toutes dans `minimatch` via `@expo/fingerprint`, un outil de compilation qui n’est pas embarqué dans l’app.
 - **Secrets** : aucune clé ni aucun mot de passe dans le code ou la configuration.
 - **Android** (vérifié par prebuild) : `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE` et `SYSTEM_ALERT_WINDOW` sont retirées. Restent la biométrie (`USE_BIOMETRIC`, `USE_FINGERPRINT`), `VIBRATE`, les notifications (ajoutée par la bibliothèque) et `INTERNET`, qu’Expo ajoute par défaut et dont la version de développement a besoin pour se connecter à l’ordinateur. `allowBackup="false"`. Dans les versions bêta (`preview`) et stores (`production`), `app.config.js` retire aussi `INTERNET` : l’app ne peut matériellement pas accéder au réseau (vérifié par prebuild et par un test).
-- **iOS** (vérifié par prebuild) : le texte d’autorisation Face ID est présent. `PrivacyInfo.xcprivacy` déclare l’absence de suivi et de données collectées. `ITSAppUsesNonExemptEncryption` vaut `false`.
+- **Modules de fichiers** (sauvegarde) : le prebuild de production du 15 novembre 2026 confirme que `expo-document-picker`, `expo-sharing` et `expo-file-system` n’ajoutent aucune permission Android restante : `INTERNET`, `READ_EXTERNAL_STORAGE` et `WRITE_EXTERNAL_STORAGE` sont retirées. `expo-file-system` embarque son propre manifeste de confidentialité iOS.
+- **iOS** (vérifié par prebuild) : application pour iPhone uniquement (`TARGETED_DEVICE_FAMILY = 1`). Le texte d’autorisation Face ID est présent. `PrivacyInfo.xcprivacy` déclare l’absence de suivi et de données collectées. `ITSAppUsesNonExemptEncryption` vaut `false`.
 
 ## Points à confirmer avant publication
 
 - **Chiffrement et export.** Nokori n’utilise le chiffrement que pour protéger ses propres données sur le téléphone, avec un algorithme standard. C’est en principe une utilisation exemptée de déclaration d’export aux États-Unis, d’où `usesNonExemptEncryption: false`. App Store Connect pose aussi une question sur la distribution en **France** : la même exemption s’applique en général aux usages de protection des données, mais à relire au moment de remplir le formulaire.
+- **SQLCipher sur un vrai téléphone.** Le chiffrement ne se vérifie que sur une version compilée (EAS Build) : au lancement, aucun avertissement « SQLCipher absent » ne doit apparaître, et l’app refuse d’écrire sans chiffrement. À contrôler une fois sur iPhone et sur Android (voir docs/BETA.md).
 - **Version web.** C’est une version de test, à partager avec des testeurs, pas une version publique. Elle n’a ni serveur ni accès réseau : les données restent dans le navigateur de chacun, mais en clair (`localStorage`), sans verrouillage ni rappels. Elle le dit dès le premier écran et dans les réglages, et demande aux moteurs de recherche de ne pas l’indexer (`noindex`). Pour de vrais chiffres, l’app pour téléphone reste la référence.
 
 ## Signaler un problème

@@ -1,4 +1,4 @@
-// Données d'exemple des captures d'écran : un mois de novembre 2026 crédible, figé au 14.
+// Données d'exemple des captures d'écran des stores uniquement (jamais dans l'app) : septembre à novembre 2026, figé au 14 novembre.
 module.exports = {
   v: 1, dismissed: [], notes: { '2026-10': 'Cuisiner le dimanche pour la semaine' },
   prefs: { theme: 'auto', lock: true, hideAmounts: false, alerts: true },
@@ -15,6 +15,12 @@ module.exports = {
     ],
   },
   expenses: [
+    { id: 's1', date: '2026-09-05', label: 'Courses', categoryId: 'courses', amount: 9150 },
+    { id: 's2', date: '2026-09-12', label: 'Restaurant', categoryId: 'restos', amount: 6400 },
+    { id: 's3', date: '2026-09-14', label: 'Courses', categoryId: 'courses', amount: 8820 },
+    { id: 's4', date: '2026-09-20', label: 'Concert', categoryId: 'culture', amount: 4500 },
+    { id: 's5', date: '2026-09-26', label: 'Courses', categoryId: 'courses', amount: 7930 },
+    { id: 's6', date: '2026-09-28', label: 'Chaussures', categoryId: 'shopping', amount: 8900 },
     { id: 'o1', date: '2026-10-03', label: 'Courses', categoryId: 'courses', amount: 8240 },
     { id: 'o2', date: '2026-10-08', label: 'Pharmacie', categoryId: 'sante', amount: 1290 },
     { id: 'o3', date: '2026-10-10', label: 'Courses', categoryId: 'courses', amount: 7615 },

@@ -73,3 +73,29 @@ Priorités : **P0** perte de données, faille de sécurité ou chiffre faux affi
 - **Couleurs hors palette** : 11 valeurs hexadécimales et 8 valeurs rgba codées en dur, dont l’ancien vermillon `rgba(188,68,35,…)` à 7 endroits. `MonthStory` et le sceau d’épargne utilisent la palette claire même en mode sombre.
 - **Animations** : un seul effet animé (l’éclat du pilier, sans pilote natif). Les éditeurs, les confirmations, le toast et les barres de progression apparaissent ou changent d’un coup.
 - **Icônes** : Feather à 3 endroits seulement ; ailleurs, des caractères texte sans police définie.
+
+## 7. Statut au 15 novembre 2026, après corrections
+
+| # | Statut | Ce qui a été fait |
+| --- | --- | --- |
+| D1 | Corrigé | Écran « Réessayer » à la place de l’accueil ; aucune écriture tant que rien n’est chargé (`state/AppState.tsx`, `ui/DataProblem.tsx`). |
+| D2 | Corrigé | Lecture en trois états ; donnée illisible copiée à part, jamais écrasée ; version future refusée (`data/persist.ts`). |
+| D3 | Corrigé | Boutons bloqués pendant l’enregistrement, identifiant déjà présent ignoré, écritures en file. |
+| D4 | Corrigé | Mois des charges annuelles et échéance des charges à 4 semaines conservés (`domain/onboarding.ts`). |
+| D5 | Corrigé | Historique du profil par mois, utilisé par le bilan, le calendrier et l’activité (`domain/history.ts`). |
+| D6 | Corrigé | Sauvegarde chiffrée, restauration depuis les réglages et dès l’accueil d’un nouveau téléphone. |
+| D7 | Restant | Un seul bloc JSON : suffisant pour plusieurs années de saisie (50 000 dépenses relues au plus). À revoir si besoin. |
+| S1 | Corrigé | Verrou enclenché dès l’ouverture, Face ID demandé tout de suite (`ui/LockGate.tsx`). |
+| S2 | Corrigé | Masquage centralisé (`ui/money.tsx`) : tous les écrans, la story comprise ; vérifié par un test de bout en bout. |
+| S3 | Corrigé | `temp_store = MEMORY`, `secure_delete = ON`. |
+| S5 | Restant | Vérification de SQLCipher sur un vrai téléphone (version compilée) : à faire à la main. |
+| C1 | Corrigé | Le grand chiffre est l’argent disponible, prélèvements à venir déduits. |
+| C2 | Corrigé | « Budget dépassé de … », 0 € par jour. |
+| C3 | Corrigé | Projection complétée par le rythme prévu les 7 premiers jours, marquée « estimation ». |
+| C4 | Restant | Budget au mois civil (choix kakeibo) ; « autres revenus » conservés mais pas encore saisissables. |
+| F1 | Corrigé | Activité mois par mois depuis la première dépense, recherche, modification, suppression annulable. |
+| F2 | Corrigé | Calendrier de −24 à +12 mois, bouton « Revenir à aujourd’hui ». |
+| F3 | Corrigé | Bilan de n’importe quel mois, comparaison au même jour avec le mois précédent, dépenses par catégorie. |
+| F4 | Corrigé | Historique des versements, versement du mois, paliers. |
+| F5 | Corrigé | Date jusqu’à 62 jours en arrière, montant inhabituel signalé. |
+| U1 à U5 | Corrigé | Système de design (`theme/tokens.ts`) et composants communs (`ui/kit.tsx`) sur tous les écrans ; icônes Feather ; aplats de couleur ; état de chargement ; confirmations animées. |

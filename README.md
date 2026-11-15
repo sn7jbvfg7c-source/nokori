@@ -30,7 +30,7 @@ npm run e2e        # parcours complets dans la version web : accueil, dépense, 
 | `src/state` | État de l'app et enregistrement automatique |
 | `src/domain/__tests__` | Tests du moteur |
 | `src/theme` | Palettes claire et sombre, contexte de thème, typographie |
-| `src/ui` | Composants : carte du mois, liste des piliers |
+| `src/ui` | Composants communs (`kit.tsx` : boutons, cartes, lignes, puces, onglets, états vides, toasts), carte du mois, piliers, calendrier, verrou, affichage des montants (`money.tsx`) |
 | `src/screens` | Écrans |
 | `e2e` | Captures et tests dans la version web |
 | `store` | Fiches des stores (`texts.js`, `FICHES.md`), captures d’écran et leurs scripts |
@@ -90,4 +90,7 @@ Le chiffrement SQLCipher n'existe pas dans Expo Go : pour tester la vraie app, i
 - [x] 11b : accessibilité : audit automatique de 26 écrans, contrastes renforcés (teintes de 7 mois, vermillon, texte secondaire), noms des boutons, story sans défilement automatique pour VoiceOver/TalkBack et « Réduire les animations », grands chiffres plafonnés
 - [x] 11c : préparation de la bêta : `eas.json` (développement, bêta interne, stores), icône et écran de démarrage 残, permission Internet retirée des versions distribuées sur Android, politique de confidentialité et conditions ([docs/](docs)), guide [docs/BETA.md](docs/BETA.md)
 - [x] 12 : publication préparée : textes des fiches App Store et Google Play (limites vérifiées par un test), fiche App Store envoyée par `eas metadata:push` (`store.config.js`), 6 captures iPhone et Android, image de présentation, page d’assistance, guide [docs/PUBLICATION.md](docs/PUBLICATION.md). App réglée pour iPhone seulement. Une base restaurée par iCloud sans sa clé ne bloque plus l’app
+- [x] 13 : audit complet ([docs/AUDIT.md](docs/AUDIT.md)) et corrections : plus aucun risque d’écrasement des données au démarrage, verrou Face ID au démarrage, montant disponible juste, historique du profil, masquage de tous les montants
+- [x] 14 : sauvegarde chiffrée (phrase secrète, scrypt + AES-256-GCM), restauration depuis les réglages ou dès l’accueil d’un nouveau téléphone
+- [x] 15 : refonte de l’interface (système de design, composants communs, icônes) et nouvelles fonctions : historique complet et recherche, modification d’une dépense, suppression annulable, calendrier libre, bilan comparé et par catégorie, historique des versements
 - [ ] Sortie : comptes, pages publiques, envoi aux stores (à faire par vous, voir docs/PUBLICATION.md)
