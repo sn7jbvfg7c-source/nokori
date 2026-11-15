@@ -41,7 +41,7 @@
     "test": "jest",
     "typecheck": "tsc --noEmit",
     "lint": "expo lint",
-    "e2e": "expo export --platform web --output-dir dist && node e2e/onboarding.e2e.js && node e2e/activity.e2e.js"
+    "e2e": "expo export --platform web --output-dir dist && node e2e/onboarding.e2e.js && node e2e/activity.e2e.js && node e2e/accounts.e2e.js"
   },
   "private": true,
   "jest": {

@@ -2,13 +2,14 @@
  * Sérialisation de l'état. Tout ce qui est relu est vérifié champ par champ :
  * une donnée abîmée ou inattendue est écartée, jamais exécutée ni affichée telle quelle.
  */
+import { MAX_BALANCE, type Account, type AccountKind } from '../domain/accounts';
 import type { ChargeGroup, Expense, FixedCharge, Frequency, Profile } from '../domain/types';
 
 export const STATE_KEY = 'state';
 export const STATE_VERSION = 1;
 
-export interface AppData { profile: Profile | null; expenses: Expense[]; /** suggestions de charges ignorées */ dismissed: string[] }
-export const EMPTY: AppData = { profile: null, expenses: [], dismissed: [] };
+export interface AppData { profile: Profile | null; expenses: Expense[]; /** suggestions de charges ignorées */ dismissed: string[]; accounts: Account[] }
+export const EMPTY: AppData = { profile: null, expenses: [], dismissed: [], accounts: [] };
 
 const GROUPS: ChargeGroup[] = ['logement', 'energie', 'internet', 'assurance', 'sante', 'transports', 'abos', 'sport'];
 const FREQS: Frequency[] = ['mois', '4sem', 'an'];
@@ -39,6 +40,13 @@ function expense(x: unknown): Expense | null {
   return { id: x.id as string, date: x.date as string, label: x.label as string, categoryId: x.categoryId as string, amount: x.amount as number };
 }
 
+const KINDS: AccountKind[] = ['courant', 'livret', 'placement', 'especes'];
+function account(x: unknown): Account | null {
+  if (!isObj(x) || !text(x.id, 64) || !text(x.name) || !KINDS.includes(x.kind as AccountKind) || !isoDate(x.updated)) return null;
+  if (typeof x.balance !== 'number' || !Number.isInteger(x.balance) || Math.abs(x.balance) > MAX_BALANCE) return null;
+  return { id: x.id as string, name: x.name as string, kind: x.kind as AccountKind, balance: x.balance, updated: x.updated as string };
+}
+
 export function decode(raw: string | null): AppData {
   if (!raw || raw.length > 2_000_000) return EMPTY;
   try {
@@ -46,10 +54,11 @@ export function decode(raw: string | null): AppData {
     if (!isObj(j) || j.v !== STATE_VERSION) return EMPTY;
     const expenses = Array.isArray(j.expenses) ? j.expenses.slice(0, 20_000).map(expense).filter((e): e is Expense => e !== null) : [];
     const dismissed = Array.isArray(j.dismissed) ? j.dismissed.filter((k): k is string => typeof k === 'string' && k.length > 0 && k.length <= 64).slice(0, 200) : [];
-    return { profile: j.profile == null ? null : profile(j.profile), expenses, dismissed };
+    const accounts = Array.isArray(j.accounts) ? j.accounts.slice(0, 50).map(account).filter((a): a is Account => a !== null) : [];
+    return { profile: j.profile == null ? null : profile(j.profile), expenses, dismissed, accounts };
   } catch {
     return EMPTY;
   }
 }
 
-export const encode = (d: AppData): string => JSON.stringify({ v: STATE_VERSION, profile: d.profile, expenses: d.expenses, dismissed: d.dismissed });
+export const encode = (d: AppData): string => JSON.stringify({ v: STATE_VERSION, profile: d.profile, expenses: d.expenses, dismissed: d.dismissed, accounts: d.accounts });

@@ -17,14 +17,14 @@ npm run android    # émulateur Android ou Expo Go
 npm test           # tests unitaires (moteur, accueil, données relues)
 npm run typecheck  # vérification des types
 npm run lint       # règles de code
-npm run e2e        # parcours complets dans la version web : accueil, dépense, calendrier, activité (Playwright)
+npm run e2e        # parcours complets dans la version web : accueil, dépense, calendrier, activité, comptes (Playwright)
 ```
 
 ## Organisation
 
 | Dossier | Contenu |
 | --- | --- |
-| `src/app` | Routes (Expo Router) : onglets `(tabs)/index` (budget et calendrier) et `(tabs)/activite`, `accueil`, `depense` (fenêtre de saisie) |
+| `src/app` | Routes (Expo Router) : onglets `(tabs)/index` (budget et calendrier), `(tabs)/activite` et `(tabs)/comptes`, `accueil`, `depense` (fenêtre de saisie) |
 | `src/domain` | Moteur de calcul, sans interface : budget du mois, charges fixes, argent en centimes, couleurs du mois, accueil |
 | `src/data` | Stockage : base SQLite chiffrée (SQLCipher) sur téléphone, validation de tout ce qui est relu |
 | `src/state` | État de l'app et enregistrement automatique |
@@ -57,4 +57,5 @@ Le chiffrement SQLCipher n'existe pas dans Expo Go : pour tester la vraie app, i
 - [x] 4. Saisie d'une dépense : pavé numérique, catégories par pilier, libellé, aujourd'hui ou hier, confirmation avec « Annuler »
 - [x] 5. Calendrier : du mois dernier à dans 3 mois, couleur du mois, charges reportées, paie, dépenses, détail du jour
 - [x] 6. Activité : liste par jour (dépenses et charges passées), filtres par pilier, suppression confirmée, repérage des dépenses régulières ; barre d'onglets
-- [ ] 7 à 12 : voir le cahier des charges, onglet « Plan solo avec agents IA »
+- [x] 7. Comptes saisis à la main : courant, livret, placement, espèces ; solde signé (découvert), date de mise à jour, totaux
+- [ ] 8 à 12 : voir le cahier des charges, onglet « Plan solo avec agents IA »

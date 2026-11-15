@@ -28,6 +28,7 @@ export default function TabsLayout() {
     }}>
       <Tabs.Screen name="index" options={{ title: 'Budget', tabBarIcon: ({ color, size }) => <Feather name="pie-chart" color={String(color)} size={size - 2} /> }} />
       <Tabs.Screen name="activite" options={{ title: 'Activité', tabBarIcon: ({ color, size }) => <Feather name="list" color={String(color)} size={size - 2} /> }} />
+      <Tabs.Screen name="comptes" options={{ title: 'Comptes', tabBarIcon: ({ color, size }) => <Feather name="credit-card" color={String(color)} size={size - 2} /> }} />
     </Tabs>
   );
 }

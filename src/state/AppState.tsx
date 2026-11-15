@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { kv } from '../data/kv';
 import { decode, EMPTY, encode, STATE_KEY, type AppData } from '../data/persist';
+import { upsertAccount, type Account } from '../domain/accounts';
 import { chargeFromSuggestion, labelKey, type Suggestion } from '../domain/recurring';
 import type { Expense, Profile } from '../domain/types';
 
@@ -15,6 +16,8 @@ interface AppState extends AppData {
   lastAdded: Expense | null;
   clearLastAdded(): void;
   dismissSuggestion(key: string): Promise<void>;
+  saveAccount(a: Account): Promise<void>;
+  removeAccount(id: string): Promise<void>;
   /** fait d'une dépense régulière une charge fixe ; la dépense de ce mois est remplacée par la charge */
   acceptSuggestion(s: Suggestion, today: Date): Promise<void>;
   wipeAll(): Promise<void>;
@@ -51,6 +54,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     addExpense: async e => { await commit({ ...latest.current, expenses: [e, ...latest.current.expenses] }); setLastAdded(e); },
     removeExpense: async id => { await commit({ ...latest.current, expenses: latest.current.expenses.filter(x => x.id !== id) }); setLastAdded(l => (l?.id === id ? null : l)); },
     lastAdded, clearLastAdded: () => setLastAdded(null),
+    saveAccount: a => commit({ ...latest.current, accounts: upsertAccount(latest.current.accounts, a) }),
+    removeAccount: id => commit({ ...latest.current, accounts: latest.current.accounts.filter(x => x.id !== id) }),
     dismissSuggestion: key => commit({ ...latest.current, dismissed: [...new Set([...latest.current.dismissed, key])].slice(-200) }),
     acceptSuggestion: async (s, today) => {
       const cur = latest.current;
