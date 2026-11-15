@@ -6,12 +6,15 @@ import { calendarMonth } from '../domain/calendar';
 import { formatEuros, formatEurosRound } from '../domain/money';
 import { capitalize, MONTH_COLORS, MONTH_NAMES } from '../domain/months';
 import type { Expense, Profile } from '../domain/types';
-import { colors, font, tint } from '../theme/tokens';
+import { font, tint } from '../theme/tokens';
+import type { Palette } from '../theme/tokens';
+import { useColors, useStyles } from '../theme/theme';
 
 const DOW = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
 /** Calendrier : du mois dernier à dans 3 mois ; les charges fixes se reportent toutes seules */
 export function CalendarView({ profile, expenses, today }: { profile: Profile; expenses: Expense[]; today: Date }) {
+  const colors = useColors(); const st = useStyles(makeStyles);
   const [offset, setOffset] = useState(0);
   const base = new Date(today.getFullYear(), today.getMonth() + offset, 1);
   const y = base.getFullYear(), m = base.getMonth();
@@ -54,11 +57,11 @@ export function CalendarView({ profile, expenses, today }: { profile: Profile; e
           return (
             <Pressable key={d.d} onPress={() => setSel(s => ({ ...s, [key]: d.d }))} style={st.cell} accessibilityRole="button" accessibilityState={{ selected: on }}
               accessibilityLabel={`${d.d} ${month}${d.charges.length ? `, ${d.charges.length} charge${d.charges.length > 1 ? 's' : ''} fixe${d.charges.length > 1 ? 's' : ''}` : ''}${d.spent ? `, ${formatEuros(d.spent)} dépensés` : ''}`}>
-              <View style={[st.dayBox, { backgroundColor: on ? colors.ink : heat ? tint(col.light, 0.12 + heat * 0.45) : 'rgba(20,20,18,0.03)' }, isToday && !on && { borderWidth: 2, borderColor: col.light }]}>
-                <Text style={[st.dayN, d.future && { color: colors.ink2 }, on && { color: '#fff' }]}>{d.d}</Text>
+              <View style={[st.dayBox, { backgroundColor: on ? colors.btn : heat ? tint(col.light, 0.12 + heat * 0.45) : colors.fill }, isToday && !on && { borderWidth: 2, borderColor: col.light }]}>
+                <Text style={[st.dayN, d.future && { color: colors.ink2 }, on && { color: colors.onBtn }]}>{d.d}</Text>
                 <View style={st.marks}>
-                  {d.charges.slice(0, 3).map(c => <View key={c.id} style={[st.mark, { backgroundColor: on ? '#fff' : colors.vermilion, opacity: d.future ? 0.55 : 1 }]} />)}
-                  {d.income > 0 && <View style={[st.mark, { backgroundColor: on ? '#fff' : colors.teal }]} />}
+                  {d.charges.slice(0, 3).map(c => <View key={c.id} style={[st.mark, { backgroundColor: on ? colors.onBtn : colors.vermilion, opacity: d.future ? 0.55 : 1 }]} />)}
+                  {d.income > 0 && <View style={[st.mark, { backgroundColor: on ? colors.onBtn : colors.teal }]} />}
                 </View>
               </View>
             </Pressable>
@@ -82,6 +85,7 @@ export function CalendarView({ profile, expenses, today }: { profile: Profile; e
 }
 
 function Row({ name, sub, amount, pos }: { name: string; sub: string; amount: string; pos?: boolean }) {
+  const colors = useColors(); const st = useStyles(makeStyles);
   return (
     <View style={st.row}>
       <View style={{ flex: 1 }}><Text style={st.rowName}>{name}</Text>{!!sub && <Text style={st.rowSub}>{sub}</Text>}</View>
@@ -90,7 +94,7 @@ function Row({ name, sub, amount, pos }: { name: string; sub: string; amount: st
   );
 }
 
-const st = StyleSheet.create({
+const makeStyles = (colors: Palette) => StyleSheet.create({
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 16, marginTop: 12 },
   nav: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   navOff: { opacity: 0.35 },

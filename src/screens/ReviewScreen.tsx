@@ -6,12 +6,15 @@ import { formatEurosRound } from '../domain/money';
 import { capitalize, MONTH_COLORS, MONTH_NAMES } from '../domain/months';
 import { cleanNote, monthKey, review } from '../domain/review';
 import type { Expense, Profile } from '../domain/types';
-import { colors, font, pillarColor, tint } from '../theme/tokens';
+import { font, tint } from '../theme/tokens';
+import type { Palette } from '../theme/tokens';
+import { useColors, useStyles } from '../theme/theme';
 import { MonthStory } from '../ui/MonthStory';
 
 interface Props { profile: Profile; expenses: Expense[]; notes: Record<string, string>; today: Date; onSaveNote: (month: string, text: string) => void }
 
 export function ReviewScreen({ profile, expenses, notes, today, onSaveNote }: Props) {
+  const colors = useColors(); const st = useStyles(makeStyles);
   const insets = useSafeAreaInsets();
   const [prev, setPrev] = useState(false);
   const [story, setStory] = useState(false);
@@ -85,7 +88,7 @@ export function ReviewScreen({ profile, expenses, notes, today, onSaveNote }: Pr
           return (
             <View key={p.id} style={[st.pRow, i > 0 && st.sep]}>
               <Text style={st.pName}>{p.name}</Text>
-              <View style={[st.pBar, { backgroundColor: tint(pillarColor[p.id], 0.14) }]}><View style={{ height: 6, borderRadius: 6, width: `${f * 100}%`, backgroundColor: p.spent > p.budget ? colors.vermilion : pillarColor[p.id] }} /></View>
+              <View style={[st.pBar, { backgroundColor: tint(colors.pillar[p.id], 0.14) }]}><View style={{ height: 6, borderRadius: 6, width: `${f * 100}%`, backgroundColor: p.spent > p.budget ? colors.vermilion : colors.pillar[p.id] }} /></View>
               <Text style={st.pVal}>{Math.round((p.budget > 0 ? p.spent / p.budget : 0) * 100)} %</Text>
             </View>
           );
@@ -97,10 +100,10 @@ export function ReviewScreen({ profile, expenses, notes, today, onSaveNote }: Pr
   );
 }
 
-const st = StyleSheet.create({
+const makeStyles = (colors: Palette) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.paper },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16 },
-  switch: { flexDirection: 'row', backgroundColor: 'rgba(20,20,18,0.06)', borderRadius: 99, padding: 3 },
+  switch: { flexDirection: 'row', backgroundColor: colors.fill, borderRadius: 99, padding: 3 },
   sw: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 99 },
   swOn: { backgroundColor: colors.surface },
   swTxt: { fontFamily: font.medium, fontSize: 13, color: colors.ink2 },
@@ -127,9 +130,9 @@ const st = StyleSheet.create({
   qn: { fontFamily: font.semibold, fontSize: 12, color: colors.vermilion, width: 14 },
   q: { flex: 1, fontFamily: font.regular, fontSize: 15, color: colors.ink },
   qv: { fontFamily: font.semibold, fontSize: 15, color: colors.ink },
-  note: { minWidth: 0, width: '100%', minHeight: 70, marginTop: 10, borderRadius: 12, backgroundColor: 'rgba(20,20,18,0.04)', padding: 10, fontFamily: font.regular, fontSize: 15, color: colors.ink, textAlignVertical: 'top' },
-  saveNote: { alignSelf: 'flex-end', marginTop: 8, paddingHorizontal: 14, height: 36, borderRadius: 10, backgroundColor: colors.ink, justifyContent: 'center' },
-  saveNoteTxt: { color: '#fff', fontFamily: font.semibold, fontSize: 13 },
+  note: { minWidth: 0, width: '100%', minHeight: 70, marginTop: 10, borderRadius: 12, backgroundColor: colors.fill, padding: 10, fontFamily: font.regular, fontSize: 15, color: colors.ink, textAlignVertical: 'top' },
+  saveNote: { alignSelf: 'flex-end', marginTop: 8, paddingHorizontal: 14, height: 36, borderRadius: 10, backgroundColor: colors.btn, justifyContent: 'center' },
+  saveNoteTxt: { color: colors.onBtn, fontFamily: font.semibold, fontSize: 13 },
   count: { fontFamily: font.regular, fontSize: 11.5, color: colors.ink3, textAlign: 'right', marginTop: 4 },
   pRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 13 },
   pName: { width: 80, fontFamily: font.medium, fontSize: 14, color: colors.ink },

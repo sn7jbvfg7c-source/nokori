@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { kv } from '../data/kv';
-import { decode, EMPTY, encode, STATE_KEY, type AppData } from '../data/persist';
+import { decode, EMPTY, encode, STATE_KEY, type AppData, type Prefs } from '../data/persist';
 import { upsertAccount, type Account } from '../domain/accounts';
 import type { Goal } from '../domain/goals';
 import { chargeFromSuggestion, labelKey, type Suggestion } from '../domain/recurring';
@@ -20,6 +20,7 @@ interface AppState extends AppData {
   saveAccount(a: Account): Promise<void>;
   saveGoal(g: Goal): Promise<void>;
   saveNote(month: string, text: string): Promise<void>;
+  savePrefs(p: Partial<Prefs>): Promise<void>;
   removeGoal(id: string): Promise<void>;
   removeAccount(id: string): Promise<void>;
   /** fait d'une dépense régulière une charge fixe ; la dépense de ce mois est remplacée par la charge */
@@ -58,6 +59,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     addExpense: async e => { await commit({ ...latest.current, expenses: [e, ...latest.current.expenses] }); setLastAdded(e); },
     removeExpense: async id => { await commit({ ...latest.current, expenses: latest.current.expenses.filter(x => x.id !== id) }); setLastAdded(l => (l?.id === id ? null : l)); },
     lastAdded, clearLastAdded: () => setLastAdded(null),
+    savePrefs: patch => commit({ ...latest.current, prefs: { ...latest.current.prefs, ...patch } }),
     saveNote: (month, text) => { if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) return Promise.resolve(); const notes = { ...latest.current.notes }; if (text.trim()) notes[month] = text.slice(0, 280); else delete notes[month]; return commit({ ...latest.current, notes }); },
     saveGoal: g => { const l = latest.current.goals; const i = l.findIndex(x => x.id === g.id); return commit({ ...latest.current, goals: i >= 0 ? l.map(x => (x.id === g.id ? g : x)) : l.length >= 30 ? l : [...l, g] }); },
     removeGoal: id => commit({ ...latest.current, goals: latest.current.goals.filter(x => x.id !== id) }),

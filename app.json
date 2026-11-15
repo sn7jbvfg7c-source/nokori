@@ -32,7 +32,14 @@
         {
           "useSQLCipher": true
         }
-      ]
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Nokori utilise Face ID pour protéger vos données budgétaires."
+        }
+      ],
+      "expo-notifications"
     ],
     "scheme": "nokori"
   }

@@ -17,19 +17,19 @@ npm run android    # émulateur Android ou Expo Go
 npm test           # tests unitaires (moteur, accueil, données relues)
 npm run typecheck  # vérification des types
 npm run lint       # règles de code
-npm run e2e        # parcours complets dans la version web : accueil, dépense, calendrier, activité, comptes, objectifs, bilan (Playwright)
+npm run e2e        # parcours complets dans la version web : accueil, dépense, calendrier, activité, comptes, objectifs, bilan, réglages (Playwright)
 ```
 
 ## Organisation
 
 | Dossier | Contenu |
 | --- | --- |
-| `src/app` | Routes (Expo Router) : onglets `(tabs)/index` (budget et calendrier), `(tabs)/activite`, `(tabs)/comptes`, `(tabs)/objectifs` et `(tabs)/bilan`, `accueil`, `depense` (fenêtre de saisie) |
+| `src/app` | Routes (Expo Router) : onglets `(tabs)/index` (budget et calendrier), `(tabs)/activite`, `(tabs)/comptes`, `(tabs)/objectifs` et `(tabs)/bilan`, `accueil`, `depense` et `reglages` (fenêtres) |
 | `src/domain` | Moteur de calcul, sans interface : budget du mois, charges fixes, argent en centimes, couleurs du mois, accueil |
 | `src/data` | Stockage : base SQLite chiffrée (SQLCipher) sur téléphone, validation de tout ce qui est relu |
 | `src/state` | État de l'app et enregistrement automatique |
 | `src/domain/__tests__` | Tests du moteur |
-| `src/theme` | Couleurs et typographie du prototype |
+| `src/theme` | Palettes claire et sombre, contexte de thème, typographie |
 | `src/ui` | Composants : carte du mois, liste des piliers |
 | `src/screens` | Écrans |
 | `e2e` | Captures et tests dans la version web |
@@ -42,6 +42,10 @@ npm run e2e        # parcours complets dans la version web : accueil, dépense, 
 - Aucune donnée ne quitte le téléphone dans la version 1.
 - Base chiffrée par SQLCipher, clé aléatoire de 256 bits dans le trousseau, liée à l'appareil. L'app publiée refuse d'écrire si le chiffrement est absent.
 - Tout ce qui est relu du stockage est validé champ par champ.
+
+## Fonctions natives
+
+Le verrouillage Face ID et les rappels n'existent pas dans le navigateur : ils sont indiqués « indisponibles » dans la version web et se testent sur une version de développement.
 
 ## Tester sur un téléphone
 
@@ -60,4 +64,5 @@ Le chiffrement SQLCipher n'existe pas dans Expo Go : pour tester la vraie app, i
 - [x] 7. Comptes saisis à la main : courant, livret, placement, espèces ; solde signé (découvert), date de mise à jour, totaux
 - [x] 8. Objectifs : montant visé, déjà épargné, versement mensuel, versements notés, date d'arrivée (et variante avec le reste du mois) ; défis semaine sans envies et série sous le budget du jour
 - [x] 9. Bilan : mois en cours et mois précédent, épargné, répartition, quatre questions, note « comment faire mieux » par mois, piliers ; story du mois clos en 5 écrans
-- [ ] 10 à 12 : voir le cahier des charges, onglet « Plan solo avec agents IA »
+- [x] 10. Réglages : thème auto, clair ou sombre (palettes vérifiées WCAG AA), masquer les montants, verrouillage Face ID, rappels locaux 3 jours avant chaque charge (sans montant), tout effacer
+- [ ] 11 et 12 : contrôles (sécurité, accessibilité, bêta) et publication

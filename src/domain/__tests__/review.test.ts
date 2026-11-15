@@ -1,4 +1,4 @@
-import { decode, encode } from '../../data/persist';
+import { decode, DEFAULT_PREFS as EMPTY_PREFS, encode } from '../../data/persist';
 import { cleanNote, monthKey, review } from '../review';
 import type { Expense, Profile } from '../types';
 
@@ -38,7 +38,7 @@ describe('bilan', () => {
     expect(cleanNote('ligne 1\nligne 2')).toBe('ligne 1\nligne 2');
   });
   test('relecture des notes : clés et longueurs validées', () => {
-    const d = decode(encode({ profile: null, expenses: [], dismissed: [], accounts: [], goals: [], notes: { '2026-10': 'Moins de livraisons' } }));
+    const d = decode(encode({ profile: null, expenses: [], dismissed: [], accounts: [], goals: [], notes: { '2026-10': 'Moins de livraisons' }, prefs: EMPTY_PREFS }));
     expect(d.notes).toEqual({ '2026-10': 'Moins de livraisons' });
     const bad = JSON.stringify({ v: 1, notes: { '2026-10': 'ok', hack: 'x', '2026-11': 'a'.repeat(500), __proto__: { polluted: 1 }, '2026-12': 42 } });
     expect(decode(bad).notes).toEqual({ '2026-10': 'ok' });

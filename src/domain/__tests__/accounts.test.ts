@@ -1,4 +1,4 @@
-import { decode, encode } from '../../data/persist';
+import { decode, DEFAULT_PREFS as EMPTY_PREFS, encode } from '../../data/persist';
 import { parseBalance, totals, upsertAccount, type Account } from '../accounts';
 
 const cc: Account = { id: 'a', name: 'Compte courant', kind: 'courant', balance: 96433, updated: '2026-11-14' };
@@ -29,7 +29,7 @@ describe('comptes', () => {
     expect(upsertAccount(many, { ...cc, id: 'x' })).toHaveLength(50);
   });
   test('relecture : comptes valides gardés, comptes abîmés écartés', () => {
-    const raw = encode({ profile: null, expenses: [], dismissed: [], accounts: [cc, la], goals: [], notes: {} });
+    const raw = encode({ profile: null, expenses: [], dismissed: [], accounts: [cc, la], goals: [], notes: {}, prefs: EMPTY_PREFS });
     expect(decode(raw).accounts).toEqual([cc, la]);
     const bad = JSON.stringify({ v: 1, profile: null, expenses: [], dismissed: [], accounts: [cc, { id: 'z', name: '', kind: 'crypto', balance: 1e15, updated: 'hier' }, 'texte'] });
     expect(decode(bad).accounts).toEqual([cc]);

@@ -13,6 +13,7 @@
     "expo-linear-gradient": "~58.0.4",
     "expo-linking": "~58.0.17",
     "expo-local-authentication": "~58.0.3",
+    "expo-notifications": "~58.1.9",
     "expo-router": "~58.0.31",
     "expo-secure-store": "~58.0.3",
     "expo-sqlite": "~58.0.17",
@@ -41,7 +42,7 @@
     "test": "jest",
     "typecheck": "tsc --noEmit",
     "lint": "expo lint",
-    "e2e": "expo export --platform web --output-dir dist && node e2e/onboarding.e2e.js && node e2e/activity.e2e.js && node e2e/accounts.e2e.js && node e2e/goals.e2e.js && node e2e/review.e2e.js"
+    "e2e": "expo export --platform web --output-dir dist && node e2e/onboarding.e2e.js && node e2e/activity.e2e.js && node e2e/accounts.e2e.js && node e2e/goals.e2e.js && node e2e/review.e2e.js && node e2e/settings.e2e.js"
   },
   "private": true,
   "jest": {

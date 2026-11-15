@@ -3,13 +3,13 @@ import { BudgetScreen } from '../../screens/BudgetScreen';
 import { useAppState } from '../../state/AppState';
 
 export default function Home() {
-  const { profile, expenses, lastAdded, removeExpense, clearLastAdded } = useAppState();
+  const { profile, expenses, prefs, lastAdded, removeExpense, clearLastAdded } = useAppState();
   const router = useRouter();
   if (!profile) return null; // le garde de la barre d'onglets redirige déjà vers l'accueil
   return (
     <BudgetScreen
       profile={profile} expenses={expenses} today={new Date()}
-      onEdit={() => router.push('/accueil')} onAdd={() => router.push('/depense')}
+      onEdit={() => router.push('/accueil')} onAdd={() => router.push('/depense')} onSettings={() => router.push('/reglages')} hideAmounts={prefs.hideAmounts}
       lastAdded={lastAdded} onUndo={id => removeExpense(id)} onDismiss={clearLastAdded}
     />
   );

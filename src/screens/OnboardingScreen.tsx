@@ -5,7 +5,9 @@ import { GROUP_NAME } from '../domain/charges';
 import { formatEuros, formatEurosRound, parseEuros } from '../domain/money';
 import { buildProfile, cleanName, draftFromProfile, emptyDraft, PAYDAYS, SAVE_STEPS, searchCatalog, summary, type CatalogItem, type Draft, type DraftCharge } from '../domain/onboarding';
 import type { ChargeGroup, Frequency, Profile } from '../domain/types';
-import { colors, font } from '../theme/tokens';
+import { font } from '../theme/tokens';
+import type { Palette } from '../theme/tokens';
+import { useColors, useStyles } from '../theme/theme';
 
 const STEPS = 5;
 const GROUPS = Object.keys(GROUP_NAME) as ChargeGroup[];
@@ -14,6 +16,7 @@ const freqText = (c: DraftCharge) => (c.freq === '4sem' ? `toutes les 4 semaines
 
 /** Champ montant : garde le texte tapé, remonte les centimes (ou null si invalide) */
 function AmountInput({ value, onChange, label, big }: { value: number | null; onChange: (c: number | null) => void; label: string; big?: boolean }) {
+  const colors = useColors(); const st = useStyles(makeStyles);
   const [txt, setTxt] = useState(value === null ? '' : formatEuros(value).replace(/ €$/, '').replace(/ /g, ' '));
   const bad = txt.trim() !== '' && parseEuros(txt) === null;
   return (
@@ -33,6 +36,7 @@ function AmountInput({ value, onChange, label, big }: { value: number | null; on
 }
 
 function Stepper({ value, onChange, min = 1, max = 31, label }: { value: number; onChange: (n: number) => void; min?: number; max?: number; label: string }) {
+  const st = useStyles(makeStyles);
   return (
     <View style={st.stepper}>
       <Pressable style={st.stepBtn} onPress={() => onChange(Math.max(min, value - 1))} accessibilityRole="button" accessibilityLabel={`${label} : jour précédent`}><Text style={st.stepTxt}>−</Text></Pressable>
@@ -43,6 +47,7 @@ function Stepper({ value, onChange, min = 1, max = 31, label }: { value: number;
 }
 
 function Chips<T extends string | number>({ items, value, onChange }: { items: [T, string][]; value: T | null; onChange: (v: T) => void }) {
+  const st = useStyles(makeStyles);
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={st.chips}>
       {items.map(([v, l]) => (
@@ -55,6 +60,7 @@ function Chips<T extends string | number>({ items, value, onChange }: { items: [
 }
 
 function ChargeEditor({ c, set, remove }: { c: DraftCharge; set: (p: Partial<DraftCharge>) => void; remove: () => void }) {
+  const st = useStyles(makeStyles);
   return (
     <View style={st.editor}>
       <View style={st.edRow}><Text style={st.edLbl}>Montant</Text><View style={{ width: 150 }}><AmountInput value={c.amount} onChange={a => set({ amount: a })} label={`Montant ${c.name}`} /></View></View>
@@ -72,6 +78,7 @@ function ChargeEditor({ c, set, remove }: { c: DraftCharge; set: (p: Partial<Dra
 }
 
 function ChargesStep({ draft, setDraft }: { draft: Draft; setDraft: (f: (d: Draft) => Draft) => void }) {
+  const colors = useColors(); const st = useStyles(makeStyles);
   const [q, setQ] = useState('');
   const [group, setGroup] = useState<ChargeGroup | null>(null);
   const [open, setOpen] = useState<string | null>(null);
@@ -130,7 +137,7 @@ function ChargesStep({ draft, setDraft }: { draft: Draft; setDraft: (f: (d: Draf
             <Pressable
               style={[st.small, st.smallDark, { flex: 1 }, !manual.name.trim() && { opacity: 0.4 }]} disabled={!manual.name.trim()} accessibilityRole="button" accessibilityLabel="Ajouter la charge"
               onPress={() => { const id = `perso-${Date.now()}`; setDraft(d => ({ ...d, charges: [...d.charges, { id, name: manual.name.trim(), group: manual.group, amount: manual.amount, day: manual.day, freq: 'mois', custom: true }] })); setManual(null); setOpen(id); }}>
-              <Text style={[st.smallTxt, { color: '#fff' }]}>Ajouter</Text>
+              <Text style={[st.smallTxt, { color: colors.onBtn }]}>Ajouter</Text>
             </Pressable>
           </View>
         </View>
@@ -148,6 +155,7 @@ function ChargesStep({ draft, setDraft }: { draft: Draft; setDraft: (f: (d: Draf
 }
 
 export function OnboardingScreen({ initial, onDone }: { initial: Profile | null; onDone: (p: Profile) => void }) {
+  const colors = useColors(); const st = useStyles(makeStyles);
   const insets = useSafeAreaInsets();
   const [step, setStep] = useState(0);
   const [draft, setDraftState] = useState<Draft>(() => (initial ? draftFromProfile(initial) : emptyDraft()));
@@ -223,12 +231,12 @@ export function OnboardingScreen({ initial, onDone }: { initial: Profile | null;
   );
 }
 
-const st = StyleSheet.create({
+const makeStyles = (colors: Palette) => StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16 },
-  back: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(20,20,18,0.06)', alignItems: 'center', justifyContent: 'center' },
+  back: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.fill, alignItems: 'center', justifyContent: 'center' },
   backTxt: { fontSize: 24, lineHeight: 26, color: colors.ink },
   prog: { flex: 1, flexDirection: 'row', gap: 4 },
-  progSeg: { flex: 1, height: 4, borderRadius: 4, backgroundColor: 'rgba(20,20,18,0.1)' },
+  progSeg: { flex: 1, height: 4, borderRadius: 4, backgroundColor: colors.fill2 },
   progOn: { backgroundColor: colors.vermilion },
   skip: { fontFamily: font.semibold, fontSize: 14, color: colors.ink2 },
   body: { padding: 24, paddingBottom: 40, width: '100%', maxWidth: 520, alignSelf: 'center' },
@@ -240,51 +248,51 @@ const st = StyleSheet.create({
   p: { fontFamily: font.regular, fontSize: 15, lineHeight: 22, color: colors.ink2 },
   note: { fontFamily: font.medium, fontSize: 14, color: colors.ink, backgroundColor: 'rgba(188,68,35,0.08)', borderRadius: 14, padding: 12, marginTop: 16 },
   err: { fontFamily: font.medium, fontSize: 13, color: colors.vermilion, marginTop: 6 },
-  amountRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: 14, paddingHorizontal: 12, height: 46, borderWidth: 1.5, borderColor: 'rgba(20,20,18,0.14)' },
+  amountRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: 14, paddingHorizontal: 12, height: 46, borderWidth: 1.5, borderColor: colors.fill2 },
   amountBig: { height: 80, marginTop: 20, borderRadius: 20 },
   amountInput: { flex: 1, minWidth: 0, width: '100%', fontFamily: font.semibold, fontSize: 18, color: colors.ink, textAlign: 'right' },
   amountInputBig: { fontSize: 40, letterSpacing: -1.5 },
   euro: { fontFamily: font.semibold, fontSize: 18, color: colors.ink2, marginLeft: 6 },
   euroBig: { fontSize: 32 },
   chips: { gap: 6, paddingVertical: 10 },
-  chip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 99, backgroundColor: 'rgba(20,20,18,0.06)' },
-  chipOn: { backgroundColor: colors.ink },
+  chip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 99, backgroundColor: colors.fill },
+  chipOn: { backgroundColor: colors.btn },
   chipTxt: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
-  chipTxtOn: { color: '#fff' },
+  chipTxtOn: { color: colors.onBtn },
   bigVal: { fontFamily: font.semibold, fontSize: 56, letterSpacing: -2.5, color: colors.ink, textAlign: 'center', marginTop: 24 },
-  search: { minWidth: 0, width: '100%', backgroundColor: colors.surface, borderRadius: 14, paddingHorizontal: 14, height: 46, borderWidth: 1.5, borderColor: 'rgba(20,20,18,0.14)', fontFamily: font.regular, fontSize: 16, color: colors.ink, marginTop: 14 },
+  search: { minWidth: 0, width: '100%', backgroundColor: colors.surface, borderRadius: 14, paddingHorizontal: 14, height: 46, borderWidth: 1.5, borderColor: colors.fill2, fontFamily: font.regular, fontSize: 16, color: colors.ink, marginTop: 14 },
   list: { backgroundColor: colors.surface, borderRadius: 20, paddingHorizontal: 12, marginTop: 6 },
   rowWrap: { borderBottomWidth: 1, borderBottomColor: colors.hair },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
-  rowIcon: { width: 36, height: 36, borderRadius: 11, backgroundColor: 'rgba(20,20,18,0.05)', alignItems: 'center', justifyContent: 'center' },
+  rowIcon: { width: 36, height: 36, borderRadius: 11, backgroundColor: colors.fill, alignItems: 'center', justifyContent: 'center' },
   rowIconTxt: { fontFamily: font.semibold, fontSize: 15, color: colors.ink },
   rowName: { fontFamily: font.semibold, fontSize: 15, color: colors.ink },
   rowSub: { fontFamily: font.regular, fontSize: 12.5, color: colors.ink2, marginTop: 1 },
-  tg: { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(20,20,18,0.06)', alignItems: 'center', justifyContent: 'center' },
+  tg: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.fill, alignItems: 'center', justifyContent: 'center' },
   tgOn: { backgroundColor: colors.vermilion },
   tgTxt: { fontFamily: font.semibold, fontSize: 17, color: colors.ink },
   editor: { marginLeft: 48, marginBottom: 12, backgroundColor: 'rgba(188,68,35,0.06)', borderRadius: 16, padding: 12, gap: 10 },
   edRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
   edLbl: { fontFamily: font.regular, fontSize: 14, color: colors.ink2 },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  stepBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: 'rgba(20,20,18,0.14)', alignItems: 'center', justifyContent: 'center' },
+  stepBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.fill2, alignItems: 'center', justifyContent: 'center' },
   stepTxt: { fontSize: 18, color: colors.ink },
   stepVal: { fontFamily: font.bold, fontSize: 16, color: colors.ink, minWidth: 22, textAlign: 'center' },
-  seg: { flexDirection: 'row', backgroundColor: 'rgba(20,20,18,0.06)', borderRadius: 12, padding: 3 },
+  seg: { flexDirection: 'row', backgroundColor: colors.fill, borderRadius: 12, padding: 3 },
   segBtn: { flex: 1, paddingVertical: 8, borderRadius: 9, alignItems: 'center' },
   segOn: { backgroundColor: colors.surface },
   segTxt: { fontFamily: font.semibold, fontSize: 13, color: colors.ink2 },
   segTxtOn: { color: colors.ink },
   remove: { fontFamily: font.semibold, fontSize: 13, color: colors.vermilion },
-  addman: { marginTop: 12, height: 48, borderRadius: 16, borderWidth: 1.5, borderStyle: 'dashed', borderColor: 'rgba(20,20,18,0.2)', alignItems: 'center', justifyContent: 'center' },
+  addman: { marginTop: 12, height: 48, borderRadius: 16, borderWidth: 1.5, borderStyle: 'dashed', borderColor: colors.fill2, alignItems: 'center', justifyContent: 'center' },
   addmanTxt: { fontFamily: font.semibold, fontSize: 15, color: colors.ink },
-  small: { height: 44, borderRadius: 12, backgroundColor: 'rgba(20,20,18,0.06)', alignItems: 'center', justifyContent: 'center' },
-  smallDark: { backgroundColor: colors.ink },
+  small: { height: 44, borderRadius: 12, backgroundColor: colors.fill, alignItems: 'center', justifyContent: 'center' },
+  smallDark: { backgroundColor: colors.btn },
   smallTxt: { fontFamily: font.semibold, fontSize: 14, color: colors.ink },
   total: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 },
   totalVal: { fontFamily: font.bold, fontSize: 18, color: colors.ink },
   sumRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 14, paddingHorizontal: 4 },
   perDay: { alignItems: 'center', marginTop: 24 },
-  go: { marginHorizontal: 16, height: 56, borderRadius: 18, backgroundColor: colors.ink, alignItems: 'center', justifyContent: 'center' },
-  goTxt: { fontFamily: font.semibold, fontSize: 16, color: '#fff' },
+  go: { marginHorizontal: 16, height: 56, borderRadius: 18, backgroundColor: colors.btn, alignItems: 'center', justifyContent: 'center' },
+  goTxt: { fontFamily: font.semibold, fontSize: 16, color: colors.onBtn },
 });

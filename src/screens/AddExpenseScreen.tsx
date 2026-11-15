@@ -7,12 +7,15 @@ import { KEYS, press, toCents } from '../domain/keypad';
 import { formatEuros } from '../domain/money';
 import { cleanName } from '../domain/onboarding';
 import type { Expense } from '../domain/types';
-import { colors, font, pillarColor, tint } from '../theme/tokens';
+import { font, tint, onColor } from '../theme/tokens';
+import type { Palette } from '../theme/tokens';
+import { useColors, useStyles } from '../theme/theme';
 
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 /** Saisie d'une dépense : montant au pavé, catégorie rangée par pilier, libellé facultatif, aujourd'hui ou hier */
 export function AddExpenseScreen({ today, onSave, onClose }: { today: Date; onSave: (e: Expense) => void; onClose: () => void }) {
+  const colors = useColors(); const st = useStyles(makeStyles);
   const insets = useSafeAreaInsets();
   const [amount, setAmount] = useState('0');
   const [cat, setCat] = useState<string | null>(null);
@@ -38,14 +41,14 @@ export function AddExpenseScreen({ today, onSave, onClose }: { today: Date; onSa
       <ScrollView style={{ flexGrow: 0 }} contentContainerStyle={st.groups}>
         {PILLARS.map(pl => (
           <View key={pl.id} style={st.group}>
-            <View style={[st.dot, { backgroundColor: pillarColor[pl.id] }]} />
+            <View style={[st.dot, { backgroundColor: colors.pillar[pl.id] }]} />
             <View style={st.catRow}>
               {CATEGORIES.filter(c => c.pillar === pl.id).map(c => {
                 const on = cat === c.id;
                 return (
                   <Pressable key={c.id} onPress={() => setCat(c.id)} accessibilityRole="button" accessibilityState={{ selected: on }} accessibilityLabel={`${c.name}, ${pl.name}`}
-                    style={[st.cat, { backgroundColor: on ? pillarColor[pl.id] : tint(pillarColor[pl.id], 0.12) }]}>
-                    <Text style={[st.catTxt, on && { color: '#fff' }]}>{c.name}</Text>
+                    style={[st.cat, { backgroundColor: on ? colors.pillar[pl.id] : tint(colors.pillar[pl.id], 0.12) }]}>
+                    <Text style={[st.catTxt, on && { color: onColor(colors.pillar[pl.id]) }]}>{c.name}</Text>
                   </Pressable>
                 );
               })}
@@ -58,30 +61,30 @@ export function AddExpenseScreen({ today, onSave, onClose }: { today: Date; onSa
         <View style={st.days}>
           {([[false, 'Aujourd’hui'], [true, 'Hier']] as [boolean, string][]).map(([v, l]) => (
             <Pressable key={l} onPress={() => setYesterday(v)} style={[st.day, yesterday === v && st.dayOn]} accessibilityRole="button" accessibilityState={{ selected: yesterday === v }}>
-              <Text style={[st.dayTxt, yesterday === v && { color: '#fff' }]}>{l}</Text>
+              <Text style={[st.dayTxt, yesterday === v && { color: colors.onBtn }]}>{l}</Text>
             </Pressable>
           ))}
         </View>
       </View>
       <View style={st.keys}>
         {KEYS.map(k => (
-          <Pressable key={k} onPress={() => setAmount(a => press(a, k))} style={({ pressed }) => [st.key, pressed && { backgroundColor: 'rgba(20,20,18,0.08)' }]} accessibilityRole="button" accessibilityLabel={k === '⌫' ? 'Effacer' : k === ',' ? 'Virgule' : k}>
+          <Pressable key={k} onPress={() => setAmount(a => press(a, k))} style={({ pressed }) => [st.key, pressed && { backgroundColor: colors.fill }]} accessibilityRole="button" accessibilityLabel={k === '⌫' ? 'Effacer' : k === ',' ? 'Virgule' : k}>
             <Text style={st.keyTxt}>{k}</Text>
           </Pressable>
         ))}
       </View>
-      <Pressable onPress={save} disabled={!ok} style={[st.go, { backgroundColor: category ? pillarColor[category.pillar] : colors.ink }, !ok && { opacity: 0.35 }]} accessibilityRole="button" accessibilityLabel="Ajouter la dépense">
-        <Text style={st.goTxt}>{ok && category ? `Ajouter ${formatEuros(cents)} en ${PILLARS.find(p => p.id === category.pillar)!.name}` : 'Ajouter'}</Text>
+      <Pressable onPress={save} disabled={!ok} style={[st.go, { backgroundColor: category ? colors.pillar[category.pillar] : colors.btn }, !ok && { opacity: 0.35 }]} accessibilityRole="button" accessibilityLabel="Ajouter la dépense">
+        <Text style={[st.goTxt, { color: category ? onColor(colors.pillar[category.pillar]) : colors.onBtn }]}>{ok && category ? `Ajouter ${formatEuros(cents)} en ${PILLARS.find(p => p.id === category.pillar)!.name}` : 'Ajouter'}</Text>
       </Pressable>
     </View>
   );
 }
 
-const st = StyleSheet.create({
+const makeStyles = (colors: Palette) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.surface, paddingHorizontal: 20 },
   head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   title: { fontFamily: font.semibold, fontSize: 18, color: colors.ink },
-  close: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(20,20,18,0.06)', alignItems: 'center', justifyContent: 'center' },
+  close: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.fill, alignItems: 'center', justifyContent: 'center' },
   closeTxt: { fontSize: 22, lineHeight: 24, color: colors.ink },
   amount: { fontFamily: font.semibold, fontSize: 60, letterSpacing: -2.8, color: colors.ink, textAlign: 'center', marginTop: 8 },
   cur: { fontSize: 34, color: colors.ink2, letterSpacing: 0 },
@@ -92,10 +95,10 @@ const st = StyleSheet.create({
   cat: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 99 },
   catTxt: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
   meta: { flexDirection: 'row', gap: 8, alignItems: 'center', marginTop: 4 },
-  label: { flex: 1, minWidth: 0, height: 42, borderRadius: 12, backgroundColor: 'rgba(20,20,18,0.05)', paddingHorizontal: 12, fontFamily: font.regular, fontSize: 15, color: colors.ink },
+  label: { flex: 1, minWidth: 0, height: 42, borderRadius: 12, backgroundColor: colors.fill, paddingHorizontal: 12, fontFamily: font.regular, fontSize: 15, color: colors.ink },
   days: { flexDirection: 'row', gap: 4 },
-  day: { paddingHorizontal: 10, height: 42, borderRadius: 12, backgroundColor: 'rgba(20,20,18,0.05)', justifyContent: 'center' },
-  dayOn: { backgroundColor: colors.ink },
+  day: { paddingHorizontal: 10, height: 42, borderRadius: 12, backgroundColor: colors.fill, justifyContent: 'center' },
+  dayOn: { backgroundColor: colors.btn },
   dayTxt: { fontFamily: font.medium, fontSize: 13, color: colors.ink },
   keys: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 10, flex: 1, alignContent: 'flex-end' },
   key: { width: '33.33%', height: 54, alignItems: 'center', justifyContent: 'center', borderRadius: 14 },

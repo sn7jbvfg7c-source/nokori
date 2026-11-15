@@ -6,7 +6,9 @@ import { PILLARS } from '../domain/budget';
 import { formatEuros } from '../domain/money';
 import { detectRecurring, type Suggestion } from '../domain/recurring';
 import type { Expense, PillarId, Profile } from '../domain/types';
-import { colors, font, pillarColor, tint } from '../theme/tokens';
+import { font, tint, onColor } from '../theme/tokens';
+import type { Palette } from '../theme/tokens';
+import { useColors, useStyles } from '../theme/theme';
 
 interface Props {
   profile: Profile; expenses: Expense[]; dismissed: string[]; today: Date;
@@ -14,6 +16,7 @@ interface Props {
 }
 
 export function ActivityScreen({ profile, expenses, dismissed, today, onAdd, onDelete, onIgnore, onAccept }: Props) {
+  const colors = useColors(); const st = useStyles(makeStyles);
   const insets = useSafeAreaInsets();
   const [filter, setFilter] = useState<PillarId | null>(null);
   const [open, setOpen] = useState<string | null>(null);
@@ -42,8 +45,8 @@ export function ActivityScreen({ profile, expenses, dismissed, today, onAdd, onD
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={st.filters}>
         {([[null, 'Tout'], ...PILLARS.map(p => [p.id, p.name])] as [PillarId | null, string][]).map(([id, name]) => (
-          <Pressable key={name} onPress={() => setFilter(id)} style={[st.f, filter === id && { backgroundColor: id ? pillarColor[id] : colors.ink }]} accessibilityRole="button" accessibilityState={{ selected: filter === id }}>
-            <Text style={[st.fTxt, filter === id && { color: '#fff' }]}>{name}</Text>
+          <Pressable key={name} onPress={() => setFilter(id)} style={[st.f, filter === id && { backgroundColor: id ? colors.pillar[id] : colors.btn }]} accessibilityRole="button" accessibilityState={{ selected: filter === id }}>
+            <Text style={[st.fTxt, filter === id && { color: id ? onColor(colors.pillar[id]) : colors.onBtn }]}>{name}</Text>
           </Pressable>
         ))}
       </ScrollView>
@@ -56,7 +59,7 @@ export function ActivityScreen({ profile, expenses, dismissed, today, onAdd, onD
               <View key={i.key} style={n > 0 && st.sep}>
                 <Pressable style={st.row} onPress={() => { if (i.kind === 'depense') { setOpen(open === i.key ? null : i.key); setConfirm(null); } }}
                   accessibilityRole={i.kind === 'depense' ? 'button' : undefined} accessibilityLabel={`${i.label}, ${i.sub}, ${formatEuros(i.amount)}`}>
-                  <View style={[st.chip, { backgroundColor: tint(pillarColor[i.pillar], 0.12) }]}><Text style={[st.chipTxt, { color: pillarColor[i.pillar] }]}>{i.label.charAt(0).toUpperCase()}</Text></View>
+                  <View style={[st.chip, { backgroundColor: tint(colors.pillar[i.pillar], 0.12) }]}><Text style={[st.chipTxt, { color: colors.pillar[i.pillar] }]}>{i.label.charAt(0).toUpperCase()}</Text></View>
                   <View style={{ flex: 1 }}>
                     <Text style={st.name} numberOfLines={1}>{i.label}</Text>
                     <Text style={st.sub}>{i.sub}</Text>
@@ -86,12 +89,12 @@ export function ActivityScreen({ profile, expenses, dismissed, today, onAdd, onD
   );
 }
 
-const st = StyleSheet.create({
+const makeStyles = (colors: Palette) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.paper },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20 },
   title: { fontFamily: font.semibold, fontSize: 17, color: colors.ink },
-  add: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.ink, alignItems: 'center', justifyContent: 'center' },
-  plus: { color: '#fff', fontSize: 24, lineHeight: 26, fontFamily: font.medium },
+  add: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.btn, alignItems: 'center', justifyContent: 'center' },
+  plus: { color: colors.onBtn, fontSize: 24, lineHeight: 26, fontFamily: font.medium },
   sugg: { margin: 16, marginBottom: 4, borderRadius: 22, padding: 16, backgroundColor: 'rgba(188,68,35,0.07)', borderWidth: 1.5, borderColor: 'rgba(188,68,35,0.25)' },
   suggHead: { fontFamily: font.semibold, fontSize: 12.5, color: colors.vermilion, textTransform: 'uppercase', letterSpacing: 0.6 },
   suggName: { fontFamily: font.semibold, fontSize: 18, color: colors.ink, marginTop: 6 },
@@ -102,7 +105,7 @@ const st = StyleSheet.create({
   sbDark: { backgroundColor: colors.vermilion, flex: 1 },
   sbTxt: { fontFamily: font.semibold, fontSize: 14, color: colors.ink },
   filters: { gap: 6, paddingHorizontal: 16, paddingVertical: 12 },
-  f: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 99, backgroundColor: 'rgba(20,20,18,0.06)' },
+  f: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 99, backgroundColor: colors.fill },
   fTxt: { fontFamily: font.medium, fontSize: 14, color: colors.ink },
   dayHead: { flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: 24, marginTop: 14, marginBottom: 6 },
   dayTitle: { fontFamily: font.semibold, fontSize: 13, color: colors.ink2 },

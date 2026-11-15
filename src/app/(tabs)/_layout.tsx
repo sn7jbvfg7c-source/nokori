@@ -3,12 +3,14 @@ import { Redirect, Tabs } from 'expo-router';
 import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppState } from '../../state/AppState';
-import { colors, font } from '../../theme/tokens';
+import { useColors } from '../../theme/theme';
+import { font } from '../../theme/tokens';
 
 /** Barre d'onglets ; sans profil, on part vers l'accueil */
 export default function TabsLayout() {
   const { ready, profile, error } = useAppState();
   const insets = useSafeAreaInsets();
+  const colors = useColors();
   if (!ready) return <View style={{ flex: 1, backgroundColor: colors.paper }} />;
   if (error && !profile) return (
     <View style={{ flex: 1, backgroundColor: colors.paper, justifyContent: 'center', padding: 32 }}>
@@ -22,7 +24,7 @@ export default function TabsLayout() {
       tabBarActiveTintColor: colors.ink,
       tabBarInactiveTintColor: colors.ink2,
       // hauteur fixée avec la marge de sécurité du téléphone : l'icône et le libellé ne sont jamais coupés
-      tabBarStyle: { backgroundColor: 'rgba(247,244,239,0.97)', borderTopColor: colors.hair, height: 66 + insets.bottom, paddingTop: 4, paddingBottom: insets.bottom + 4 },
+      tabBarStyle: { backgroundColor: colors.paper, borderTopColor: colors.hair, height: 66 + insets.bottom, paddingTop: 4, paddingBottom: insets.bottom + 4 },
       tabBarLabelStyle: { fontFamily: font.medium, fontSize: 11.5 },
       sceneStyle: { backgroundColor: colors.paper },
     }}>

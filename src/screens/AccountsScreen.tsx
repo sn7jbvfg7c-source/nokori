@@ -6,7 +6,9 @@ import { ACCOUNT_KINDS, parseBalance, totals, type Account, type AccountKind } f
 import { dayTitle } from '../domain/activity';
 import { formatEuros } from '../domain/money';
 import { cleanName } from '../domain/onboarding';
-import { colors, font } from '../theme/tokens';
+import { font } from '../theme/tokens';
+import type { Palette } from '../theme/tokens';
+import { useColors, useStyles } from '../theme/theme';
 
 const isoOf = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const updatedText = (iso: string, today: Date) => {
@@ -18,6 +20,7 @@ const balanceText = (c: number) => formatEuros(c).replace(/ €$/, '').replace(
 interface Draft { id: string | null; name: string; kind: AccountKind; balance: string }
 
 function Editor({ draft, setDraft, onSave, onCancel, onDelete }: { draft: Draft; setDraft: (d: Draft) => void; onSave: () => void; onCancel: () => void; onDelete?: () => void }) {
+  const colors = useColors(); const st = useStyles(makeStyles);
   const [confirm, setConfirm] = useState(false);
   const bal = parseBalance(draft.balance);
   const ok = draft.name.trim().length > 0 && bal !== null;
@@ -27,7 +30,7 @@ function Editor({ draft, setDraft, onSave, onCancel, onDelete }: { draft: Draft;
       <View style={st.kinds}>
         {ACCOUNT_KINDS.map(k => (
           <Pressable key={k.id} onPress={() => setDraft({ ...draft, kind: k.id })} style={[st.kind, draft.kind === k.id && st.kindOn]} accessibilityRole="button" accessibilityState={{ selected: draft.kind === k.id }}>
-            <Text style={[st.kindTxt, draft.kind === k.id && { color: '#fff' }]}>{k.name}</Text>
+            <Text style={[st.kindTxt, draft.kind === k.id && { color: colors.onBtn }]}>{k.name}</Text>
           </Pressable>
         ))}
       </View>
@@ -50,14 +53,15 @@ function Editor({ draft, setDraft, onSave, onCancel, onDelete }: { draft: Draft;
           {onDelete && <Pressable onPress={() => setConfirm(true)} style={st.del} accessibilityRole="button" accessibilityLabel={`Supprimer ${draft.name}`}><Text style={[st.btnTxt, { color: colors.vermilion }]}>Supprimer</Text></Pressable>}
           <View style={{ flex: 1 }} />
           <Pressable onPress={onCancel} style={[st.btn, st.btnLight]} accessibilityRole="button"><Text style={st.btnTxt}>Annuler</Text></Pressable>
-          <Pressable onPress={onSave} disabled={!ok} style={[st.btn, st.btnDark, !ok && { opacity: 0.35 }]} accessibilityRole="button" accessibilityLabel="Enregistrer le compte"><Text style={[st.btnTxt, { color: '#fff' }]}>Enregistrer</Text></Pressable>
+          <Pressable onPress={onSave} disabled={!ok} style={[st.btn, st.btnDark, !ok && { opacity: 0.35 }]} accessibilityRole="button" accessibilityLabel="Enregistrer le compte"><Text style={[st.btnTxt, { color: colors.onBtn }]}>Enregistrer</Text></Pressable>
         </View>
       )}
     </View>
   );
 }
 
-export function AccountsScreen({ accounts, today, onSave, onRemove }: { accounts: Account[]; today: Date; onSave: (a: Account) => void; onRemove: (id: string) => void }) {
+export function AccountsScreen({ accounts, today, onSave, onRemove, hideAmounts = false }: { accounts: Account[]; today: Date; onSave: (a: Account) => void; onRemove: (id: string) => void; hideAmounts?: boolean }) {
+  const colors = useColors(); const st = useStyles(makeStyles);
   const insets = useSafeAreaInsets();
   const [draft, setDraft] = useState<Draft | null>(null);
   const t = totals(accounts);
@@ -78,25 +82,25 @@ export function AccountsScreen({ accounts, today, onSave, onRemove }: { accounts
       {accounts.length > 0 && (
         <View style={st.head}>
           <Text style={st.kick}>Total de vos comptes</Text>
-          <Text style={[st.total, t.total < 0 && { color: colors.vermilion }]} accessibilityLabel={`Total de vos comptes : ${formatEuros(t.total)}`}>{formatEuros(t.total)}</Text>
+          <Text style={[st.total, t.total < 0 && { color: colors.vermilion }]} accessibilityLabel={hideAmounts ? 'Total masqué' : `Total de vos comptes : ${formatEuros(t.total)}`}>{hideAmounts ? '•••' : formatEuros(t.total)}</Text>
         </View>
       )}
       {draft && draft.id === null && <Editor draft={draft} setDraft={setDraft} onSave={save} onCancel={() => setDraft(null)} />}
       {t.byKind.map(k => (
         <View key={k.id}>
-          <View style={st.secHead}><Text style={st.sec}>{k.plural}</Text><Text style={st.secR}>{formatEuros(k.total)}</Text></View>
+          <View style={st.secHead}><Text style={st.sec}>{k.plural}</Text><Text style={st.secR}>{hideAmounts ? '•••' : formatEuros(k.total)}</Text></View>
           <View style={st.list}>
             {k.accounts.map((a, i) => (
               <View key={a.id} style={i > 0 && st.sep}>
                 {draft?.id === a.id ? (
                   <Editor draft={draft} setDraft={setDraft} onSave={save} onCancel={() => setDraft(null)} onDelete={() => { onRemove(a.id); setDraft(null); }} />
                 ) : (
-                  <Pressable style={st.row} onPress={() => setDraft({ id: a.id, name: a.name, kind: a.kind, balance: balanceText(a.balance) })} accessibilityRole="button" accessibilityLabel={`${a.name}, ${formatEuros(a.balance)}, ${updatedText(a.updated, today)}`}>
+                  <Pressable style={st.row} onPress={() => setDraft({ id: a.id, name: a.name, kind: a.kind, balance: balanceText(a.balance) })} accessibilityRole="button" accessibilityLabel={`${a.name}, ${hideAmounts ? 'solde masqué' : formatEuros(a.balance)}, ${updatedText(a.updated, today)}`}>
                     <View style={{ flex: 1 }}>
                       <Text style={st.name}>{a.name}</Text>
                       <Text style={st.sub}>{updatedText(a.updated, today)}</Text>
                     </View>
-                    <Text style={[st.bal, a.balance < 0 && { color: colors.vermilion }]}>{formatEuros(a.balance)}</Text>
+                    <Text style={[st.bal, a.balance < 0 && !hideAmounts && { color: colors.vermilion }]}>{hideAmounts ? '•••' : formatEuros(a.balance)}</Text>
                   </Pressable>
                 )}
               </View>
@@ -108,7 +112,7 @@ export function AccountsScreen({ accounts, today, onSave, onRemove }: { accounts
         <View style={st.empty}>
           <Text style={st.emptyTitle}>Aucun compte pour l’instant</Text>
           <Text style={st.emptyTxt}>Ajoutez vos comptes à la main (compte courant, livrets, placements) et mettez à jour leur solde quand vous voulez.</Text>
-          <Pressable onPress={() => setDraft({ id: null, name: '', kind: 'courant', balance: '' })} style={[st.btn, st.btnDark, { alignSelf: 'center', marginTop: 12 }]} accessibilityRole="button"><Text style={[st.btnTxt, { color: '#fff' }]}>Ajouter un compte</Text></Pressable>
+          <Pressable onPress={() => setDraft({ id: null, name: '', kind: 'courant', balance: '' })} style={[st.btn, st.btnDark, { alignSelf: 'center', marginTop: 12 }]} accessibilityRole="button"><Text style={[st.btnTxt, { color: colors.onBtn }]}>Ajouter un compte</Text></Pressable>
         </View>
       )}
       <Text style={st.note}>Saisie à la main : Nokori ne se connecte à aucune banque, et ces soldes restent sur votre téléphone.</Text>
@@ -116,12 +120,12 @@ export function AccountsScreen({ accounts, today, onSave, onRemove }: { accounts
   );
 }
 
-const st = StyleSheet.create({
+const makeStyles = (colors: Palette) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.paper },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20 },
   title: { fontFamily: font.semibold, fontSize: 17, color: colors.ink },
-  add: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.ink, alignItems: 'center', justifyContent: 'center' },
-  plus: { color: '#fff', fontSize: 24, lineHeight: 26, fontFamily: font.medium },
+  add: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.btn, alignItems: 'center', justifyContent: 'center' },
+  plus: { color: colors.onBtn, fontSize: 24, lineHeight: 26, fontFamily: font.medium },
   head: { paddingHorizontal: 24, paddingTop: 14 },
   kick: { fontFamily: font.regular, fontSize: 14, color: colors.ink2 },
   total: { fontFamily: font.semibold, fontSize: 40, letterSpacing: -1.8, color: colors.ink, marginTop: 2 },
@@ -135,21 +139,21 @@ const st = StyleSheet.create({
   sub: { fontFamily: font.regular, fontSize: 12.5, color: colors.ink2, marginTop: 2 },
   bal: { fontFamily: font.semibold, fontSize: 16, color: colors.ink },
   editor: { marginHorizontal: 0, marginVertical: 10, padding: 12, borderRadius: 16, backgroundColor: 'rgba(188,68,35,0.06)', gap: 10 },
-  input: { minWidth: 0, width: '100%', height: 44, borderRadius: 12, backgroundColor: colors.surface, paddingHorizontal: 12, fontFamily: font.regular, fontSize: 15, color: colors.ink, borderWidth: 1.5, borderColor: 'rgba(20,20,18,0.14)' },
+  input: { minWidth: 0, width: '100%', height: 44, borderRadius: 12, backgroundColor: colors.surface, paddingHorizontal: 12, fontFamily: font.regular, fontSize: 15, color: colors.ink, borderWidth: 1.5, borderColor: colors.fill2 },
   kinds: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  kind: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 99, backgroundColor: 'rgba(20,20,18,0.06)' },
-  kindOn: { backgroundColor: colors.ink },
+  kind: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 99, backgroundColor: colors.fill },
+  kindOn: { backgroundColor: colors.btn },
   kindTxt: { fontFamily: font.medium, fontSize: 13, color: colors.ink },
   balRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   lbl: { fontFamily: font.regular, fontSize: 14, color: colors.ink2 },
-  balBox: { flexDirection: 'row', alignItems: 'center', width: 170, height: 44, borderRadius: 12, backgroundColor: colors.surface, paddingHorizontal: 12, borderWidth: 1.5, borderColor: 'rgba(20,20,18,0.14)' },
+  balBox: { flexDirection: 'row', alignItems: 'center', width: 170, height: 44, borderRadius: 12, backgroundColor: colors.surface, paddingHorizontal: 12, borderWidth: 1.5, borderColor: colors.fill2 },
   balInput: { flex: 1, minWidth: 0, width: '100%', textAlign: 'right', fontFamily: font.semibold, fontSize: 17, color: colors.ink },
   euro: { fontFamily: font.semibold, fontSize: 16, color: colors.ink2, marginLeft: 6 },
   err: { fontFamily: font.medium, fontSize: 13, color: colors.vermilion },
   btns: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   btn: { paddingHorizontal: 14, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   btnLight: { backgroundColor: colors.surface },
-  btnDark: { backgroundColor: colors.ink },
+  btnDark: { backgroundColor: colors.btn },
   del: { paddingHorizontal: 4, height: 40, justifyContent: 'center' },
   btnTxt: { fontFamily: font.semibold, fontSize: 14, color: colors.ink },
   ask: { flex: 1, fontFamily: font.medium, fontSize: 14, color: colors.ink },

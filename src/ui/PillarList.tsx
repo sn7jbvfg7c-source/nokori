@@ -3,7 +3,9 @@ import { Animated, StyleSheet, Text, View } from 'react-native';
 import type { PillarState } from '../domain/budget';
 import { formatEurosRound } from '../domain/money';
 import type { PillarId } from '../domain/types';
-import { colors, font, pillarColor, tint } from '../theme/tokens';
+import { font, tint } from '../theme/tokens';
+import type { Palette } from '../theme/tokens';
+import { useColors, useStyles } from '../theme/theme';
 
 const GLYPH: Record<string, string> = { besoins: '⌂', envies: '♡', culture: '❖', imprevus: '☂' };
 
@@ -19,6 +21,7 @@ function Flash({ color, run }: { color: string; run: unknown }) {
 }
 
 export function PillarList({ pillars, hideAmounts = false, highlight }: { pillars: PillarState[]; hideAmounts?: boolean; highlight?: PillarId }) {
+  const colors = useColors(); const st = useStyles(makeStyles);
   const money = (v: number) => (hideAmounts ? '•••' : formatEurosRound(v));
   return (
     <View>
@@ -26,9 +29,9 @@ export function PillarList({ pillars, hideAmounts = false, highlight }: { pillar
       <View style={st.list}>
         {pillars.map((p, i) => (
           <View key={p.id} style={[st.row, i > 0 && st.sep]} accessible accessibilityLabel={`${p.name} : il reste ${money(p.left)} sur ${money(p.budget)}`}>
-            <Flash color={pillarColor[p.id]} run={highlight === p.id ? p.spent : 0} />
-            <View style={[st.chip, { backgroundColor: tint(pillarColor[p.id], 0.12) }]}>
-              <Text style={[st.glyph, { color: pillarColor[p.id] }]}>{GLYPH[p.id]}</Text>
+            <Flash color={colors.pillar[p.id]} run={highlight === p.id ? p.spent : 0} />
+            <View style={[st.chip, { backgroundColor: tint(colors.pillar[p.id], 0.12) }]}>
+              <Text style={[st.glyph, { color: colors.pillar[p.id] }]}>{GLYPH[p.id]}</Text>
             </View>
             <View style={st.text}>
               <Text style={st.name}>{p.name}</Text>
@@ -42,7 +45,7 @@ export function PillarList({ pillars, hideAmounts = false, highlight }: { pillar
   );
 }
 
-const st = StyleSheet.create({
+const makeStyles = (colors: Palette) => StyleSheet.create({
   head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', paddingHorizontal: 24, paddingTop: 26, paddingBottom: 8 },
   h3: { fontFamily: font.semibold, fontSize: 14, color: colors.ink },
   mono: { fontFamily: font.regular, fontSize: 12, color: colors.ink2 },
