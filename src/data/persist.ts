@@ -3,13 +3,14 @@
  * une donnée abîmée ou inattendue est écartée, jamais exécutée ni affichée telle quelle.
  */
 import { MAX_BALANCE, type Account, type AccountKind } from '../domain/accounts';
+import type { Goal, GoalType } from '../domain/goals';
 import type { ChargeGroup, Expense, FixedCharge, Frequency, Profile } from '../domain/types';
 
 export const STATE_KEY = 'state';
 export const STATE_VERSION = 1;
 
-export interface AppData { profile: Profile | null; expenses: Expense[]; /** suggestions de charges ignorées */ dismissed: string[]; accounts: Account[] }
-export const EMPTY: AppData = { profile: null, expenses: [], dismissed: [], accounts: [] };
+export interface AppData { profile: Profile | null; expenses: Expense[]; /** suggestions de charges ignorées */ dismissed: string[]; accounts: Account[]; goals: Goal[] }
+export const EMPTY: AppData = { profile: null, expenses: [], dismissed: [], accounts: [], goals: [] };
 
 const GROUPS: ChargeGroup[] = ['logement', 'energie', 'internet', 'assurance', 'sante', 'transports', 'abos', 'sport'];
 const FREQS: Frequency[] = ['mois', '4sem', 'an'];
@@ -47,6 +48,13 @@ function account(x: unknown): Account | null {
   return { id: x.id as string, name: x.name as string, kind: x.kind as AccountKind, balance: x.balance, updated: x.updated as string };
 }
 
+const GOAL_TYPES: GoalType[] = ['voyage', 'voiture', 'maison', 'precaution', 'etudes', 'autre'];
+const bigCents = (x: unknown) => typeof x === 'number' && Number.isInteger(x) && x >= 0 && x <= MAX_BALANCE;
+function goal(x: unknown): Goal | null {
+  if (!isObj(x) || !text(x.id, 64) || !text(x.name) || !GOAL_TYPES.includes(x.type as GoalType) || !bigCents(x.target) || !bigCents(x.saved) || !bigCents(x.monthly) || (x.target as number) <= 0) return null;
+  return { id: x.id as string, name: x.name as string, type: x.type as GoalType, target: x.target as number, saved: x.saved as number, monthly: x.monthly as number };
+}
+
 export function decode(raw: string | null): AppData {
   if (!raw || raw.length > 2_000_000) return EMPTY;
   try {
@@ -55,10 +63,11 @@ export function decode(raw: string | null): AppData {
     const expenses = Array.isArray(j.expenses) ? j.expenses.slice(0, 20_000).map(expense).filter((e): e is Expense => e !== null) : [];
     const dismissed = Array.isArray(j.dismissed) ? j.dismissed.filter((k): k is string => typeof k === 'string' && k.length > 0 && k.length <= 64).slice(0, 200) : [];
     const accounts = Array.isArray(j.accounts) ? j.accounts.slice(0, 50).map(account).filter((a): a is Account => a !== null) : [];
-    return { profile: j.profile == null ? null : profile(j.profile), expenses, dismissed, accounts };
+    const goals = Array.isArray(j.goals) ? j.goals.slice(0, 30).map(goal).filter((g): g is Goal => g !== null) : [];
+    return { profile: j.profile == null ? null : profile(j.profile), expenses, dismissed, accounts, goals };
   } catch {
     return EMPTY;
   }
 }
 
-export const encode = (d: AppData): string => JSON.stringify({ v: STATE_VERSION, profile: d.profile, expenses: d.expenses, dismissed: d.dismissed, accounts: d.accounts });
+export const encode = (d: AppData): string => JSON.stringify({ v: STATE_VERSION, profile: d.profile, expenses: d.expenses, dismissed: d.dismissed, accounts: d.accounts, goals: d.goals });
