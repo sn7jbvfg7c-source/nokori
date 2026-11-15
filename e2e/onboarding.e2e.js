@@ -16,7 +16,7 @@ const eq = (a, b, what) => { if (a !== b) throw new Error(`${what} : « ${a} » 
   const btn = name => p.getByRole('button', { name, exact: true });
   await p.goto('http://localhost:8099/'); await W(2000);
 
-  await t('premier lancement : redirection vers l’accueil', async () => { await p.getByText('sans le carnet.').waitFor(); await shot('o0'); await btn('Commencer').click(); await W(300); });
+  await t('premier lancement : redirection vers l’accueil, avertissement de la version web', async () => { await p.getByText('sans le carnet.').waitFor(); await p.getByText('Version de test dans le navigateur').waitFor(); await shot('o0'); await btn('Commencer').click(); await W(300); });
   await t('« Continuer » bloqué tant que le revenu est vide', async () => { if (!(await btn('Continuer').isDisabled())) throw new Error('bouton actif'); });
   await t('revenu invalide signalé', async () => { await p.getByLabel('Revenu mensuel').fill('12,345'); await p.getByText('Montant invalide').waitFor(); });
   await t('revenu et jour de paie', async () => { await p.getByLabel('Revenu mensuel').fill('2 480'); await btn('le 25').click(); await shot('o1'); await btn('Continuer').click(); await W(300); });

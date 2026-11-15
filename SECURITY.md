@@ -44,7 +44,7 @@ Il vérifie aussi la clé liée à l’appareil, le refus d’écrire sans chiff
 ## Points à confirmer avant publication
 
 - **Chiffrement et export.** Nokori n’utilise le chiffrement que pour protéger ses propres données sur le téléphone, avec un algorithme standard. C’est en principe une utilisation exemptée de déclaration d’export aux États-Unis, d’où `usesNonExemptEncryption: false`. App Store Connect pose aussi une question sur la distribution en **France** : la même exemption s’applique en général aux usages de protection des données, mais à relire au moment de remplir le formulaire.
-- **Version web.** Elle sert seulement aux tests. Elle stocke les données en clair dans le navigateur et n’a pas de verrouillage. Elle ne doit pas être publiée.
+- **Version web.** C’est une version de test, à partager avec des testeurs, pas une version publique. Elle n’a ni serveur ni accès réseau : les données restent dans le navigateur de chacun, mais en clair (`localStorage`), sans verrouillage ni rappels. Elle le dit dès le premier écran et dans les réglages, et demande aux moteurs de recherche de ne pas l’indexer (`noindex`). Pour de vrais chiffres, l’app pour téléphone reste la référence.
 
 ## Signaler un problème
 

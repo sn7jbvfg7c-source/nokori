@@ -80,11 +80,13 @@ export function SettingsScreen({ prefs, onChange, onClose, onEditAnswers, onWipe
 
       <Text style={st.sec}>Vos données</Text>
       <View style={st.card}>
-        <Text style={st.rowS}>Tout est enregistré sur ce téléphone, dans une base chiffrée. Nokori n’a pas de serveur et ne se connecte à aucune banque.</Text>
+        <Text style={st.rowS}>{web
+          ? 'Version de test : tout est enregistré dans ce navigateur, sans chiffrement. Nokori n’a pas de serveur et ne se connecte à aucune banque. L’app pour téléphone chiffre tout.'
+          : 'Tout est enregistré sur ce téléphone, dans une base chiffrée. Nokori n’a pas de serveur et ne se connecte à aucune banque.'}</Text>
         <View style={st.sep} />
         {confirm ? (
           <View style={{ gap: 10 }}>
-            <Text style={[st.rowT, { color: colors.vermilion }]}>Tout effacer de ce téléphone ?</Text>
+            <Text style={[st.rowT, { color: colors.vermilion }]}>{web ? 'Tout effacer de ce navigateur ?' : 'Tout effacer de ce téléphone ?'}</Text>
             <Text style={st.rowS}>Dépenses, charges, comptes, objectifs et bilans seront supprimés. C’est définitif.</Text>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <Pressable onPress={() => setConfirm(false)} style={[st.btn, { backgroundColor: colors.fill }]} accessibilityRole="button"><Text style={st.btnTxt}>Annuler</Text></Pressable>

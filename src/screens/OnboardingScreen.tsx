@@ -182,6 +182,12 @@ export function OnboardingScreen({ initial, onDone }: { initial: Profile | null;
             <View style={st.art}><Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.artK}>残</Text></View>
             <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.h1}>Le kakeibo,{'\n'}sans le carnet.</Text>
             <Text style={st.p}>Quelques questions, une minute, et votre mois se calcule tout seul : ce qui tombe, quand, et ce qu’il vous reste vraiment. Tout reste sur votre téléphone.</Text>
+            {Platform.OS === 'web' && (
+              <View style={st.webNote} accessibilityRole="text">
+                <Text style={st.webNoteT}>Version de test dans le navigateur</Text>
+                <Text style={st.webNoteS}>Vos chiffres restent dans ce navigateur, sur cet appareil : rien n’est envoyé. Mais ici ils ne sont pas chiffrés, et il n’y a ni Face ID ni rappels. Des montants d’essai suffisent pour tester.</Text>
+              </View>
+            )}
           </View>
         )}
         {step === 1 && (
@@ -233,6 +239,9 @@ export function OnboardingScreen({ initial, onDone }: { initial: Profile | null;
 }
 
 const makeStyles = (colors: Palette) => StyleSheet.create({
+  webNote: { marginTop: 20, padding: 14, borderRadius: 14, backgroundColor: colors.fill, gap: 4 },
+  webNoteT: { fontFamily: font.semibold, fontSize: 14, color: colors.ink },
+  webNoteS: { fontFamily: font.regular, fontSize: 13, lineHeight: 18, color: colors.ink2 },
   top: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16 },
   back: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.fill, alignItems: 'center', justifyContent: 'center' },
   backTxt: { fontSize: 24, lineHeight: 26, color: colors.ink },

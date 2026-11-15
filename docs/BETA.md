@@ -2,6 +2,22 @@
 
 Ce guide part du code tel qu’il est dans ce dépôt. Les commandes se tapent dans un terminal, à la racine du projet. Les compilations se font sur les serveurs d’Expo (EAS Build) : **pas besoin de Mac**, même pour l’iPhone.
 
+## 0. Le plus simple : un lien web
+
+Vos amis ouvrent un lien dans Chrome ou Safari, sans rien installer. Sur iPhone, « Partager › Sur l’écran d’accueil » ajoute même l’icône Nokori comme une vraie app.
+
+```bash
+npx expo export --platform web --output-dir dist
+```
+
+```bash
+npx eas-cli@latest deploy --prod
+```
+
+`deploy` publie le dossier `dist` sur l’hébergement d’Expo (EAS Hosting, offre gratuite) et affiche l’adresse, du type `nokori.expo.app`.
+
+Limites de cette version de test, rappelées dans l’app : les données restent dans le navigateur, mais sans chiffrement, et il n’y a ni Face ID ni rappels. Pour tester ces fonctions, il faut la version téléphone ci-dessous.
+
 ## 1. Les comptes à créer (une seule fois)
 
 | Compte | Prix | Pour quoi |
