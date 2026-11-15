@@ -14,15 +14,20 @@ npm run android    # émulateur Android ou Expo Go
 ## Vérifier
 
 ```bash
-npm test           # tests du moteur de calcul
+npm test           # tests unitaires (moteur, accueil, données relues)
 npm run typecheck  # vérification des types
+npm run lint       # règles de code
+npm run e2e        # parcours complet de l'accueil dans la version web (Playwright)
 ```
 
 ## Organisation
 
 | Dossier | Contenu |
 | --- | --- |
-| `src/domain` | Moteur de calcul, sans interface : budget du mois, charges fixes, argent en centimes, couleurs du mois |
+| `src/app` | Routes (Expo Router) : `index` (budget), `accueil` |
+| `src/domain` | Moteur de calcul, sans interface : budget du mois, charges fixes, argent en centimes, couleurs du mois, accueil |
+| `src/data` | Stockage : base SQLite chiffrée (SQLCipher) sur téléphone, validation de tout ce qui est relu |
+| `src/state` | État de l'app et enregistrement automatique |
 | `src/domain/__tests__` | Tests du moteur |
 | `src/theme` | Couleurs et typographie du prototype |
 | `src/ui` | Composants : carte du mois, liste des piliers |
@@ -35,11 +40,18 @@ npm run typecheck  # vérification des types
 - Les dates des charges se calculent en UTC : l'heure d'été ne décale aucune échéance.
 - Nokori ne déplace jamais d'argent : aucune formulation ne doit le laisser croire (« épargne prévue », pas « mis de côté »).
 - Aucune donnée ne quitte le téléphone dans la version 1.
+- Base chiffrée par SQLCipher, clé aléatoire de 256 bits dans le trousseau, liée à l'appareil. L'app publiée refuse d'écrire si le chiffrement est absent.
+- Tout ce qui est relu du stockage est validé champ par champ.
+
+## Tester sur un téléphone
+
+Le chiffrement SQLCipher n'existe pas dans Expo Go : pour tester la vraie app, il faut une version de développement (`npx eas-cli@latest build --profile development`). Dans Expo Go, l'app fonctionne mais affiche un avertissement : base non chiffrée, réservé au développement.
 
 ## Avancement
 
 - [x] 0. Fondations : Expo SDK 58, TypeScript, police Geist, couleurs du mois
 - [x] 1. Moteur de calcul et ses tests
-- [ ] 2. Accueil au premier lancement
+- [x] 2. Accueil au premier lancement : revenu, paie, épargne, charges fixes (liste ou saisie), récapitulatif
+- [x] Stockage local chiffré et navigation
 - [x] 3. Budget : carte du mois et quatre piliers (première version, avec un profil d'exemple)
 - [ ] 4 à 12 : voir le cahier des charges, onglet « Plan solo avec agents IA »

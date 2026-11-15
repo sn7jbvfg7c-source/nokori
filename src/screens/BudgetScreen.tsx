@@ -6,7 +6,7 @@ import { colors, font } from '../theme/tokens';
 import { MonthCard } from '../ui/MonthCard';
 import { PillarList } from '../ui/PillarList';
 
-export function BudgetScreen({ profile, expenses, today, onAdd }: { profile: Profile; expenses: Expense[]; today: Date; onAdd?: () => void }) {
+export function BudgetScreen({ profile, expenses, today, onAdd, onEdit }: { profile: Profile; expenses: Expense[]; today: Date; onAdd?: () => void; onEdit?: () => void }) {
   const s = buildMonth(profile, expenses, today);
   const insets = useSafeAreaInsets();
   return (
@@ -26,6 +26,11 @@ export function BudgetScreen({ profile, expenses, today, onAdd }: { profile: Pro
           <Text style={st.saveSub}>Déjà retirée de votre budget, comme le veut le kakeibo</Text>
         </View>
       </View>
+      {onEdit && (
+        <Pressable onPress={onEdit} style={st.edit} accessibilityRole="button">
+          <Text style={st.editTxt}>Modifier mes réponses</Text>
+        </Pressable>
+      )}
     </ScrollView>
   );
 }
@@ -40,5 +45,7 @@ const st = StyleSheet.create({
   seal: { width: 42, height: 42, borderRadius: 10, backgroundColor: colors.vermilion, alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '-4deg' }] },
   sealText: { color: '#fff', fontFamily: font.bold, fontSize: 13 },
   saveTitle: { fontFamily: font.semibold, fontSize: 15, color: colors.ink },
+  edit: { alignSelf: 'center', marginTop: 20, paddingVertical: 10, paddingHorizontal: 16 },
+  editTxt: { fontFamily: font.semibold, fontSize: 14, color: colors.ink2, textDecorationLine: 'underline' },
   saveSub: { fontFamily: font.regular, fontSize: 13, color: colors.ink2, marginTop: 2 },
 });

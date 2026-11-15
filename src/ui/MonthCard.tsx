@@ -17,7 +17,7 @@ export function MonthCard({ s, hideAmounts = false }: { s: MonthState; hideAmoun
         <View style={st.tag}><Text style={st.tagText}>{c.kanji} {c.name}, la couleur du mois</Text></View>
       </View>
       <Text style={st.big} accessibilityLabel={`Il reste ${money(s.left)} à dépenser`}>{money(s.left)}</Text>
-      <Text style={st.sub}>à dépenser, ≈ {money(s.perDay)} par jour</Text>
+      <Text style={st.sub}>à dépenser, ≈ {money(s.perDay)} par jour d’ici le {s.length}</Text>
       <View style={st.eom}>
         <Text style={st.eomText}>
           {short ? 'À ce rythme, il manquera ≈ ' : 'À ce rythme, il restera ≈ '}
