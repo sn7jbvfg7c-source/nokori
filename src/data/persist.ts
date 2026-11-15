@@ -7,8 +7,8 @@ import type { ChargeGroup, Expense, FixedCharge, Frequency, Profile } from '../d
 export const STATE_KEY = 'state';
 export const STATE_VERSION = 1;
 
-export interface AppData { profile: Profile | null; expenses: Expense[] }
-export const EMPTY: AppData = { profile: null, expenses: [] };
+export interface AppData { profile: Profile | null; expenses: Expense[]; /** suggestions de charges ignorées */ dismissed: string[] }
+export const EMPTY: AppData = { profile: null, expenses: [], dismissed: [] };
 
 const GROUPS: ChargeGroup[] = ['logement', 'energie', 'internet', 'assurance', 'sante', 'transports', 'abos', 'sport'];
 const FREQS: Frequency[] = ['mois', '4sem', 'an'];
@@ -45,10 +45,11 @@ export function decode(raw: string | null): AppData {
     const j: unknown = JSON.parse(raw);
     if (!isObj(j) || j.v !== STATE_VERSION) return EMPTY;
     const expenses = Array.isArray(j.expenses) ? j.expenses.slice(0, 20_000).map(expense).filter((e): e is Expense => e !== null) : [];
-    return { profile: j.profile == null ? null : profile(j.profile), expenses };
+    const dismissed = Array.isArray(j.dismissed) ? j.dismissed.filter((k): k is string => typeof k === 'string' && k.length > 0 && k.length <= 64).slice(0, 200) : [];
+    return { profile: j.profile == null ? null : profile(j.profile), expenses, dismissed };
   } catch {
     return EMPTY;
   }
 }
 
-export const encode = (d: AppData): string => JSON.stringify({ v: STATE_VERSION, profile: d.profile, expenses: d.expenses });
+export const encode = (d: AppData): string => JSON.stringify({ v: STATE_VERSION, profile: d.profile, expenses: d.expenses, dismissed: d.dismissed });

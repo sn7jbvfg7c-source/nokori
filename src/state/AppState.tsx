@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { kv } from '../data/kv';
 import { decode, EMPTY, encode, STATE_KEY, type AppData } from '../data/persist';
+import { chargeFromSuggestion, labelKey, type Suggestion } from '../domain/recurring';
 import type { Expense, Profile } from '../domain/types';
 
 interface AppState extends AppData {
@@ -13,6 +14,9 @@ interface AppState extends AppData {
   /** dernière dépense ajoutée, pour la confirmation et « Annuler » */
   lastAdded: Expense | null;
   clearLastAdded(): void;
+  dismissSuggestion(key: string): Promise<void>;
+  /** fait d'une dépense régulière une charge fixe ; la dépense de ce mois est remplacée par la charge */
+  acceptSuggestion(s: Suggestion, today: Date): Promise<void>;
   wipeAll(): Promise<void>;
 }
 
@@ -47,6 +51,14 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     addExpense: async e => { await commit({ ...latest.current, expenses: [e, ...latest.current.expenses] }); setLastAdded(e); },
     removeExpense: async id => { await commit({ ...latest.current, expenses: latest.current.expenses.filter(x => x.id !== id) }); setLastAdded(l => (l?.id === id ? null : l)); },
     lastAdded, clearLastAdded: () => setLastAdded(null),
+    dismissSuggestion: key => commit({ ...latest.current, dismissed: [...new Set([...latest.current.dismissed, key])].slice(-200) }),
+    acceptSuggestion: async (s, today) => {
+      const cur = latest.current;
+      if (!cur.profile) return;
+      const prefix = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-`;
+      const charge = chargeFromSuggestion(s, `rec-${Date.now()}`);
+      await commit({ ...cur, profile: { ...cur.profile, charges: [...cur.profile.charges, charge] }, expenses: cur.expenses.filter(e => !(e.date.startsWith(prefix) && labelKey(e.label) === s.key)) });
+    },
     wipeAll: async () => { await kv.wipe(); latest.current = EMPTY; setData(EMPTY); setLastAdded(null); },
   }), [data, ready, error, commit, lastAdded]);
 

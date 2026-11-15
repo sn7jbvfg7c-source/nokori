@@ -59,7 +59,8 @@ describe('accueil', () => {
 describe('données relues depuis le stockage', () => {
   const p = buildProfile({ income: 248000, payday: 1, savePct: 0.2, charges: [{ id: 'loyer', name: 'Loyer', group: 'logement', amount: 78000, day: 5, freq: 'mois' }] }, nov14);
   test('aller-retour sans perte', () => {
-    const d = decode(encode({ profile: p, expenses: [{ id: 'e1', date: '2026-11-13', label: 'Café', categoryId: 'restos', amount: 480 }] }));
+    const d = decode(encode({ profile: p, expenses: [{ id: 'e1', date: '2026-11-13', label: 'Café', categoryId: 'restos', amount: 480 }], dismissed: ['disney+'] }));
+    expect(d.dismissed).toEqual(['disney+']);
     expect(d.profile).toEqual(p);
     expect(d.expenses).toHaveLength(1);
   });
@@ -71,7 +72,7 @@ describe('données relues depuis le stockage', () => {
     }
   });
   test('une charge invalide est retirée, les autres gardées', () => {
-    const raw = encode({ profile: p, expenses: [] }).replace('"charges":[', '"charges":[{"id":"x","name":"","group":"pirate","amount":1e12,"day":99,"freq":"jour"},');
+    const raw = encode({ profile: p, expenses: [], dismissed: [] }).replace('"charges":[', '"charges":[{"id":"x","name":"","group":"pirate","amount":1e12,"day":99,"freq":"jour"},');
     expect(decode(raw).profile!.charges).toEqual(p.charges);
   });
   test('dépense hostile retirée', () => {
