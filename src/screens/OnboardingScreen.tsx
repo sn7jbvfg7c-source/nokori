@@ -9,6 +9,8 @@ import { font } from '../theme/tokens';
 import type { Palette } from '../theme/tokens';
 import { useColors, useStyles } from '../theme/theme';
 import { BIG_TEXT_MAX_SCALE } from '../ui/a11y';
+import { PresentationVideo, presentationAvailable } from '../ui/PresentationVideo';
+import Feather from '@expo/vector-icons/Feather';
 
 const STEPS = 5;
 const GROUPS = Object.keys(GROUP_NAME) as ChargeGroup[];
@@ -164,6 +166,7 @@ export function OnboardingScreen({ initial, onDone, onRestore }: { initial: Prof
   const today = useMemo(() => new Date(), []);
   const sum = summary(draft, today);
   const incomeOk = draft.income !== null && draft.income > 0;
+  const [video, setVideo] = useState(false);
   const done = useRef(false); // un double appui sur « Ouvrir mon budget » n'enregistre qu'une fois
   const next = () => {
     if (step < STEPS - 1) return setStep(step + 1);
@@ -188,6 +191,12 @@ export function OnboardingScreen({ initial, onDone, onRestore }: { initial: Prof
             <View style={st.art}><Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.artK}>残</Text></View>
             <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.h1}>Le kakeibo,{'\n'}sans le carnet.</Text>
             <Text style={st.p}>Quelques questions, une minute, et votre mois se calcule tout seul : ce qui tombe, quand, et ce qu’il vous reste vraiment. Tout reste sur votre téléphone.</Text>
+            {!initial && presentationAvailable && (
+              <Pressable onPress={() => setVideo(true)} style={st.video} accessibilityRole="button" accessibilityLabel="Voir la présentation, 38 secondes">
+                <View style={st.play}><Feather name="play" size={16} color="#FFFFFF" /></View>
+                <Text style={st.videoTxt}>Voir la présentation (38 s)</Text>
+              </Pressable>
+            )}
             {!initial && onRestore && (
               <Pressable onPress={onRestore} style={st.restore} accessibilityRole="button" accessibilityLabel="J’ai déjà une sauvegarde Nokori">
                 <Text style={st.restoreTxt}>J’ai déjà une sauvegarde Nokori</Text>
@@ -245,11 +254,15 @@ export function OnboardingScreen({ initial, onDone, onRestore }: { initial: Prof
         style={[st.go, { marginBottom: insets.bottom + 16 }, !canGo && { opacity: 0.4 }]} disabled={!canGo} onPress={next} accessibilityRole="button">
         <Text style={st.goTxt}>{step === 0 ? 'Commencer' : step === STEPS - 1 ? 'Ouvrir mon budget' : 'Continuer'}</Text>
       </Pressable>
+      <PresentationVideo visible={video} onClose={() => setVideo(false)} />
     </KeyboardAvoidingView>
   );
 }
 
 const makeStyles = (colors: Palette) => StyleSheet.create({
+  video: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 20, alignSelf: 'flex-start', minHeight: 44, paddingRight: 16, paddingLeft: 6, borderRadius: 999, backgroundColor: colors.fill },
+  play: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.vermilion, alignItems: 'center', justifyContent: 'center', paddingLeft: 2 },
+  videoTxt: { fontFamily: font.semibold, fontSize: 15, color: colors.ink },
   restore: { marginTop: 18, alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' },
   restoreTxt: { fontFamily: font.semibold, fontSize: 15, color: colors.ink, textDecorationLine: 'underline' },
   webNote: { marginTop: 20, padding: 14, borderRadius: 14, backgroundColor: colors.fill, gap: 4 },

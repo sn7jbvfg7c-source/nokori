@@ -88,6 +88,17 @@ const SEED = {
     await p.getByRole('button', { name: /^Ajouter la dépense/ }).click(); await W(700);
     if (!(await state()).expenses.some(x => x.date === '2026-11-11' && x.amount === 120000)) throw new Error('date ou montant');
   });
+  await t('« Réduire les animations » : la confirmation d’ajout reste bien visible', async () => {
+    await p.emulateMedia({ reducedMotion: 'reduce' });
+    await p.goto('http://localhost:8096/'); await W(1800);
+    await p.getByRole('button', { name: 'Ajouter une dépense' }).first().click(); await W(600);
+    await p.getByRole('button', { name: '3', exact: true }).click();
+    await p.getByRole('button', { name: 'Courses, Besoins' }).click();
+    await p.getByRole('button', { name: /^Ajouter la dépense/ }).click(); await W(900);
+    const op = await p.getByText('ajouté en Besoins', { exact: false }).evaluate(e => { let o = 1; for (let x = e; x; x = x.parentElement) o *= Number(getComputedStyle(x).opacity); return o; });
+    if (op < 0.99) throw new Error('opacité ' + op);
+    await p.emulateMedia({ reducedMotion: 'no-preference' });
+  });
   await t('bilan : comparaison avec octobre et dépenses par catégorie (vraies saisies)', async () => {
     await tab('Bilan').click(); await W(500);
     await p.getByText('Par rapport à octobre', { exact: false }).waitFor();

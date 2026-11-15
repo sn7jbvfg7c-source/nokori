@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Nokori, présentation</title>
+<!--
+  Vidéo de présentation de Nokori (38 s), construite en code.
+  Chaque image se calcule à partir du temps seul : window.seek(secondes).
+  ?f=916 (1080 × 1920, par défaut) ou ?f=169 (1920 × 1080) ; ?render : attend les appels à seek (export MP4).
+  Uniquement de vrais écrans de l'app (shots/, données d'exemple), aucun chiffre ni logo de marque ajouté.
+-->
+<style>
+@font-face { font-family: G; font-weight: 400; src: url(../../node_modules/@expo-google-fonts/geist/400Regular/Geist_400Regular.ttf); }
+@font-face { font-family: G; font-weight: 500; src: url(../../node_modules/@expo-google-fonts/geist/500Medium/Geist_500Medium.ttf); }
+@font-face { font-family: G; font-weight: 600; src: url(../../node_modules/@expo-google-fonts/geist/600SemiBold/Geist_600SemiBold.ttf); }
+:root { --paper: #F7F4EF; --ink: #141412; --ink2: #65615A; --kaki: #C5502A; --peach: #F4B08F; }
+* { margin: 0; box-sizing: border-box; }
+html, body { background: #000; overflow: hidden; }
+body { font-family: G, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+#stage { position: relative; overflow: hidden; background: var(--paper); }
+.layer { position: absolute; inset: 0; }
+.cap { position: absolute; color: var(--ink); font-weight: 600; letter-spacing: -0.03em; line-height: 1.06; }
+.cap .l { display: block; will-change: transform, opacity; }
+.accent { color: var(--kaki); }
+.phone { position: absolute; border-radius: 9%/4.2%; background: var(--ink); padding: 1.6%; box-shadow: 0 50px 120px rgba(70, 35, 15, .22), 0 10px 30px rgba(70, 35, 15, .12); will-change: transform, opacity; }
+.screen { position: relative; width: 100%; height: 100%; border-radius: 7.6%/3.5%; overflow: hidden; background: var(--paper); }
+.screen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.tap { position: absolute; width: 11%; aspect-ratio: 1; margin: -5.5% 0 0 -5.5%; border-radius: 50%; background: rgba(197, 80, 42, .35); border: 3px solid rgba(197, 80, 42, .8); opacity: 0; pointer-events: none; }
+.note { position: absolute; font-weight: 500; color: var(--ink2); letter-spacing: .02em; }
+.over { position: absolute; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; }
+.pill { position: absolute; display: inline-flex; align-items: center; gap: .5em; padding: .55em 1em; border-radius: 999px; background: var(--ink); color: #fff; font-weight: 600; white-space: nowrap; }
+.logo { position: absolute; border-radius: 23%; box-shadow: 0 24px 60px rgba(120, 50, 20, .28); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <!-- 1 : accroche -->
+  <div class="layer" id="b1" style="background: var(--kaki)">
+    <div class="over" id="b1o" style="color: rgba(255,255,255,.85)">Novembre</div>
+    <div class="cap" id="b1c" style="color: #fff"><span class="l">Le 20 du mois,</span><span class="l">il vous reste</span><span class="l">combien&nbsp;?</span></div>
+  </div>
+
+  <!-- 2 à 5 : l'app -->
+  <div class="layer" id="app">
+    <div class="cap" id="cap"></div>
+    <div class="phone" id="phone"><div class="screen" id="screen"></div></div>
+    <div class="note" id="note">Données d’exemple</div>
+  </div>
+
+  <!-- 6 : confidentialité -->
+  <div class="layer" id="b6" style="background: var(--ink)">
+    <svg id="lock" viewBox="0 0 24 24" fill="none" stroke="#F4B08F" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="position:absolute">
+      <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </svg>
+    <div class="cap" id="b6c" style="color: #fff"><span class="l">Aucune banque connectée.</span><span class="l">Aucun serveur.</span><span class="l" style="color: var(--peach)">Tout reste sur votre</span><span class="l" style="color: var(--peach)">téléphone, chiffré.</span></div>
+  </div>
+
+  <!-- 7 : fin -->
+  <div class="layer" id="b7">
+    <img class="logo" id="logo" src="../../assets/icon.png" alt="">
+    <div class="cap" id="b7n" style="text-align:center"><span class="l">Nokori</span></div>
+    <div class="cap" id="b7s" style="text-align:center; font-weight:500; color: var(--ink2); letter-spacing:-.01em"><span class="l">Le kakeibo, sans le carnet.</span></div>
+    <div class="pill" id="cta">Version de test&nbsp;: <span style="color: var(--peach)">nokori.expo.app</span></div>
+  </div>
+</div>
+
+<script>
+const P = new URLSearchParams(location.search);
+const F = P.get('f') === '169' ? '169' : '916';
+const [W, H] = F === '169' ? [1920, 1080] : [1080, 1920];
+const DURATION = 38;
+const stage = document.getElementById('stage');
+stage.style.width = W + 'px'; stage.style.height = H + 'px';
+const $ = id => document.getElementById(id);
+
+// ---------- outils ----------
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const easeOut = x => 1 - Math.pow(1 - clamp(x), 3);
+const easeInOut = x => { x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+const prog = (t, a, d) => clamp((t - a) / d);
+/** un fragment de phrase qui se pose : monte de quelques pixels en apparaissant */
+const land = (el, t, at, dist = 26, dur = .55) => { const k = easeOut(prog(t, at, dur)); el.style.opacity = k; el.style.transform = `translateY(${(1 - k) * dist}px)`; };
+/** fondu d'une couche entre deux instants */
+const window_ = (t, a, b, fade = .45) => clamp(Math.min(prog(t, a - fade / 2, fade), 1 - prog(t, b - fade / 2, fade)));
+
+// ---------- mise en page selon le format ----------
+const L = F === '169'
+  ? { capX: 150, capY: null, capW: 900, capSize: 84, phoneW: 560, phoneX: 1170, phoneY: 70, noteX: 150, noteY: 1000, overSize: 22 }
+  : { capX: 90, capY: 190, capW: 920, capSize: 84, phoneW: 760, phoneX: 160, phoneY: 610, noteX: 90, noteY: 545, overSize: 26 };
+const phoneH = L.phoneW * 1912 / 880;
+Object.assign($('phone').style, { width: L.phoneW + 'px', height: phoneH + 'px', left: L.phoneX + 'px', top: L.phoneY + 'px' });
+Object.assign($('note').style, { left: L.noteX + 'px', top: L.noteY + 'px', fontSize: (F === '169' ? 18 : 24) + 'px' });
+
+// accroche
+Object.assign($('b1c').style, { left: L.capX + 'px', fontSize: (F === '169' ? 120 : 132) + 'px', width: (W - 2 * L.capX) + 'px' });
+$('b1c').style.top = (F === '169' ? 300 : 980) + 'px';
+Object.assign($('b1o').style, { left: L.capX + 'px', top: (F === '169' ? 230 : 900) + 'px', fontSize: L.overSize + 'px' });
+
+// confidentialité
+const lockS = F === '169' ? 120 : 150;
+Object.assign($('lock').style, { width: lockS + 'px', height: lockS + 'px', left: L.capX + 'px', top: (F === '169' ? 200 : 560) + 'px' });
+Object.assign($('b6c').style, { left: L.capX + 'px', top: (F === '169' ? 380 : 780) + 'px', fontSize: (F === '169' ? 84 : 74) + 'px', width: (W - 2 * L.capX) + 'px' });
+
+// fin
+const logoS = F === '169' ? 200 : 260;
+Object.assign($('logo').style, { width: logoS + 'px', height: logoS + 'px', left: (W - logoS) / 2 + 'px', top: (F === '169' ? 230 : 620) + 'px' });
+Object.assign($('b7n').style, { left: 0, width: W + 'px', top: (F === '169' ? 470 : 940) + 'px', fontSize: (F === '169' ? 120 : 140) + 'px' });
+Object.assign($('b7s').style, { left: 0, width: W + 'px', top: (F === '169' ? 620 : 1110) + 'px', fontSize: (F === '169' ? 44 : 50) + 'px' });
+$('cta').style.fontSize = (F === '169' ? 34 : 38) + 'px';
+
+// ---------- écrans et légendes ----------
+const SHOTS = ['budget', 'exp-0', 'exp-1', 'exp-2', 'exp-3', 'exp-4', 'exp-5', 'exp-cat', 'budget-toast', 'calendar', 'review', 'goals'];
+const imgs = {};
+for (const s of SHOTS) { const i = new Image(); i.src = `shots/${s}.png`; i.alt = ''; i.style.opacity = 0; $('screen').appendChild(i); imgs[s] = i; }
+let TAPS = {};
+const tapEls = {};
+
+/** quel écran à quel instant : [début, nom] ; fondu court entre deux écrans */
+const SCREENS = [[0, 'budget'], [10.7, 'exp-0'], [11.35, 'exp-1'], [11.75, 'exp-2'], [12.15, 'exp-3'], [12.55, 'exp-4'], [12.95, 'exp-5'], [13.75, 'exp-cat'], [14.85, 'budget-toast'], [17.0, 'calendar'], [22.0, 'review'], [25.2, 'goals']];
+/** touches : [instant, repère dans taps.json] */
+const TAPLIST = [[10.35, 'add'], [11.15, 'k1'], [11.55, 'k2'], [11.95, 'k3'], [12.35, 'k4'], [12.75, 'k5'], [13.5, 'cat'], [14.55, 'go']];
+/** légendes : [début, fin, lignes (la dernière en couleur)] */
+const CAPS = [
+  [4.0, 10.0, ['Ce qu’il vous reste,', 'vraiment.']],
+  [10.0, 17.0, ['Une dépense', 'en quelques secondes.']],
+  [17.0, 22.0, ['Vos prélèvements,', 'avant qu’ils tombent.']],
+  [22.0, 28.0, ['Le bilan kakeibo,', 'et vos projets.']],
+];
+const capEls = CAPS.map(([, , lines]) => {
+  const d = document.createElement('div'); d.className = 'cap';
+  Object.assign(d.style, { left: L.capX + 'px', width: L.capW + 'px', fontSize: L.capSize + 'px' });
+  d.innerHTML = lines.map((l, i) => `<span class="l${i === lines.length - 1 ? ' accent' : ''}">${l}</span>`).join('');
+  $('app').appendChild(d); return d;
+});
+
+function screenAt(t) {
+  let cur = SCREENS[0], prev = null;
+  for (const s of SCREENS) if (t >= s[0]) { prev = cur; cur = s; }
+  return { cur, prev };
+}
+
+// ---------- une image, calculée depuis le temps seul ----------
+window.seek = function seek(t) {
+  t = clamp(t, 0, DURATION);
+  // 1. accroche
+  $('b1').style.opacity = window_(t, -1, 4.0);
+  land($('b1o'), t, .15, 16);
+  [...$('b1c').children].forEach((l, i) => land(l, t, .35 + i * .45, 34));
+
+  // 2-5. l'app
+  const appOn = window_(t, 4.0, 28.0);
+  $('app').style.opacity = appOn;
+  // téléphone : entre à 4,3 s, avance doucement pendant chaque séquence
+  const enter = easeOut(prog(t, 4.3, .9));
+  const seg = t < 10 ? [4.3, 10] : t < 17 ? [10, 17] : t < 22 ? [17, 22] : [22, 28];
+  const push = 1 + .045 * easeInOut(prog(t, seg[0], seg[1] - seg[0]));
+  $('phone').style.opacity = enter;
+  $('phone').style.transform = `translateY(${(1 - enter) * 120}px) scale(${push})`;
+  $('phone').style.transformOrigin = '50% 18%';
+  $('note').style.opacity = enter * .9;
+  // écrans
+  const { cur } = screenAt(t);
+  for (const s of SHOTS) imgs[s].style.opacity = 0;
+  const fadeIn = clamp((t - cur[0]) / .18);
+  const idx = SCREENS.indexOf(cur);
+  if (idx > 0 && fadeIn < 1) imgs[SCREENS[idx - 1][1]].style.opacity = 1;
+  imgs[cur[1]].style.opacity = idx === 0 ? 1 : fadeIn;
+  // touches
+  for (const [at, k] of TAPLIST) {
+    const el = tapEls[k]; if (!el) continue;
+    const p = prog(t, at, .45);
+    el.style.opacity = p > 0 && p < 1 ? (1 - p) : 0;
+    el.style.transform = `scale(${.6 + .7 * easeOut(p)})`;
+  }
+  // légendes
+  CAPS.forEach(([a, b], i) => {
+    const on = window_(t, a, b, .5);
+    capEls[i].style.opacity = on;
+    [...capEls[i].children].forEach((l, j) => land(l, t, a + .25 + j * .35));
+    // en 9:16 la légende est en haut ; en 16:9 centrée verticalement à gauche
+    capEls[i].style.top = (F === '169' ? (H / 2 - L.capSize * 1.1) : L.capY) + 'px';
+  });
+
+  // 6. confidentialité
+  $('b6').style.opacity = window_(t, 28.0, 33.0);
+  const lk = easeOut(prog(t, 28.25, .6));
+  $('lock').style.opacity = lk; $('lock').style.transform = `scale(${.85 + .15 * lk})`;
+  const b6 = [...$('b6c').children];
+  [28.45, 29.15, 29.95, 30.2].forEach((at, i) => land(b6[i], t, at, 30));
+
+  // 7. fin
+  $('b7').style.opacity = window_(t, 33.0, 99);
+  const lg = easeOut(prog(t, 33.2, .7));
+  $('logo').style.opacity = lg; $('logo').style.transform = `translateY(${(1 - lg) * 30}px) scale(${.9 + .1 * lg})`;
+  land($('b7n').children[0], t, 33.6, 30);
+  land($('b7s').children[0], t, 34.0, 20);
+  const cta = $('cta'), ck = easeOut(prog(t, 34.5, .6));
+  cta.style.opacity = ck;
+  cta.style.left = (W - cta.offsetWidth) / 2 + 'px';
+  cta.style.top = (F === '169' ? 760 : 1280) + (1 - ck) * 20 + 'px';
+};
+
+// ---------- démarrage ----------
+window.ready = (async () => {
+  await document.fonts.ready;
+  await Promise.all(Object.values(imgs).map(i => i.decode().catch(() => {})));
+  await new Promise(r => { if ($('logo').complete) r(); else $('logo').onload = r; });
+  try { TAPS = await (await fetch('shots/taps.json')).json(); } catch { TAPS = window.TAPS_INLINE || {}; }
+  for (const [, k] of TAPLIST) {
+    if (!TAPS[k]) continue;
+    const el = document.createElement('div'); el.className = 'tap';
+    el.style.left = TAPS[k].x * 100 + '%'; el.style.top = TAPS[k].y * 100 + '%';
+    $('screen').appendChild(el); tapEls[k] = el;
+  }
+  seek(0);
+  return true;
+})();
+if (!P.has('render')) {
+  const t0 = performance.now();
+  window.ready.then(() => { const loop = () => { seek(((performance.now() - t0) / 1000) % DURATION); requestAnimationFrame(loop); }; loop(); });
+}
+</script>
+</body>
+</html>

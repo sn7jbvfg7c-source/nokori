@@ -1,6 +1,6 @@
 // Petit serveur statique pour la version web exportée (dossier dist)
 const http = require('http'), fs = require('fs'), path = require('path');
-const types = { '.html': 'text/html', '.js': 'text/javascript', '.ttf': 'font/ttf', '.json': 'application/json', '.ico': 'image/x-icon', '.png': 'image/png' };
+const types = { '.html': 'text/html', '.js': 'text/javascript', '.ttf': 'font/ttf', '.json': 'application/json', '.ico': 'image/x-icon', '.png': 'image/png', '.jpg': 'image/jpeg', '.mp4': 'video/mp4', '.webmanifest': 'application/manifest+json' };
 module.exports = (port = 8099) => new Promise(ok => {
   const root = path.resolve(__dirname, '../dist');
   const srv = http.createServer((q, s) => {

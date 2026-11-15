@@ -295,7 +295,9 @@ export function Toast({ message, actionLabel, actionA11y, onAction, onHide, bott
   const reduced = useReducedMotion();
   const [a] = useState(() => new Animated.Value(reduced ? 1 : 0));
   useEffect(() => {
-    if (!reduced) Animated.timing(a, { toValue: 1, duration: motion.base, useNativeDriver: true }).start();
+    // « Réduire les animations » peut être connu après le premier affichage : on montre alors le toast d'un coup
+    if (reduced) a.setValue(1);
+    else Animated.timing(a, { toValue: 1, duration: motion.base, useNativeDriver: true }).start();
     const timer = setTimeout(onHide, 5000);
     return () => clearTimeout(timer);
   }, [a, reduced, onHide, message]);

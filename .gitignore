@@ -45,3 +45,7 @@ e2e/*.png
 
 # captures brutes, régénérées par node store/raw.js
 store/raw/
+
+# vidéo : captures et images de contrôle, régénérées par store/video/capture.js et render.js
+store/video/shots/
+store/video/out/still-*
