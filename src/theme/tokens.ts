@@ -62,3 +62,37 @@ export const font = {
   semibold: 'Geist_600SemiBold',
   bold: 'Geist_700Bold',
 };
+
+/* ───────── Système de mise en page ─────────
+ * Une seule échelle pour tous les écrans : espacements, rayons, tailles de texte.
+ * Les écrans n'inventent pas de valeurs : ils piochent ici.
+ */
+
+/** Espacements (multiples de 4) ; `gutter` est la marge latérale des écrans */
+export const space = { xxs: 2, xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32, xxxl: 48, gutter: 16 } as const;
+
+/** Rayons : champs et puces (sm/md), cartes (lg), grandes cartes (xl), pilules */
+export const radius = { sm: 10, md: 14, lg: 20, xl: 28, pill: 999 } as const;
+
+/** Hauteurs tactiles (44 pt minimum, recommandations Apple et Google) */
+export const size = { touch: 44, button: 52, buttonSm: 40, icon: 20, iconSm: 16 } as const;
+
+/** Échelle typographique (Geist). Les chiffres utilisent des chasses fixes pour ne pas « danser ». */
+export const type = {
+  display: { fontFamily: font.semibold, fontSize: 56, lineHeight: 62, letterSpacing: -2.2 },
+  h1: { fontFamily: font.semibold, fontSize: 32, lineHeight: 38, letterSpacing: -1 },
+  title: { fontFamily: font.semibold, fontSize: 22, lineHeight: 28, letterSpacing: -0.5 },
+  headline: { fontFamily: font.semibold, fontSize: 17, lineHeight: 22, letterSpacing: -0.2 },
+  body: { fontFamily: font.regular, fontSize: 15, lineHeight: 21 },
+  bodyStrong: { fontFamily: font.semibold, fontSize: 15, lineHeight: 21 },
+  callout: { fontFamily: font.medium, fontSize: 14, lineHeight: 19 },
+  footnote: { fontFamily: font.regular, fontSize: 13, lineHeight: 18 },
+  caption: { fontFamily: font.medium, fontSize: 12, lineHeight: 16 },
+  overline: { fontFamily: font.semibold, fontSize: 11.5, lineHeight: 14, letterSpacing: 0.7, textTransform: 'uppercase' as const },
+} as const;
+
+/** Chiffres à chasse fixe : les montants restent alignés et ne bougent pas quand ils changent */
+export const tabular = { fontVariant: ['tabular-nums' as const] };
+
+/** Durées d'animation (ms) : discrètes, jamais plus d'un tiers de seconde */
+export const motion = { fast: 140, base: 220, slow: 320 } as const;

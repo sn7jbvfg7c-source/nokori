@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GROUP_NAME } from '../domain/charges';
@@ -164,7 +164,13 @@ export function OnboardingScreen({ initial, onDone }: { initial: Profile | null;
   const today = useMemo(() => new Date(), []);
   const sum = summary(draft, today);
   const incomeOk = draft.income !== null && draft.income > 0;
-  const next = () => (step === STEPS - 1 ? onDone(buildProfile(draft, today)) : setStep(step + 1));
+  const done = useRef(false); // un double appui sur « Ouvrir mon budget » n'enregistre qu'une fois
+  const next = () => {
+    if (step < STEPS - 1) return setStep(step + 1);
+    if (done.current) return;
+    done.current = true;
+    onDone(buildProfile(draft, today, initial));
+  };
   const canGo = step !== 1 || incomeOk;
 
   return (

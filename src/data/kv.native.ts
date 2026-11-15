@@ -46,6 +46,8 @@ async function open(): Promise<SQLite.SQLiteDatabase> {
     if (!__DEV__) { await db.closeAsync(); throw new Error('Base non chiffrée : enregistrement refusé'); }
     console.warn('[Nokori] SQLCipher absent (Expo Go ?) : base NON chiffrée, développement uniquement.');
   }
+  // fichiers temporaires (tris, index) en mémoire plutôt que sur le disque ; contenu effacé réellement écrasé
+  await db.execAsync('PRAGMA temp_store = MEMORY; PRAGMA secure_delete = ON;');
   await db.execAsync('CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY NOT NULL, v TEXT NOT NULL);');
   return db;
 }

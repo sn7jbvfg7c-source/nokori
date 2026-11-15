@@ -23,7 +23,11 @@ export const PAYDAYS: [number, string][] = [[1, 'le 1er'], [5, 'le 5'], [10, 'le
 export const SAVE_STEPS = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4];
 
 /** Une charge en cours de saisie : montant pas encore renseigné possible */
-export interface DraftCharge { id: string; name: string; group: ChargeGroup; amount: Cents | null; day: number; freq: Frequency; custom?: boolean }
+export interface DraftCharge {
+  id: string; name: string; group: ChargeGroup; amount: Cents | null; day: number; freq: Frequency; custom?: boolean;
+  /** charge déjà enregistrée : sa fréquence, son jour, son échéance de référence et son mois d'origine, gardés tels quels si rien ne change */
+  saved?: { freq: Frequency; day: number; anchor?: string; month?: number };
+}
 export interface Draft { income: Cents | null; payday: number; savePct: number; charges: DraftCharge[] }
 
 export const emptyDraft = (): Draft => ({ income: null, payday: 1, savePct: 0.2, charges: [] });
@@ -45,15 +49,17 @@ export function toFixedCharge(d: DraftCharge, today: Date): FixedCharge | null {
   if (d.amount === null || d.amount <= 0) return null;
   const y = today.getFullYear(), m = today.getMonth();
   const c: FixedCharge = { id: d.id, name: cleanName(d.name).trim() || 'Charge', group: d.group, amount: d.amount, day: Math.min(31, Math.max(1, d.day)), freq: d.freq };
-  if (d.freq === '4sem') c.anchor = iso(y, m, Math.min(c.day, daysInMonth(y, m)));
-  if (d.freq === 'an') c.month = m;
+  const kept = d.saved && d.saved.freq === d.freq ? d.saved : undefined;
+  if (d.freq === '4sem') c.anchor = kept?.anchor && kept.day === c.day ? kept.anchor : iso(y, m, Math.min(c.day, daysInMonth(y, m)));
+  // une charge annuelle garde son mois (une assurance de mars reste en mars, même modifiée en novembre)
+  if (d.freq === 'an') c.month = kept?.month ?? m;
   return c;
 }
 
-export function buildProfile(d: Draft, today: Date): Profile {
+export function buildProfile(d: Draft, today: Date, previous?: Profile | null): Profile {
   return {
     income: d.income ?? 0,
-    extraIncome: 0,
+    extraIncome: previous?.extraIncome ?? 0,
     payday: d.payday,
     savePct: Math.min(0.4, Math.max(0, d.savePct)),
     charges: d.charges.map(c => toFixedCharge(c, today)).filter((c): c is FixedCharge => c !== null),
@@ -73,6 +79,6 @@ export function summary(d: Draft, today: Date) {
 export function draftFromProfile(p: Profile): Draft {
   return {
     income: p.income, payday: p.payday, savePct: p.savePct,
-    charges: p.charges.map(c => ({ id: c.id, name: c.name, group: c.group, amount: c.amount, day: c.day, freq: c.freq, custom: !CATALOG.some(i => i.id === c.id) })),
+    charges: p.charges.map(c => ({ id: c.id, name: c.name, group: c.group, amount: c.amount, day: c.day, freq: c.freq, custom: !CATALOG.some(i => i.id === c.id), saved: { freq: c.freq, day: c.day, anchor: c.anchor, month: c.month } })),
   };
 }
