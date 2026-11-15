@@ -20,7 +20,7 @@ Nokori est une app de suivi de budget **manuelle** : elle ne se connecte à aucu
 | Fichier de données modifié ou corrompu | Chaque champ est relu et validé (types, bornes des montants, longueurs, nombre d’éléments). Une donnée invalide est écartée, l’app ne plante pas. |
 | Injection dans la base | Requêtes paramétrées. La clé, seule valeur insérée dans un `PRAGMA`, doit faire exactement 64 caractères hexadécimaux. |
 | Notifications lues sur l’écran verrouillé | Les rappels de prélèvement ne contiennent **aucun montant**. |
-| Fuite par le réseau | L’app ne fait aucun appel réseau. Un test le vérifie à chaque lancement. |
+| Fuite par le réseau | L’app ne fait aucun appel réseau, un test le vérifie à chaque lancement. Sur Android, les versions distribuées n’ont même pas la permission Internet. |
 
 ## Ce qui est vérifié automatiquement
 
@@ -38,7 +38,7 @@ Il vérifie aussi la clé liée à l’appareil, le refus d’écrire sans chiff
 
 - **Dépendances** (`npm audit`) : 3 alertes modérées, toutes dans `minimatch` via `@expo/fingerprint`, un outil de compilation qui n’est pas embarqué dans l’app.
 - **Secrets** : aucune clé ni aucun mot de passe dans le code ou la configuration.
-- **Android** (vérifié par prebuild) : `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE` et `SYSTEM_ALERT_WINDOW` sont retirées. Restent la biométrie (`USE_BIOMETRIC`, `USE_FINGERPRINT`), `VIBRATE`, les notifications (ajoutée par la bibliothèque) et `INTERNET`, qu’Expo ajoute par défaut et dont la version de développement a besoin pour se connecter à l’ordinateur. `allowBackup="false"`. À faire à l’étape beta : retirer `INTERNET` de la version publiée, pour que l’app ne puisse matériellement pas accéder au réseau.
+- **Android** (vérifié par prebuild) : `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE` et `SYSTEM_ALERT_WINDOW` sont retirées. Restent la biométrie (`USE_BIOMETRIC`, `USE_FINGERPRINT`), `VIBRATE`, les notifications (ajoutée par la bibliothèque) et `INTERNET`, qu’Expo ajoute par défaut et dont la version de développement a besoin pour se connecter à l’ordinateur. `allowBackup="false"`. Dans les versions bêta (`preview`) et stores (`production`), `app.config.js` retire aussi `INTERNET` : l’app ne peut matériellement pas accéder au réseau (vérifié par prebuild et par un test).
 - **iOS** (vérifié par prebuild) : le texte d’autorisation Face ID est présent. `PrivacyInfo.xcprivacy` déclare l’absence de suivi et de données collectées. `ITSAppUsesNonExemptEncryption` vaut `false`.
 
 ## Points à confirmer avant publication

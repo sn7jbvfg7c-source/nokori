@@ -52,4 +52,14 @@ describe('garde-fous de sécurité', () => {
     expect(app.ios.privacyManifests.NSPrivacyTracking).toBe(false);
     expect(app.ios.privacyManifests.NSPrivacyCollectedDataTypes).toEqual([]);
   });
+  test('versions bêta et stores : permission Internet retirée sur Android', () => {
+    const app = JSON.parse(fs.readFileSync(path.resolve(ROOT, '../app.json'), 'utf8')).expo;
+    const configure = require('../../app.config.js');
+    const perms = profile => { process.env.EAS_BUILD_PROFILE = profile; return configure({ config: app }).android.blockedPermissions; };
+    try {
+      expect(perms('production')).toContain('android.permission.INTERNET');
+      expect(perms('preview')).toContain('android.permission.INTERNET');
+      expect(perms('development')).not.toContain('android.permission.INTERNET');
+    } finally { delete process.env.EAS_BUILD_PROFILE; }
+  });
 });

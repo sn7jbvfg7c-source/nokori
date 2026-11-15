@@ -24,11 +24,14 @@
       },
       "config": {
         "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "CFBundleDevelopmentRegion": "fr"
       }
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#C5502A",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -61,7 +64,20 @@
           "faceIDPermission": "Nokori utilise Face ID pour protéger vos données budgétaires."
         }
       ],
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#F7F4EF",
+          "dark": {
+            "image": "./assets/splash-icon.png",
+            "backgroundColor": "#151412"
+          }
+        }
+      ]
     ],
     "scheme": "nokori"
   }

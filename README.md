@@ -68,7 +68,7 @@ Ce que l’app fait :
 
 ## Tester sur un téléphone
 
-Le chiffrement SQLCipher n'existe pas dans Expo Go : pour tester la vraie app, il faut une version de développement (`npx eas-cli@latest build --profile development`). Dans Expo Go, l'app fonctionne mais affiche un avertissement : base non chiffrée, réservé au développement.
+Le chiffrement SQLCipher n'existe pas dans Expo Go : pour tester la vraie app, il faut une version de développement (`npx eas-cli@latest build --profile development`). Le pas à pas complet, jusqu’à TestFlight et Google Play, est dans [docs/BETA.md](docs/BETA.md). Dans Expo Go, l'app fonctionne mais affiche un avertissement : base non chiffrée, réservé au développement.
 
 ## Avancement
 
@@ -86,5 +86,5 @@ Le chiffrement SQLCipher n'existe pas dans Expo Go : pour tester la vraie app, i
 - [x] 10. Réglages : thème auto, clair ou sombre (palettes vérifiées WCAG AA), masquer les montants, verrouillage Face ID, rappels locaux 3 jours avant chaque charge (sans montant), tout effacer
 - [x] 11a : revue de sécurité (voir [SECURITY.md](SECURITY.md)) : test automatique « aucun réseau, aucun code dynamique, aucun stockage en clair », pas de sauvegarde Android, permissions inutiles retirées, manifeste de confidentialité iOS
 - [x] 11b : accessibilité : audit automatique de 26 écrans, contrastes renforcés (teintes de 7 mois, vermillon, texte secondaire), noms des boutons, story sans défilement automatique pour VoiceOver/TalkBack et « Réduire les animations », grands chiffres plafonnés
-- [ ] 11c : préparation de la bêta
+- [x] 11c : préparation de la bêta : `eas.json` (développement, bêta interne, stores), icône et écran de démarrage 残, permission Internet retirée des versions distribuées sur Android, politique de confidentialité et conditions ([docs/](docs)), guide [docs/BETA.md](docs/BETA.md)
 - [ ] 12 : publication
