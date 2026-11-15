@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GROUP_NAME } from '../domain/charges';
-import { formatEuros, formatEurosRound, parseEuros } from '../domain/money';
+import { formatEuros, formatEurosRound, parseEuros, toInputText } from '../domain/money';
 import { buildProfile, cleanName, draftFromProfile, emptyDraft, PAYDAYS, SAVE_STEPS, searchCatalog, summary, type CatalogItem, type Draft, type DraftCharge } from '../domain/onboarding';
 import type { ChargeGroup, Frequency, Profile } from '../domain/types';
 import { font } from '../theme/tokens';
@@ -20,7 +20,7 @@ const freqText = (c: DraftCharge) => (c.freq === '4sem' ? `toutes les 4 semaines
 /** Champ montant : garde le texte tapé, remonte les centimes (ou null si invalide) */
 function AmountInput({ value, onChange, label, big }: { value: number | null; onChange: (c: number | null) => void; label: string; big?: boolean }) {
   const colors = useColors(); const st = useStyles(makeStyles);
-  const [txt, setTxt] = useState(value === null ? '' : formatEuros(value).replace(/ €$/, '').replace(/ /g, ' '));
+  const [txt, setTxt] = useState(value === null ? '' : toInputText(value));
   const bad = txt.trim() !== '' && parseEuros(txt) === null;
   return (
     <View>

@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ACCOUNT_KINDS, parseBalance, totals, type Account, type AccountKind } from '../domain/accounts';
 import { dayTitle } from '../domain/activity';
-import { formatEuros } from '../domain/money';
+import { formatEuros, toInputText } from '../domain/money';
 import { cleanName } from '../domain/onboarding';
 import { useColors, useStyles } from '../theme/theme';
 import type { Palette } from '../theme/tokens';
@@ -18,7 +18,7 @@ const updatedText = (iso: string, today: Date) => {
   const x = dayTitle(iso, today);
   return x === 'Aujourd’hui' ? 'mis à jour aujourd’hui' : x === 'Hier' ? 'mis à jour hier' : `mis à jour le ${x}`;
 };
-const balanceText = (c: number) => formatEuros(c).replace(/ €$/, '').replace(/ /g, ' ').replace('−', '-');
+const balanceText = toInputText;
 const ageDays = (iso: string, today: Date) => Math.round((Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) - Date.parse(iso + 'T00:00:00Z')) / 86_400_000);
 /** Au-delà, on suggère de mettre le solde à jour */
 export const STALE_DAYS = 30;

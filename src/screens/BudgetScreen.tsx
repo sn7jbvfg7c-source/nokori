@@ -16,11 +16,11 @@ import { PillarList } from '../ui/PillarList';
 
 interface Props {
   profile: Profile; history?: ProfileEra[]; expenses: Expense[]; today: Date;
-  onAdd?: () => void; onEdit?: () => void; onSettings?: () => void;
+  onAdd?: () => void; onEdit?: () => void; onSettings?: () => void; onPillar?: (p: PillarId) => void;
   lastAdded?: Expense | null; onUndo?: (id: string) => void; onDismiss?: () => void;
 }
 
-export function BudgetScreen({ profile, history = [], expenses, today, onAdd, onEdit, onSettings, lastAdded, onUndo, onDismiss }: Props) {
+export function BudgetScreen({ profile, history = [], expenses, today, onAdd, onEdit, onSettings, onPillar, lastAdded, onUndo, onDismiss }: Props) {
   const c = useColors(); const st = useStyles(makeStyles);
   const m = useMoney();
   const s = buildMonth(profile, expenses, today);
@@ -42,7 +42,7 @@ export function BudgetScreen({ profile, history = [], expenses, today, onAdd, on
         {view === 'mois' ? (
           <>
             <MonthCard s={s} />
-            <PillarList pillars={s.pillars} highlight={pillar} />
+            <PillarList pillars={s.pillars} highlight={pillar} onOpen={onPillar} />
             <Card style={st.save}>
               <View style={st.seal}><Text style={st.sealText}>{Math.round(profile.savePct * 100)} %</Text></View>
               <View style={{ flex: 1 }}>

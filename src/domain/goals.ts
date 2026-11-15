@@ -14,7 +14,9 @@ export interface Goal { id: string; name: string; type: GoalType; target: Cents;
 
 /** Note un versement : ajoute au total et à l'historique */
 export function addDeposit(g: Goal, amount: Cents, date: string): Goal {
-  return { ...g, saved: Math.min(g.saved + amount, 10_000_000_000), deposits: [{ date, amount }, ...(g.deposits ?? [])].slice(0, 100) };
+  // un versement ancien (noté après coup) se range à sa date : l'historique reste du plus récent au plus ancien
+  const deposits = [{ date, amount }, ...(g.deposits ?? [])].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 100);
+  return { ...g, saved: Math.min(g.saved + amount, 10_000_000_000), deposits };
 }
 
 /** Total versé pendant un mois (AAAA-MM) */
@@ -79,4 +81,18 @@ export function streakUnderDailyBudget(p: Profile, expenses: Expense[], today: D
     days++;
   }
   return { days, perDay };
+}
+
+/**
+ * Date saisie « JJ/MM/AAAA » (ou « J/M/AA ») : renvoie AAAA-MM-JJ, ou null si elle n'existe pas,
+ * si elle est dans le futur ou avant 2000. Un versement se note après l'avoir fait.
+ */
+export function parseDayFr(s: string, today: Date): string | null {
+  const m = /^\s*(\d{1,2})[/.\- ](\d{1,2})[/.\- ](\d{2}|\d{4})\s*$/.exec(s);
+  if (!m) return null;
+  const d = Number(m[1]), mo = Number(m[2]), y = m[3].length === 2 ? 2000 + Number(m[3]) : Number(m[3]);
+  const dt = new Date(y, mo - 1, d);
+  if (y < 2000 || dt.getFullYear() !== y || dt.getMonth() !== mo - 1 || dt.getDate() !== d) return null;
+  if (dt > new Date(today.getFullYear(), today.getMonth(), today.getDate())) return null;
+  return `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 }

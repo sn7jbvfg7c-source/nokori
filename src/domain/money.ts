@@ -31,3 +31,11 @@ export function formatEurosRound(c: Cents): string {
   const neg = c < 0, a = Math.round(Math.abs(c) / 100);
   return `${neg ? '−' : ''}${group(a)}${NBSP}€`;
 }
+
+/**
+ * Montant pré-rempli dans un champ de saisie : « 2 000,00 » (espaces normaux, sans symbole €),
+ * relisible tel quel par parseEuros / parseBalance. Négatif : « -120,00 ».
+ */
+export function toInputText(c: Cents): string {
+  return formatEuros(c).replace(/[\s ]*€$/, '').replace(/ /g, ' ').replace('−', '-');
+}

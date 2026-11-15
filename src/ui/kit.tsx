@@ -153,6 +153,7 @@ export function Chip({ label, selected, onPress, color, a11yLabel, icon }: { lab
   const fg = selected ? (color ? onColor(color) : c.onBtn) : c.ink;
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityState={{ selected }} accessibilityLabel={a11yLabel}
+      {...({ 'aria-pressed': selected } as object)}
       style={[st.chip, { backgroundColor: selected ? on : color ? tint(color, 0.11) : c.fill }]}>
       {icon && <View aria-hidden><Feather name={icon} size={14} color={selected ? fg : color ?? c.ink2} /></View>}
       <Text style={[st.chipTxt, { color: fg }]}>{label}</Text>

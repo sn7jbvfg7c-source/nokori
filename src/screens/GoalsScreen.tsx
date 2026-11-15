@@ -5,8 +5,8 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { parseBalance } from '../domain/accounts';
 import { dayTitle } from '../domain/activity';
-import { addDeposit, depositedIn, eta, GOAL_TYPES, milestone, monthSurplus, progress, streakUnderDailyBudget, weekWithoutWants, type Goal, type GoalType } from '../domain/goals';
-import { formatEuros } from '../domain/money';
+import { addDeposit, depositedIn, eta, parseDayFr, GOAL_TYPES, milestone, monthSurplus, progress, streakUnderDailyBudget, weekWithoutWants, type Goal, type GoalType } from '../domain/goals';
+import { toInputText } from '../domain/money';
 import { MONTH_NAMES } from '../domain/months';
 import { cleanName } from '../domain/onboarding';
 import type { Expense, Profile } from '../domain/types';
@@ -18,9 +18,11 @@ import { Badge, Button, Card, Chip, Confirm, EmptyState, IconButton, ProgressBar
 import { useMoney } from '../ui/money';
 
 const amount = (s: string) => { const v = parseBalance(s); return v !== null && v >= 0 ? v : null; };
-const txt = (c: number) => formatEuros(c).replace(/ €$/, '').replace(/ /g, ' ');
+const txt = toInputText;
 const typeOf = (x: GoalType) => GOAL_TYPES.find(g => g.id === x)!;
 const isoOf = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+/** « lun. 3 mars », avec l'année si ce n'est pas l'année en cours */
+const depDay = (iso: string, today: Date) => dayTitle(iso, today) + (iso.slice(0, 4) !== String(today.getFullYear()) ? ` ${iso.slice(0, 4)}` : '');
 const MILESTONE: Record<25 | 50 | 75 | 100, string> = { 25: 'Un quart du chemin.', 50: 'La moitié est faite.', 75: 'Les trois quarts : la ligne d’arrivée approche.', 100: 'Objectif atteint. Bravo.' };
 
 interface Draft { id: string | null; name: string; type: GoalType; target: string; saved: string; monthly: string }
@@ -72,7 +74,7 @@ export function GoalsScreen({ goals, profile, expenses, today, onSave, onRemove 
   const m$ = useMoney();
   const insets = useSafeAreaInsets();
   const [draft, setDraft] = useState<Draft | null>(null);
-  const [deposit, setDeposit] = useState<{ id: string; value: string } | null>(null);
+  const [deposit, setDeposit] = useState<{ id: string; value: string; date: string | null } | null>(null);
   const surplus = monthSurplus(profile, expenses, today);
   const week = weekWithoutWants(expenses, today), okWeek = week.filter(Boolean).length;
   const streak = streakUnderDailyBudget(profile, expenses, today);
@@ -93,19 +95,42 @@ export function GoalsScreen({ goals, profile, expenses, today, onSave, onRemove 
     return e.reached ? 'Objectif atteint' : e.label ? `Au rythme de ${m$.round(g.monthly)} par mois : ${e.label}` : 'Ajoutez un versement mensuel pour voir la date d’arrivée';
   };
 
-  const depositRow = (g: Goal) => deposit?.id === g.id ? (
-    <View style={st.depRow}>
-      <View style={[st.fBox, { flex: 1, width: undefined }]}>
-        <TextInput value={deposit.value} onChangeText={v => setDeposit({ id: g.id, value: v.replace(/[^\d,.\s]/g, '').slice(0, 14) })} keyboardType="decimal-pad" inputMode="decimal" placeholder="0" placeholderTextColor={c.ink3} accessibilityLabel={`Versement pour ${g.name}`} style={st.fInput} autoFocus />
-        <Text style={st.euro}>€</Text>
+  const depositRow = (g: Goal) => {
+    if (deposit?.id !== g.id) return (
+      <Button label="Noter un versement" icon="plus" variant="secondary" small onPress={() => setDeposit({ id: g.id, value: '', date: null })} a11yLabel={`Noter un versement pour ${g.name}`} style={{ alignSelf: 'flex-start' }} />
+    );
+    const v = amount(deposit.value);
+    // date : aujourd'hui par défaut, ou une date passée (versement fait avant de créer l'objectif)
+    const iso = deposit.date === null ? isoOf(today) : parseDayFr(deposit.date, today);
+    const badDate = deposit.date !== null && deposit.date.trim().length >= 6 && !iso;
+    return (
+      <View style={st.depBox}>
+        <View style={st.depRow}>
+          <View style={[st.fBox, { flex: 1, width: undefined }]}>
+            <TextInput value={deposit.value} onChangeText={x => setDeposit({ ...deposit, value: x.replace(/[^\d,.\s]/g, '').slice(0, 14) })} keyboardType="decimal-pad" inputMode="decimal" placeholder="0" placeholderTextColor={c.ink3} accessibilityLabel={`Versement pour ${g.name}`} style={st.fInput} autoFocus />
+            <Text style={st.euro}>€</Text>
+          </View>
+        </View>
+        <View style={st.depRow}>
+          <Chip label="Aujourd’hui" selected={deposit.date === null} onPress={() => setDeposit({ ...deposit, date: null })} />
+          <Chip label="Autre date" icon="calendar" selected={deposit.date !== null} onPress={() => setDeposit({ ...deposit, date: deposit.date ?? '' })} />
+        </View>
+        {deposit.date !== null && (
+          <View>
+            <TextInput value={deposit.date} onChangeText={x => setDeposit({ ...deposit, date: x.replace(/[^\d/.\- ]/g, '').slice(0, 10) })} placeholder="JJ/MM/AAAA" placeholderTextColor={c.ink3}
+              keyboardType="numbers-and-punctuation" inputMode="numeric" accessibilityLabel={`Date du versement pour ${g.name}`} style={st.input} maxLength={10} />
+            <Text style={[st.meta, badDate && { color: c.vermilion }]}>{badDate ? 'Date invalide (jamais dans le futur).' : iso && deposit.date ? `Versement du ${depDay(iso, today).toLowerCase()}.` : 'Si vous ne savez plus exactement, une date approximative suffit.'}</Text>
+          </View>
+        )}
+        <View style={st.btns}>
+          <View style={{ flex: 1 }} />
+          <Button label="Annuler" variant="secondary" small onPress={() => setDeposit(null)} />
+          <Button label="Noter" small disabled={!v || !iso} a11yLabel={`Noter le versement pour ${g.name}`}
+            onPress={() => { if (v && iso) { onSave(addDeposit(g, v, iso)); setDeposit(null); } }} />
+        </View>
       </View>
-      <Button label="Annuler" variant="secondary" small onPress={() => setDeposit(null)} />
-      <Button label="Noter" small disabled={!amount(deposit.value)} a11yLabel={`Noter le versement pour ${g.name}`}
-        onPress={() => { const v = amount(deposit.value); if (v) { onSave(addDeposit(g, v, isoOf(today))); setDeposit(null); } }} />
-    </View>
-  ) : (
-    <Button label="Noter un versement" icon="plus" variant="secondary" small onPress={() => setDeposit({ id: g.id, value: '' })} a11yLabel={`Noter un versement pour ${g.name}`} style={{ alignSelf: 'flex-start' }} />
-  );
+    );
+  };
 
   const monthLine = (g: Goal) => {
     if (g.monthly <= 0 || progress(g) >= 1) return null;
@@ -164,7 +189,7 @@ export function GoalsScreen({ goals, profile, expenses, today, onSave, onRemove 
               <View style={st.history}>
                 <Text style={st.histTitle}>Derniers versements</Text>
                 {lead.deposits.slice(0, 3).map((dp, i) => (
-                  <View key={i} style={st.histRow}><Text style={st.histDate}>{dayTitle(dp.date, today)}</Text><Text style={st.histAmt}>{m$.signed(dp.amount, '+')}</Text></View>
+                  <View key={i} style={st.histRow}><Text style={st.histDate}>{depDay(dp.date, today)}</Text><Text style={st.histAmt}>{m$.signed(dp.amount, '+')}</Text></View>
                 ))}
               </View>
             )}
@@ -258,7 +283,8 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   etaMain: { ...t.callout, fontFamily: font.semibold, color: c.ink },
   etaSub: { ...t.footnote, color: c.ink2 },
   monthLine: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  depRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, flex: 1 },
+  depBox: { gap: space.sm, flex: 1 },
+  depRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   history: { marginTop: space.xs, paddingTop: space.sm, borderTopWidth: StyleSheet.hairlineWidth * 2, borderTopColor: c.hair, gap: 6 },
   histTitle: { ...t.overline, color: c.ink2 },
   histRow: { flexDirection: 'row', justifyContent: 'space-between' },

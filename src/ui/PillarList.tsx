@@ -1,5 +1,6 @@
+import Feather from '@expo/vector-icons/Feather';
 import { useEffect, useState } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { PillarState } from '../domain/budget';
 import type { PillarId } from '../domain/types';
 import { useColors, useStyles } from '../theme/theme';
@@ -24,7 +25,8 @@ function Flash({ color, run }: { color: string; run: unknown }) {
 }
 
 /** Les quatre piliers kakeibo : ce qui reste, ce qui a été dépensé, et la part du budget consommée */
-export function PillarList({ pillars, highlight }: { pillars: PillarState[]; highlight?: PillarId }) {
+/** `onOpen` : toucher un pilier ouvre ses dépenses dans l'Activité */
+export function PillarList({ pillars, highlight, onOpen }: { pillars: PillarState[]; highlight?: PillarId; onOpen?: (p: PillarId) => void }) {
   const c = useColors(); const st = useStyles(makeStyles);
   const m = useMoney();
   return (
@@ -35,7 +37,9 @@ export function PillarList({ pillars, highlight }: { pillars: PillarState[]; hig
           const color = c.pillar[p.id];
           const over = p.left < 0;
           return (
-            <View key={p.id} style={[st.row, i > 0 && st.sep]} accessible accessibilityLabel={`${p.name} : il reste ${m.spoken(p.left)} sur ${m.spoken(p.budget)}`}>
+            <Pressable key={p.id} onPress={onOpen ? () => onOpen(p.id) : undefined} disabled={!onOpen} style={({ pressed }) => [st.row, i > 0 && st.sep, pressed && { opacity: 0.6 }]}
+              accessibilityRole={onOpen ? 'button' : undefined} accessibilityHint={onOpen ? 'Affiche les dépenses de ce pilier dans l’Activité' : undefined}
+              accessibilityLabel={`${p.name} : il reste ${m.spoken(p.left)} sur ${m.spoken(p.budget)}. ${m.round(p.left)} · ${m.round(p.spent)} dépensés sur ${m.round(p.budget)} · ${p.hint}`}>
               <Flash color={color} run={highlight === p.id ? p.spent : 0} />
               <Badge color={color} icon={PILLAR_ICON[p.id]} />
               <View style={st.body}>
@@ -46,7 +50,8 @@ export function PillarList({ pillars, highlight }: { pillars: PillarState[]; hig
                 <ProgressBar value={p.budget > 0 ? p.spent / p.budget : p.spent > 0 ? 1 : 0} color={over ? c.vermilion : color} height={4} />
                 <Text style={st.detail}>{m.round(p.spent)} dépensés sur {m.round(p.budget)} · {p.hint}</Text>
               </View>
-            </View>
+              {onOpen && <View aria-hidden><Feather name="chevron-right" size={18} color={c.ink3} /></View>}
+            </Pressable>
           );
         })}
       </Card>

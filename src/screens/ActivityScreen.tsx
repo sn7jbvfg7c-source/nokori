@@ -18,18 +18,23 @@ interface Props {
   profile: Profile; profileAt?: (y: number, m: number) => Profile; expenses: Expense[]; dismissed: string[]; today: Date;
   onAdd: () => void; onEdit: (id: string) => void; onDelete: (id: string) => void; onIgnore: (key: string) => void; onAccept: (s: Suggestion) => void;
   lastRemoved?: Expense | null; onUndoRemove?: () => void; onClearRemoved?: () => void;
+  /** pilier demandé depuis le Budget ; `linkKey` change à chaque demande */
+  linkFilter?: PillarId | null; linkKey?: string;
 }
 
 /** Activité : chaque mois depuis la première dépense, recherche dans tout l'historique, modification et suppression */
-export function ActivityScreen({ profile, profileAt, expenses, dismissed, today, onAdd, onEdit, onDelete, onIgnore, onAccept, lastRemoved, onUndoRemove, onClearRemoved }: Props) {
+export function ActivityScreen({ profile, profileAt, expenses, dismissed, today, onAdd, onEdit, onDelete, onIgnore, onAccept, lastRemoved, onUndoRemove, onClearRemoved, linkFilter, linkKey }: Props) {
   const c = useColors(); const st = useStyles(makeStyles);
   const m$ = useMoney();
   const insets = useSafeAreaInsets();
-  const [filter, setFilter] = useState<PillarId | null>(null);
+  const [filter, setFilter] = useState<PillarId | null>(linkFilter ?? null);
   const [query, setQuery] = useState('');
   const [offset, setOffset] = useState(0);
   const [open, setOpen] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<string | null>(null);
+  // ouvert depuis un pilier du Budget : ce pilier, le mois en cours, sans recherche
+  const [seenKey, setSeenKey] = useState(linkKey);
+  if (linkKey !== seenKey) { setSeenKey(linkKey); setFilter(linkFilter ?? null); setOffset(0); setQuery(''); setOpen(null); }
   const first = useMemo(() => firstMonth(expenses, today), [expenses, today]);
   const minOffset = (first.year * 12 + first.month) - (today.getFullYear() * 12 + today.getMonth());
   const shown = new Date(today.getFullYear(), today.getMonth() + offset, 1);

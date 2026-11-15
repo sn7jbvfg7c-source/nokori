@@ -122,6 +122,50 @@ const SEED = {
     const g = (await state()).goals[0];
     if (g.saved !== 105000 || g.deposits?.[0]?.date !== '2026-11-14' || g.deposits[0].amount !== 15000) throw new Error(JSON.stringify(g));
   });
+  await t('objectif : modifier sans retaper les montants, « Enregistrer » reste possible', async () => {
+    await p.getByRole('button', { name: /modifier Japon$/ }).click(); await W(400);
+    if (await p.getByText('Montant invalide').count()) throw new Error('montant pré-rempli refusé');
+    const v = await p.getByLabel('Montant visé').inputValue();
+    if (/€/.test(v)) throw new Error('symbole dans le champ : ' + v);
+    await p.getByLabel('Nom de l’objectif').fill('Japon 2027');
+    await p.getByRole('button', { name: 'Enregistrer l’objectif' }).click(); await W(400);
+    const g = (await state()).goals[0];
+    if (g.name !== 'Japon 2027' || g.target !== 300000 || g.saved !== 105000) throw new Error(JSON.stringify(g));
+  });
+  await t('versement à une date passée : rangé à sa date', async () => {
+    await p.getByRole('button', { name: 'Noter un versement pour Japon 2027' }).click();
+    await p.getByLabel('Versement pour Japon 2027', { exact: true }).fill('500');
+    await p.getByRole('button', { name: 'Autre date' }).click();
+    await p.getByLabel('Date du versement pour Japon 2027').fill('12/12/2026');
+    await p.getByText('Date invalide', { exact: false }).waitFor();
+    if (!(await p.getByRole('button', { name: 'Noter le versement pour Japon 2027' }).isDisabled())) throw new Error('date future acceptée');
+    await p.getByLabel('Date du versement pour Japon 2027').fill('03/06/2026');
+    await p.getByRole('button', { name: 'Noter le versement pour Japon 2027' }).click(); await W(400);
+    const g = (await state()).goals[0];
+    if (g.saved !== 155000 || g.deposits.map(d => d.date).join() !== '2026-11-14,2026-06-03') throw new Error(JSON.stringify(g.deposits));
+  });
+  await t('compte : modifier sans retaper le solde', async () => {
+    await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('nokori:state')); s.accounts = [{ id: 'c', name: 'Livret A', kind: 'livret', balance: 645000, updated: '2026-11-01' }]; localStorage.setItem('nokori:state', JSON.stringify(s)); });
+    await p.goto('http://localhost:8096/'); await W(1800);
+    await tab('Comptes').click(); await W(500);
+    await p.getByRole('button', { name: /^Livret A,/ }).click(); await W(300);
+    if (await p.getByText('Solde invalide', { exact: false }).count()) throw new Error('solde pré-rempli refusé');
+    await p.getByLabel('Nom du compte').fill('Livret A (banque)');
+    await p.getByRole('button', { name: 'Enregistrer le compte' }).click(); await W(300);
+    const a = (await state()).accounts[0];
+    if (a.name !== 'Livret A (banque)' || a.balance !== 645000) throw new Error(JSON.stringify(a));
+  });
+  await t('budget : toucher « Envies » ouvre les dépenses Envies dans l’Activité', async () => {
+    await tab('Budget').click(); await W(400);
+    await p.getByRole('button', { name: /^Envies : il reste/ }).click(); await W(600);
+    await p.getByText('Novembre 2026').waitFor();
+    const on = await p.getByRole('button', { name: 'Envies', exact: true }).getAttribute('aria-pressed');
+    if (on !== 'true') throw new Error('filtre Envies non sélectionné');
+    if (await p.getByText('Courses', { exact: true }).filter({ visible: true }).count()) throw new Error('dépense Besoins visible');
+    await tab('Budget').click(); await W(300);
+    await p.getByRole('button', { name: /^Culture : il reste/ }).click(); await W(600);
+    if ((await p.getByRole('button', { name: 'Culture', exact: true }).getAttribute('aria-pressed')) !== 'true') throw new Error('filtre Culture');
+  });
   await t('masquer les montants : plus aucun montant dans l’activité ni le bilan', async () => {
     await tab('Budget').click(); await W(400);
     await p.getByRole('button', { name: 'Réglages' }).click(); await W(500);
