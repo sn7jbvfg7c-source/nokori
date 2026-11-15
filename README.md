@@ -65,4 +65,6 @@ Le chiffrement SQLCipher n'existe pas dans Expo Go : pour tester la vraie app, i
 - [x] 8. Objectifs : montant visé, déjà épargné, versement mensuel, versements notés, date d'arrivée (et variante avec le reste du mois) ; défis semaine sans envies et série sous le budget du jour
 - [x] 9. Bilan : mois en cours et mois précédent, épargné, répartition, quatre questions, note « comment faire mieux » par mois, piliers ; story du mois clos en 5 écrans
 - [x] 10. Réglages : thème auto, clair ou sombre (palettes vérifiées WCAG AA), masquer les montants, verrouillage Face ID, rappels locaux 3 jours avant chaque charge (sans montant), tout effacer
-- [ ] 11 et 12 : contrôles (sécurité, accessibilité, bêta) et publication
+- [x] 11a : revue de sécurité (voir [SECURITY.md](SECURITY.md)) : test automatique « aucun réseau, aucun code dynamique, aucun stockage en clair », pas de sauvegarde Android, permissions inutiles retirées, manifeste de confidentialité iOS
+- [ ] 11b et 11c : accessibilité, préparation de la bêta
+- [ ] 12 : publication
