@@ -39,3 +39,32 @@ describe('date d’un versement', () => {
     expect(addDeposit(g2, 1000, '2026-11-15').deposits![0].date).toBe('2026-11-15');
   });
 });
+
+import { activityFor } from '../activity';
+describe('recherche dans l’activité : les charges fixes aussi (bug signalé)', () => {
+  const p = { income: 200000, extraIncome: 0, payday: 1, savePct: 0.1, charges: [
+    { id: 'loyer', name: 'Loyer', group: 'logement' as const, amount: 70000, day: 5, freq: 'mois' as const },
+    { id: 'net', name: 'Netflix', group: 'abos' as const, amount: 1399, day: 20, freq: 'mois' as const },
+  ] };
+  const expenses = [{ id: 'a', date: '2026-09-10', label: 'Courses', categoryId: 'courses', amount: 5000 }];
+  const today = new Date(2026, 10, 14);
+  const q = (query: string) => activityFor(p, expenses, today, { year: 2026, month: 10, query });
+  test('par nom : chaque prélèvement passé, depuis la première dépense, jamais dans le futur', () => {
+    const r = q('loyer');
+    expect(r.days.map(d => d.date)).toEqual(['2026-11-05', '2026-10-05', '2026-09-05']);
+    expect(r.fixed).toBe(210000);
+    expect(q('netflix').days.map(d => d.date)).toEqual(['2026-10-20', '2026-09-20']);
+  });
+  test('par groupe (« abonnements ») ou par « charge fixe »', () => {
+    expect(q('abonnements').count).toBe(2);
+    expect(q('charge fixe').count).toBe(5);
+  });
+  test('les dépenses restent trouvées, sans doublon', () => {
+    expect(q('courses').count).toBe(1);
+  });
+  test('montant d’époque : un loyer augmenté en novembre garde l’ancien montant en octobre', () => {
+    const old = { ...p, charges: [{ ...p.charges[0], amount: 65000 }, p.charges[1]] };
+    const r = activityFor(p, expenses, today, { year: 2026, month: 10, query: 'loyer', profileAt: (y, m) => (y * 12 + m < 2026 * 12 + 10 ? old : p) });
+    expect(r.days.map(d => d.total)).toEqual([70000, 65000, 65000]);
+  });
+});

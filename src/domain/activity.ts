@@ -73,12 +73,24 @@ export function activityFor(p: Profile, expenses: Expense[], today: Date, q: Act
     if (search && !norm(e.label).includes(search) && !norm(cat.name).includes(search)) continue;
     items.push({ key: 'e' + e.id, date: e.date, kind: 'depense', id: e.id, label: e.label, sub: cat.name, amount: e.amount, pillar: cat.pillar });
   }
-  if (!search) {
-    const prof = q.profileAt ? q.profileAt(q.year, q.month) : p;
-    for (const c of prof.charges) for (const d of chargeDays(c, q.year, q.month)) {
-      const date = iso(q.year, q.month, d);
-      if (date > todayIso) continue;
-      items.push({ key: `c${c.id}${date}`, date, kind: 'charge', id: c.id, label: c.name, sub: `charge fixe, ${GROUP_NAME[c.group].toLowerCase()}`, amount: c.amount, pillar: pillarOfCharge(c) });
+  // charges fixes déjà passées : le mois affiché, ou en recherche tous les mois depuis la première dépense
+  // (les mêmes mois que ceux que l'on peut parcourir), avec le montant qu'elles avaient à l'époque
+  const months: [number, number][] = [];
+  if (!search) months.push([q.year, q.month]);
+  else {
+    const f = firstMonth(expenses, today);
+    for (let k = f.year * 12 + f.month; k <= today.getFullYear() * 12 + today.getMonth(); k++) months.push([Math.floor(k / 12), k % 12]);
+  }
+  for (const [y, m] of months) {
+    const prof = q.profileAt ? q.profileAt(y, m) : p;
+    for (const c of prof.charges) {
+      const group = GROUP_NAME[c.group];
+      if (search && !norm(c.name).includes(search) && !norm(group).includes(search) && !'charge fixe'.includes(search) && !norm('charges fixes').includes(search)) continue;
+      for (const d of chargeDays(c, y, m)) {
+        const date = iso(y, m, d);
+        if (date > todayIso) continue;
+        items.push({ key: `c${c.id}${date}`, date, kind: 'charge', id: c.id, label: c.name, sub: `charge fixe, ${group.toLowerCase()}`, amount: c.amount, pillar: pillarOfCharge(c) });
+      }
     }
   }
   const shown = q.filter ? items.filter(i => i.pillar === q.filter) : items;
