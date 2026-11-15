@@ -30,6 +30,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="activite" options={{ title: 'Activité', tabBarIcon: ({ color, size }) => <Feather name="list" color={String(color)} size={size - 2} /> }} />
       <Tabs.Screen name="comptes" options={{ title: 'Comptes', tabBarIcon: ({ color, size }) => <Feather name="credit-card" color={String(color)} size={size - 2} /> }} />
       <Tabs.Screen name="objectifs" options={{ title: 'Objectifs', tabBarIcon: ({ color, size }) => <Feather name="target" color={String(color)} size={size - 2} /> }} />
+      <Tabs.Screen name="bilan" options={{ title: 'Bilan', tabBarIcon: ({ color, size }) => <Feather name="file-text" color={String(color)} size={size - 2} /> }} />
     </Tabs>
   );
 }

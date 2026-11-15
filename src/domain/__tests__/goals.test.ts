@@ -25,7 +25,7 @@ describe('objectifs', () => {
     expect(monthSurplus(p, Array.from({ length: 14 }, (_, i) => e(String(i), `2026-11-${String(i + 1).padStart(2, '0')}`, 'courses', 30000)), nov14)).toBe(0);
   });
   test('relecture : objectifs valides gardés, abîmés écartés', () => {
-    expect(decode(encode({ profile: null, expenses: [], dismissed: [], accounts: [], goals: [japon] })).goals).toEqual([japon]);
+    expect(decode(encode({ profile: null, expenses: [], dismissed: [], accounts: [], goals: [japon], notes: {} })).goals).toEqual([japon]);
     const bad = JSON.stringify({ v: 1, goals: [japon, { id: 'x', name: 'x', type: 'fusée', target: -1, saved: 0, monthly: 0 }, null] });
     expect(decode(bad).goals).toEqual([japon]);
   });

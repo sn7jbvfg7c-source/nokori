@@ -29,7 +29,7 @@ describe('comptes', () => {
     expect(upsertAccount(many, { ...cc, id: 'x' })).toHaveLength(50);
   });
   test('relecture : comptes valides gardés, comptes abîmés écartés', () => {
-    const raw = encode({ profile: null, expenses: [], dismissed: [], accounts: [cc, la], goals: [] });
+    const raw = encode({ profile: null, expenses: [], dismissed: [], accounts: [cc, la], goals: [], notes: {} });
     expect(decode(raw).accounts).toEqual([cc, la]);
     const bad = JSON.stringify({ v: 1, profile: null, expenses: [], dismissed: [], accounts: [cc, { id: 'z', name: '', kind: 'crypto', balance: 1e15, updated: 'hier' }, 'texte'] });
     expect(decode(bad).accounts).toEqual([cc]);

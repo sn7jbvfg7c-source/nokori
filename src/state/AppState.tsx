@@ -19,6 +19,7 @@ interface AppState extends AppData {
   dismissSuggestion(key: string): Promise<void>;
   saveAccount(a: Account): Promise<void>;
   saveGoal(g: Goal): Promise<void>;
+  saveNote(month: string, text: string): Promise<void>;
   removeGoal(id: string): Promise<void>;
   removeAccount(id: string): Promise<void>;
   /** fait d'une dépense régulière une charge fixe ; la dépense de ce mois est remplacée par la charge */
@@ -57,6 +58,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     addExpense: async e => { await commit({ ...latest.current, expenses: [e, ...latest.current.expenses] }); setLastAdded(e); },
     removeExpense: async id => { await commit({ ...latest.current, expenses: latest.current.expenses.filter(x => x.id !== id) }); setLastAdded(l => (l?.id === id ? null : l)); },
     lastAdded, clearLastAdded: () => setLastAdded(null),
+    saveNote: (month, text) => { if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) return Promise.resolve(); const notes = { ...latest.current.notes }; if (text.trim()) notes[month] = text.slice(0, 280); else delete notes[month]; return commit({ ...latest.current, notes }); },
     saveGoal: g => { const l = latest.current.goals; const i = l.findIndex(x => x.id === g.id); return commit({ ...latest.current, goals: i >= 0 ? l.map(x => (x.id === g.id ? g : x)) : l.length >= 30 ? l : [...l, g] }); },
     removeGoal: id => commit({ ...latest.current, goals: latest.current.goals.filter(x => x.id !== id) }),
     saveAccount: a => commit({ ...latest.current, accounts: upsertAccount(latest.current.accounts, a) }),

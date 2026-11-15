@@ -9,8 +9,8 @@ import type { ChargeGroup, Expense, FixedCharge, Frequency, Profile } from '../d
 export const STATE_KEY = 'state';
 export const STATE_VERSION = 1;
 
-export interface AppData { profile: Profile | null; expenses: Expense[]; /** suggestions de charges ignorées */ dismissed: string[]; accounts: Account[]; goals: Goal[] }
-export const EMPTY: AppData = { profile: null, expenses: [], dismissed: [], accounts: [], goals: [] };
+export interface AppData { profile: Profile | null; expenses: Expense[]; /** suggestions de charges ignorées */ dismissed: string[]; accounts: Account[]; goals: Goal[]; /** notes « comment faire mieux », par mois AAAA-MM */ notes: Record<string, string> }
+export const EMPTY: AppData = { profile: null, expenses: [], dismissed: [], accounts: [], goals: [], notes: {} };
 
 const GROUPS: ChargeGroup[] = ['logement', 'energie', 'internet', 'assurance', 'sante', 'transports', 'abos', 'sport'];
 const FREQS: Frequency[] = ['mois', '4sem', 'an'];
@@ -64,10 +64,12 @@ export function decode(raw: string | null): AppData {
     const dismissed = Array.isArray(j.dismissed) ? j.dismissed.filter((k): k is string => typeof k === 'string' && k.length > 0 && k.length <= 64).slice(0, 200) : [];
     const accounts = Array.isArray(j.accounts) ? j.accounts.slice(0, 50).map(account).filter((a): a is Account => a !== null) : [];
     const goals = Array.isArray(j.goals) ? j.goals.slice(0, 30).map(goal).filter((g): g is Goal => g !== null) : [];
-    return { profile: j.profile == null ? null : profile(j.profile), expenses, dismissed, accounts, goals };
+    const notes: Record<string, string> = Object.create(null);
+    if (isObj(j.notes)) for (const [k, v] of Object.entries(j.notes).slice(0, 60)) if (/^\d{4}-(0[1-9]|1[0-2])$/.test(k) && typeof v === 'string' && v.length <= 280) notes[k] = v;
+    return { profile: j.profile == null ? null : profile(j.profile), expenses, dismissed, accounts, goals, notes: { ...notes } };
   } catch {
     return EMPTY;
   }
 }
 
-export const encode = (d: AppData): string => JSON.stringify({ v: STATE_VERSION, profile: d.profile, expenses: d.expenses, dismissed: d.dismissed, accounts: d.accounts, goals: d.goals });
+export const encode = (d: AppData): string => JSON.stringify({ v: STATE_VERSION, profile: d.profile, expenses: d.expenses, dismissed: d.dismissed, accounts: d.accounts, goals: d.goals, notes: d.notes });

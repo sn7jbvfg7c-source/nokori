@@ -17,14 +17,14 @@ npm run android    # émulateur Android ou Expo Go
 npm test           # tests unitaires (moteur, accueil, données relues)
 npm run typecheck  # vérification des types
 npm run lint       # règles de code
-npm run e2e        # parcours complets dans la version web : accueil, dépense, calendrier, activité, comptes, objectifs (Playwright)
+npm run e2e        # parcours complets dans la version web : accueil, dépense, calendrier, activité, comptes, objectifs, bilan (Playwright)
 ```
 
 ## Organisation
 
 | Dossier | Contenu |
 | --- | --- |
-| `src/app` | Routes (Expo Router) : onglets `(tabs)/index` (budget et calendrier), `(tabs)/activite`, `(tabs)/comptes` et `(tabs)/objectifs`, `accueil`, `depense` (fenêtre de saisie) |
+| `src/app` | Routes (Expo Router) : onglets `(tabs)/index` (budget et calendrier), `(tabs)/activite`, `(tabs)/comptes`, `(tabs)/objectifs` et `(tabs)/bilan`, `accueil`, `depense` (fenêtre de saisie) |
 | `src/domain` | Moteur de calcul, sans interface : budget du mois, charges fixes, argent en centimes, couleurs du mois, accueil |
 | `src/data` | Stockage : base SQLite chiffrée (SQLCipher) sur téléphone, validation de tout ce qui est relu |
 | `src/state` | État de l'app et enregistrement automatique |
@@ -59,4 +59,5 @@ Le chiffrement SQLCipher n'existe pas dans Expo Go : pour tester la vraie app, i
 - [x] 6. Activité : liste par jour (dépenses et charges passées), filtres par pilier, suppression confirmée, repérage des dépenses régulières ; barre d'onglets
 - [x] 7. Comptes saisis à la main : courant, livret, placement, espèces ; solde signé (découvert), date de mise à jour, totaux
 - [x] 8. Objectifs : montant visé, déjà épargné, versement mensuel, versements notés, date d'arrivée (et variante avec le reste du mois) ; défis semaine sans envies et série sous le budget du jour
-- [ ] 9 à 12 : voir le cahier des charges, onglet « Plan solo avec agents IA »
+- [x] 9. Bilan : mois en cours et mois précédent, épargné, répartition, quatre questions, note « comment faire mieux » par mois, piliers ; story du mois clos en 5 écrans
+- [ ] 10 à 12 : voir le cahier des charges, onglet « Plan solo avec agents IA »
