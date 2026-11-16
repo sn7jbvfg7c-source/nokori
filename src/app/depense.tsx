@@ -39,3 +39,6 @@ function Missing({ onClose }: { onClose: () => void }) {
     </View>
   );
 }
+
+/** Plantage pendant l'affichage : écran d'erreur au lieu d'un écran blanc (aucune donnée lue ni écrite) */
+export { ModalCrash as ErrorBoundary } from '../ui/CrashScreen';

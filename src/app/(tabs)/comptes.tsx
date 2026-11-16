@@ -8,3 +8,6 @@ export default function Comptes() {
   const { accounts, saveAccount, removeAccount } = useAppState();
   return <TabScene><AccountsScreen accounts={accounts} today={today} onSave={saveAccount} onRemove={removeAccount} /></TabScene>;
 }
+
+/** Plantage pendant l'affichage : écran d'erreur au lieu d'un écran blanc (aucune donnée lue ni écrite) */
+export { TabCrash as ErrorBoundary } from '../../ui/CrashScreen';

@@ -37,3 +37,6 @@ export default function TabsLayout() {
     </View>
   );
 }
+
+/** Plantage pendant l'affichage : écran d'erreur au lieu d'un écran blanc (aucune donnée lue ni écrite) */
+export { TabCrash as ErrorBoundary } from '../../ui/CrashScreen';

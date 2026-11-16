@@ -9,3 +9,6 @@ export default function Objectifs() {
   if (!profile) return null;
   return <TabScene><GoalsScreen goals={goals} profile={profile} expenses={expenses} today={today} onSave={saveGoal} onRemove={removeGoal} /></TabScene>;
 }
+
+/** Plantage pendant l'affichage : écran d'erreur au lieu d'un écran blanc (aucune donnée lue ni écrite) */
+export { TabCrash as ErrorBoundary } from '../../ui/CrashScreen';

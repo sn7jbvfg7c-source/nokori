@@ -35,6 +35,7 @@ Nokori est une app de suivi de budget **manuelle** : elle ne se connecte à aucu
 - **Lecture** : trois cas distincts. Rien d’enregistré (premier lancement), données relues, ou données illisibles (fichier abîmé, version plus récente de l’app). Dans le dernier cas, rien n’est réécrit : une copie est gardée et l’utilisateur choisit (restaurer une sauvegarde, réessayer après une mise à jour, ou repartir de zéro après confirmation).
 - **Stockage indisponible** (trousseau verrouillé, erreur SQLite) : écran « Réessayer » au lieu du questionnaire de départ. Avant ce correctif, répondre au questionnaire pouvait écraser toutes les données.
 - **Écritures** : en file, dans l’ordre ; un échec affiche un bandeau. Double appui sans effet.
+- **Plantage d’un écran** : écran « Un problème est survenu » au lieu d’un écran blanc (ErrorBoundary d’Expo Router : racine, chaque onglet, chaque fenêtre ; `src/ui/CrashScreen.tsx`). Il ne lit ni n’écrit aucune donnée ; « Réessayer » réaffiche l’écran. Un onglet qui plante laisse la barre d’onglets et le verrou en place. Les détails techniques sont masqués par défaut et nettoyés (textes entre guillemets et nombres retirés). Vérifié par `e2e/crash.e2e.js` grâce à un drapeau de test (web : stockage du navigateur ; téléphone : version de développement seulement).
 - **SQLCipher** : `PRAGMA temp_store = MEMORY` (pas de fichier temporaire de tri sur le disque) et `PRAGMA secure_delete = ON` (le contenu effacé est réellement écrasé).
 
 ## Ce qui est vérifié automatiquement

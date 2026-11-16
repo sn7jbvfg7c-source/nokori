@@ -18,6 +18,7 @@ import { DataProblem } from '../ui/DataProblem';
 import { LockGate } from '../ui/LockGate';
 import { MoneyProvider } from '../ui/money';
 import { WebFrame } from '../ui/WebFrame';
+import { CrashProbe } from '../ui/CrashProbe';
 
 /** Bandeau en haut de l'écran quand un enregistrement a échoué */
 function SaveError() {
@@ -87,6 +88,7 @@ function Themed() {
     <ThemeProvider pref={prefs.theme}>
       <MoneyProvider hidden={prefs.hideAmounts}>
         <WebFrame>
+          <CrashProbe where="racine" />
           <Shell />
         </WebFrame>
       </MoneyProvider>
@@ -111,3 +113,5 @@ const s = StyleSheet.create({
   bannerTxt: { flex: 1, color: '#fff', fontFamily: font.medium, fontSize: 13, lineHeight: 18 },
 });
 
+/** Plantage pendant l'affichage : écran d'erreur au lieu d'un écran blanc (aucune donnée lue ni écrite) */
+export { RootCrash as ErrorBoundary } from '../ui/CrashScreen';

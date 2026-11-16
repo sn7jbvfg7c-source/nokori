@@ -87,4 +87,10 @@ export const kv: KV = {
 };
 
 /** Pas de drapeau de test sur téléphone */
-export const testFlag = (_name: string): string | null => null;
+/**
+ * Drapeaux de test : toujours null dans une version distribuée (preview, production).
+ * En développement seulement, on peut en poser depuis la console du débogueur :
+ * globalThis.__NOKORI_TEST_FLAGS = { 'test-plantage': 'budget' } (voir docs/TESTS-APPAREILS.md).
+ */
+export const testFlag = (name: string): string | null =>
+  __DEV__ ? ((globalThis as { __NOKORI_TEST_FLAGS?: Record<string, string> }).__NOKORI_TEST_FLAGS?.[name] ?? null) : null;

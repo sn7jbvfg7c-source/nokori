@@ -4,6 +4,7 @@ import { BudgetScreen } from '../../screens/BudgetScreen';
 import { useAppState } from '../../state/AppState';
 import { useToday } from '../../ui/useToday';
 import { TabScene } from '../../ui/TabScene';
+import { CrashProbe } from '../../ui/CrashProbe';
 
 export default function Home() {
   const today = useToday();
@@ -14,6 +15,7 @@ export default function Home() {
   if (!profile) return null; // le garde de la barre d'onglets redirige déjà vers l'accueil
   return (
     <TabScene>
+      <CrashProbe where="budget" />
       <BudgetScreen
         profile={profile} history={history} expenses={expenses} today={today}
         onEdit={() => router.push('/accueil')} onAdd={() => router.push('/depense')} onSettings={() => router.push('/reglages')}
@@ -23,3 +25,6 @@ export default function Home() {
     </TabScene>
   );
 }
+
+/** Plantage pendant l'affichage : écran d'erreur au lieu d'un écran blanc (aucune donnée lue ni écrite) */
+export { TabCrash as ErrorBoundary } from '../../ui/CrashScreen';
