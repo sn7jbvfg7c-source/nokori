@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { backupFileName, BackupError, createBackup, openBackup, passphraseProblem, readHeader, RESTORE_MESSAGES, summarize } from '../domain/backup';
+import { backupFileName, BackupError, createBackup, openBackup, passphraseStrength, readHeader, RESTORE_MESSAGES, summarize, type PassphraseLevel } from '../domain/backup';
 import { MONTH_NAMES } from '../domain/months';
 import type { AppData } from '../data/persist';
 import { pickBackup, randomBytes, shareBackup } from '../data/backupFile';
 import { useColors, useStyles } from '../theme/theme';
 import type { Palette } from '../theme/tokens';
-import { radius, space, type as t } from '../theme/tokens';
+import { font, radius, space, type as t } from '../theme/tokens';
 import { Button, Card, IconButton, Notice, ScreenHeader, SectionHeader } from '../ui/kit';
 
 type Step =
@@ -18,6 +18,26 @@ type Step =
 
 const longDate = (iso: string) => { const [y, m, d] = iso.split('-').map(Number); return `${d} ${MONTH_NAMES[m - 1]} ${y}`; };
 const plural = (n: number, one: string, many: string) => `${n} ${n > 1 ? many : one}`;
+
+const LEVEL_TEXT: Record<PassphraseLevel, string> = { faible: 'Faible', correcte: 'Correcte', excellente: 'Excellente' };
+const LEVEL_STEPS: Record<PassphraseLevel, number> = { faible: 1, correcte: 2, excellente: 3 };
+
+/** Jauge de sécurité de la phrase secrète : 3 segments, un mot, et le conseil ou la raison du refus */
+function StrengthMeter({ level, problem }: { level: PassphraseLevel; problem: string | null }) {
+  const c = useColors(); const st = useStyles(makeStyles);
+  const color = level === 'faible' ? c.vermilion : level === 'correcte' ? c.pillar.culture : c.teal;
+  return (
+    <View accessible accessibilityLabel={`Sécurité de la phrase : ${LEVEL_TEXT[level]}. ${problem ?? (level === 'correcte' ? 'Acceptée. Quelques mots de plus la rendraient excellente.' : 'Acceptée.')}`} accessibilityLiveRegion="polite">
+      <View style={st.meter} aria-hidden>
+        {[1, 2, 3].map(i => <View key={i} style={[st.meterSeg, { backgroundColor: i <= LEVEL_STEPS[level] ? color : c.fill2 }]} />)}
+      </View>
+      <Text style={st.hint}>
+        <Text style={{ color: c.ink, fontFamily: font.semibold }}>Sécurité : {LEVEL_TEXT[level]}. </Text>
+        {problem ?? (level === 'correcte' ? 'Acceptée. Quelques mots de plus la rendraient excellente.' : 'Acceptée.')}
+      </Text>
+    </View>
+  );
+}
 
 interface Props {
   /** « restore » : seulement la restauration (données actuelles illisibles) */
@@ -45,7 +65,8 @@ export function BackupScreen({ mode = 'all', data, today, onReplace, onExported,
   const [rprogress, setRprogress] = useState<number | null>(null);
   const [restoreErr, setRestoreErr] = useState<string | null>(null);
 
-  const problem = pass ? passphraseProblem(pass) : null;
+  const strength = pass ? passphraseStrength(pass) : null;
+  const problem = strength?.problem ?? null;
   const mismatch = pass2.length > 0 && pass !== pass2;
   const canExport = !!pass && !problem && pass === pass2 && progress === null;
 
@@ -116,8 +137,9 @@ export function BackupScreen({ mode = 'all', data, today, onReplace, onExported,
           <Card style={st.card}>
             <Text style={st.label}>Phrase secrète</Text>
             <TextInput value={pass} onChangeText={setPass} secureTextEntry autoCapitalize="none" autoCorrect={false} textContentType="newPassword" autoComplete="new-password"
-              placeholder="Plusieurs mots, par exemple" placeholderTextColor={c.ink3} accessibilityLabel="Phrase secrète de la sauvegarde" style={st.input} maxLength={200} />
-            {problem && <Text style={st.hint}>{problem}</Text>}
+              placeholder="4 mots sans lien entre eux" placeholderTextColor={c.ink3} accessibilityLabel="Phrase secrète de la sauvegarde" style={st.input} maxLength={200} />
+            {strength ? <StrengthMeter level={strength.level} problem={problem} />
+              : <Text style={st.hint}>12 caractères au moins. Le plus sûr : 4 mots sans lien entre eux, faciles à retenir pour vous.</Text>}
             <Text style={st.label}>La même, une seconde fois</Text>
             <TextInput value={pass2} onChangeText={setPass2} secureTextEntry autoCapitalize="none" autoCorrect={false} textContentType="newPassword" autoComplete="new-password"
               placeholderTextColor={c.ink3} accessibilityLabel="Confirmer la phrase secrète" style={st.input} maxLength={200} />
@@ -171,6 +193,8 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   label: { ...t.caption, color: c.ink2, marginTop: space.xs },
   input: { ...t.body, color: c.ink, height: 48, borderRadius: radius.md, backgroundColor: c.fill, paddingHorizontal: space.md },
   hint: { ...t.footnote, color: c.ink2 },
+  meter: { flexDirection: 'row', gap: space.xs, marginBottom: space.xs },
+  meterSeg: { flex: 1, height: 4, borderRadius: radius.pill },
   p: { ...t.body, color: c.ink },
   strong: { fontFamily: t.bodyStrong.fontFamily },
   row: { flexDirection: 'row', gap: space.sm, marginTop: space.xs },

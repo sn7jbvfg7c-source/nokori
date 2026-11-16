@@ -11,10 +11,12 @@
 import { gcm } from '@noble/ciphers/aes.js';
 import { scryptAsync } from '@noble/hashes/scrypt.js';
 import { decodeState, encode, type AppData } from '../data/persist';
+import { passphraseProblem } from './passphrase';
+
+export { MIN_PASSPHRASE, passphraseProblem, passphraseStrength, type PassphraseLevel } from './passphrase';
 
 export const BACKUP_FORMAT = 'nokori-sauvegarde';
 export const BACKUP_VERSION = 1;
-export const MIN_PASSPHRASE = 8;
 /** scrypt : 2^15 × 8 = 32 Mo de mémoire, quelques secondes sur un téléphone ; paramètres écrits dans le fichier */
 export const KDF = { N: 2 ** 15, r: 8, p: 1 } as const;
 /**
@@ -108,13 +110,11 @@ const aad = (h: BackupHeader) => enc.encode(JSON.stringify([h.format, h.v, h.cre
 const deriveKey = (pass: string, salt: Uint8Array, k: { N: number; r: number; p: number }, onProgress?: (f: number) => void) =>
   scryptAsync(enc.encode(pass.normalize('NFC')), salt, { ...k, dkLen: 32, maxmem: scryptMemory(k), onProgress });
 
-export const passphraseProblem = (p: string): string | null =>
-  [...p].length < MIN_PASSPHRASE ? `Au moins ${MIN_PASSPHRASE} caractères. Une phrase de plusieurs mots est plus sûre et plus facile à retenir.` : null;
 
 /** Crée le fichier de sauvegarde (texte). `random` fournit des octets aléatoires sûrs. */
 export async function createBackup(data: AppData, pass: string, today: Date, random: (n: number) => Uint8Array, onProgress?: (f: number) => void,
   /** paramètres scrypt : KDF par défaut ; autre valeur seulement pour les tests de compatibilité */ kdf: { N: number; r: number; p: number } = KDF): Promise<string> {
-  if (passphraseProblem(pass)) throw new Error('phrase trop courte');
+  if (passphraseProblem(pass)) throw new Error('phrase trop faible'); // règle de création seulement : openBackup n'en applique aucune
   const salt = random(16), nonce = random(12);
   const header: BackupHeader = {
     format: BACKUP_FORMAT, v: BACKUP_VERSION,
