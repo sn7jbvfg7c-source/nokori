@@ -17,6 +17,14 @@ export const BACKUP_VERSION = 1;
 export const MIN_PASSPHRASE = 8;
 /** scrypt : 2^15 × 8 = 32 Mo de mémoire, quelques secondes sur un téléphone ; paramètres écrits dans le fichier */
 export const KDF = { N: 2 ** 15, r: 8, p: 1 } as const;
+/**
+ * Plus grand N accepté à la LECTURE (les nouvelles sauvegardes restent à KDF.N).
+ * Élargi de 2^16 à 2^17 pour pouvoir renforcer un jour la dérivation sans rendre illisibles les fichiers créés ensuite ;
+ * au-delà, refus avant tout calcul : un fichier piégé ne doit pas pouvoir saturer la mémoire (2^17 ≈ 128 Mo).
+ */
+export const KDF_MAX_N = 2 ** 17;
+/** Mémoire réellement demandée par scrypt (formule de @noble/hashes : 128·r·(N + p + 1) octets) */
+export const scryptMemory = (k: { N: number; r: number; p: number }) => 128 * k.r * (k.N + k.p + 1);
 const MAX_FILE = 50_000_000;
 
 export interface BackupHeader {
@@ -98,22 +106,23 @@ const aad = (h: BackupHeader) => enc.encode(JSON.stringify([h.format, h.v, h.cre
 
 /** La phrase est normalisée (NFC) : « é » tapé sur deux claviers différents donne la même clé */
 const deriveKey = (pass: string, salt: Uint8Array, k: { N: number; r: number; p: number }, onProgress?: (f: number) => void) =>
-  scryptAsync(enc.encode(pass.normalize('NFC')), salt, { ...k, dkLen: 32, maxmem: 2 ** 27, onProgress });
+  scryptAsync(enc.encode(pass.normalize('NFC')), salt, { ...k, dkLen: 32, maxmem: scryptMemory(k), onProgress });
 
 export const passphraseProblem = (p: string): string | null =>
   [...p].length < MIN_PASSPHRASE ? `Au moins ${MIN_PASSPHRASE} caractères. Une phrase de plusieurs mots est plus sûre et plus facile à retenir.` : null;
 
 /** Crée le fichier de sauvegarde (texte). `random` fournit des octets aléatoires sûrs. */
-export async function createBackup(data: AppData, pass: string, today: Date, random: (n: number) => Uint8Array, onProgress?: (f: number) => void): Promise<string> {
+export async function createBackup(data: AppData, pass: string, today: Date, random: (n: number) => Uint8Array, onProgress?: (f: number) => void,
+  /** paramètres scrypt : KDF par défaut ; autre valeur seulement pour les tests de compatibilité */ kdf: { N: number; r: number; p: number } = KDF): Promise<string> {
   if (passphraseProblem(pass)) throw new Error('phrase trop courte');
   const salt = random(16), nonce = random(12);
   const header: BackupHeader = {
     format: BACKUP_FORMAT, v: BACKUP_VERSION,
     created: `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`,
-    kdf: { name: 'scrypt', ...KDF, salt: toB64(salt) },
+    kdf: { name: 'scrypt', N: kdf.N, r: kdf.r, p: kdf.p, salt: toB64(salt) },
     cipher: { name: 'aes-256-gcm', nonce: toB64(nonce) },
   };
-  const key = await deriveKey(pass, salt, KDF, onProgress);
+  const key = await deriveKey(pass, salt, kdf, onProgress);
   const sealed = gcm(key, nonce, aad(header)).encrypt(enc.encode(encode(data)));
   key.fill(0);
   return JSON.stringify({ ...header, data: toB64(sealed) });
@@ -129,7 +138,7 @@ export function readHeader(text: string): BackupHeader & { data: string } {
   if (o.v > BACKUP_VERSION) throw new BackupError('version-future');
   const kdf = o.kdf as Record<string, unknown> | undefined, cipher = o.cipher as Record<string, unknown> | undefined;
   const okNum = (x: unknown, min: number, max: number) => typeof x === 'number' && Number.isInteger(x) && x >= min && x <= max;
-  if (!kdf || kdf.name !== 'scrypt' || !okNum(kdf.N, 2 ** 10, 2 ** 16) || ((kdf.N as number) & ((kdf.N as number) - 1)) !== 0 || !okNum(kdf.r, 1, 8) || kdf.p !== 1 || typeof kdf.salt !== 'string'
+  if (!kdf || kdf.name !== 'scrypt' || !okNum(kdf.N, 2 ** 10, KDF_MAX_N) || ((kdf.N as number) & ((kdf.N as number) - 1)) !== 0 || !okNum(kdf.r, 1, 8) || kdf.p !== 1 || typeof kdf.salt !== 'string'
     || !cipher || cipher.name !== 'aes-256-gcm' || typeof cipher.nonce !== 'string' || typeof o.data !== 'string' || typeof o.created !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(o.created)) throw new BackupError('pas-une-sauvegarde');
   return o as unknown as BackupHeader & { data: string };
 }
