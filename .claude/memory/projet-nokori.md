@@ -16,7 +16,7 @@ Décisions à ne pas défaire sans raison :
 
 Reste à faire (côté propriétaire) : remplir `docs/A-COMPLETER.md` (13 éléments : statut, identité, adresse, téléphone, e-mail, SIRET… et adresse/téléphone/durée des journaux d'Expo), faire relire les textes par un juriste, comptes Apple/Google et envoi aux stores (`docs/PUBLICATION.md`). Côté technique : test VoiceOver/TalkBack et vérification de FLAG_SECURE sur vrais téléphones.
 
-Fait le 16/11/2026 : page « Aide et contact » (`/legal/assistance`, adresses dans `store.config.js`, qui refuse l'envoi tant que `docs/A-COMPLETER.md` liste des manques) ; FLAG_SECURE Android via le module local `modules/nokori-secure` (pas expo-screen-capture : il enregistre un détecteur de captures qui exige une permission sur Android 14, sinon plantage) ; typographie française (`scripts/typo-fr.js`, vérifiée par un test : les tests e2e doivent comparer les textes avec `\s`, pas une espace simple) ; l'ordre clavier web était déjà bon.
+Fait le 16/11/2026 : page « Aide et contact » (`/legal/assistance`, adresses dans `store.config.js`, qui refuse l'envoi tant que `docs/A-COMPLETER.md` liste des manques) ; FLAG_SECURE Android via le module local `modules/nokori-secure` (pas expo-screen-capture : il enregistre un détecteur de captures qui exige une permission sur Android 14, sinon plantage) ; typographie française (`scripts/typo-fr.js`, vérifiée par un test : les tests e2e doivent comparer les textes avec `\s`, pas une espace simple) ; l'ordre clavier web était déjà bon. APK de test (profil preview) recompilé le 16/11 avec tous ces correctifs : aucune permission Internet, module NokoriSecure inclus.
 
 **Why:** reprendre sans tout relire ni refaire des choix déjà tranchés.
 
