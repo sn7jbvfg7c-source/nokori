@@ -13,3 +13,5 @@ Règles posées explicitement par le propriétaire :
 **Why:** l'app sera publiée sur les stores et montrée à des testeurs ; une fausse information aurait des conséquences juridiques.
 
 **How to apply:** à chaque rapport, séparer ce qui est vérifié de ce qui reste à faire ; vérifier soi-même les chiffres importants (et l'empreinte `entry-*.js` en ligne après un déploiement).
+
+Méthode validée pour les lots de travail : un commit distinct par chantier, tests concernés + typecheck + lint à chaque fois, aucune donnée existante altérée (anciennes sauvegardes toujours restaurables), signaler immédiatement toute difficulté, attendre la validation avant de modifier le projet quand il le demande.

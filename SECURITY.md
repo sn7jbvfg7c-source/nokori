@@ -76,7 +76,7 @@ Il vérifie aussi la clé liée à l’appareil, le refus d’écrire sans chiff
 ## Points à confirmer avant publication
 
 - **Chiffrement et export.** Nokori n’utilise le chiffrement que pour protéger ses propres données sur le téléphone, avec un algorithme standard. C’est en principe une utilisation exemptée de déclaration d’export aux États-Unis, d’où `usesNonExemptEncryption: false`. App Store Connect pose aussi une question sur la distribution en **France** : la même exemption s’applique en général aux usages de protection des données, mais à relire au moment de remplir le formulaire.
-- **SQLCipher sur un vrai téléphone.** Le chiffrement ne se vérifie que sur une version compilée (EAS Build) : au lancement, aucun avertissement « SQLCipher absent » ne doit apparaître, et l’app refuse d’écrire sans chiffrement. À contrôler une fois sur iPhone et sur Android (voir docs/BETA.md).
+- **SQLCipher sur un vrai téléphone.** Le chiffrement ne se vérifie que sur une version compilée (EAS Build). Le protocole complet (diagnostic, verrou, aperçu masqué, vitesse du chiffrement, restauration sur un autre appareil, clé perdue) est dans [docs/TESTS-APPAREILS.md](docs/TESTS-APPAREILS.md). Il n’a pas encore été déroulé.
 - **Version web.** C’est une version de test, à partager avec des testeurs, pas une version publique. Elle n’a ni serveur ni accès réseau : les données restent dans le navigateur de chacun, mais en clair (`localStorage`), sans verrouillage ni rappels. Elle le dit dès le premier écran et dans les réglages, et demande aux moteurs de recherche de ne pas l’indexer (`noindex`). Pour de vrais chiffres, l’app pour téléphone reste la référence.
 
 ## Limites connues

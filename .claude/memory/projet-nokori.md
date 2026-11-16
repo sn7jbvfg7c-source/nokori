@@ -21,3 +21,5 @@ Fait le 16/11/2026 : page « Aide et contact » (`/legal/assistance`, adresses d
 **Why:** reprendre sans tout relire ni refaire des choix déjà tranchés.
 
 **How to apply:** vérifier `git log` et le README avant d'agir ; ces informations datent du 15/11/2026.
+
+Lot « Sécurité et fiabilité » (16/11/2026, commits 843493e → D3) : D4, A2, A1, B, C, D1, E1, E2, E3, D2, D3 faits, un commit chacun. Restent volontairement : campagne sur téléphones (`docs/TESTS-APPAREILS.md`) et choix du coût scrypt A3 (rester à 2^15 sauf si 2^16 < 2-3 s sur Android d'entrée de gamme ; ne pas dépasser 2^16 pour les APK déjà distribués). Intégration continue : `.github/workflows/ci.yml`, vérifiable avec les outils GitHub Actions du dépôt `sn7jbvfg7c-source/nokori`. Le texte de typographie est contrôlé par un test : lancer `node scripts/typo-fr.js` après avoir écrit des textes.
