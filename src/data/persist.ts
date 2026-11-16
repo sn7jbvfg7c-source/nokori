@@ -14,7 +14,7 @@ export const STATE_KEY = 'state';
 export const STATE_VERSION = 1;
 
 export interface AppData { profile: Profile | null; /** profils des mois passés, du plus ancien au plus récent */ history: ProfileEra[]; expenses: Expense[]; /** suggestions de charges ignorées */ dismissed: string[]; accounts: Account[]; goals: Goal[]; /** notes « comment faire mieux », par mois AAAA-MM */ notes: Record<string, string>; prefs: Prefs }
-export interface Prefs { theme: 'auto' | 'clair' | 'sombre'; lock: boolean; hideAmounts: boolean; alerts: boolean; /** date de la dernière sauvegarde exportée (AAAA-MM-JJ) */ lastBackup?: string; /** choix sur les traceurs facultatifs (aucun aujourd'hui) */ consent?: ConsentChoice }
+export interface Prefs { theme: 'auto' | 'clair' | 'sombre'; lock: boolean; hideAmounts: boolean; alerts: boolean; /** date de la dernière sauvegarde exportée (AAAA-MM-JJ) */ lastBackup?: string; /** choix sur les traceurs facultatifs (aucun aujourd'hui) */ consent?: ConsentChoice; /** verrou désactivé automatiquement (téléphone sans code ni biométrie) : avis à montrer jusqu'à ce que l'utilisateur le lise */ lockOff?: { date: string } }
 export const DEFAULT_PREFS: Prefs = { theme: 'auto', lock: false, hideAmounts: false, alerts: false };
 export const EMPTY: AppData = { profile: null, history: [], expenses: [], dismissed: [], accounts: [], goals: [], notes: {}, prefs: DEFAULT_PREFS };
 
@@ -138,6 +138,7 @@ function parse(raw: string): { data: AppData; dropped: number } | null {
       lock: pr.lock === true, hideAmounts: pr.hideAmounts === true, alerts: pr.alerts === true,
     };
     if (isoDate(pr.lastBackup)) prefs.lastBackup = pr.lastBackup as string;
+    if (isObj(pr.lockOff) && isoDate(pr.lockOff.date)) prefs.lockOff = { date: pr.lockOff.date as string };
     if (isObj(pr.consent) && typeof pr.consent.v === 'number' && isoDate(pr.consent.date) && isObj(pr.consent.allowed)) {
       const allowed: Record<string, boolean> = {};
       for (const [k, v] of Object.entries(pr.consent.allowed).slice(0, 50)) if (/^[a-z0-9-]{1,40}$/.test(k)) allowed[k] = v === true;

@@ -32,6 +32,8 @@ function SaveError() {
   );
 }
 
+const isoToday = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+
 function Shell() {
   const c = useColors();
   const { prefs, profile, ready, status, retryLoad, startFresh, replaceAll, unreadableReason, savePrefs } = useAppState();
@@ -52,7 +54,7 @@ function Shell() {
 
   if (status === 'erreur' || status === 'illisible') {
     return (
-      <LockGate enabled={prefs.lock} ready onUnavailable={() => savePrefs({ lock: false })}>
+      <LockGate enabled={prefs.lock} ready /* données non chargées : rien ne peut être enregistré ici, le verrou est seulement levé */>
       <View style={{ flex: 1, backgroundColor: c.paper }}>
         {restoring
           ? <BackupScreen mode="restore" data={EMPTY_DATA} today={new Date()} onReplace={d => replaceAll(forRestore(d))} onExported={() => {}} onClose={() => setRestoring(false)} />
@@ -63,7 +65,7 @@ function Shell() {
     );
   }
   return (
-    <LockGate enabled={ready && prefs.lock} ready={ready} onUnavailable={() => savePrefs({ lock: false })}>
+    <LockGate enabled={ready && prefs.lock} ready={ready} onUnavailable={() => savePrefs({ lock: false, lockOff: { date: isoToday() } })}>
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.paper } }}>
         <Stack.Screen name="depense" options={{ presentation: 'modal' }} />
         <Stack.Screen name="reglages" options={{ presentation: 'modal' }} />

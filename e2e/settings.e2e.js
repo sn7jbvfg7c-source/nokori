@@ -55,6 +55,21 @@ const SEED = {
     await shot('st3');
     await p.getByRole('tab', { name: /Budget/ }).click(); await W(300);
   });
+  await t('verrou désactivé automatiquement : avis conservé après rechargement, visible dans les réglages, effacé par « Compris »', async () => {
+    await p.evaluate(() => { const st = JSON.parse(localStorage.getItem('nokori:state')); st.prefs.lockOff = { date: '2026-11-12' }; localStorage.setItem('nokori:state', JSON.stringify(st)); });
+    await p.reload(); await W(1800);
+    await p.getByText('Le verrouillage a été désactivé le 12 novembre 2026', { exact: false }).first().waitFor();
+    await p.reload(); await W(1800); // toujours là après fermeture et réouverture
+    await p.getByText('Le verrouillage a été désactivé le 12 novembre 2026', { exact: false }).first().waitFor();
+    await openSettings();
+    if ((await p.getByText('Le verrouillage a été désactivé', { exact: false }).count()) < 2) throw new Error('avis absent des réglages');
+    await p.keyboard.press('Escape'); await W(500);
+    await p.getByRole('button', { name: 'Compris' }).click(); await W(600);
+    if (await p.getByText('Le verrouillage a été désactivé', { exact: false }).count()) throw new Error('avis encore affiché');
+    const st = await p.evaluate(() => JSON.parse(localStorage.getItem('nokori:state')));
+    if (st.prefs.lockOff) throw new Error('avis encore enregistré');
+    if (st.expenses.length !== 1 || st.accounts.length !== 1) throw new Error('données modifiées');
+  });
   await t('tout effacer : confirmation, puis retour à l’accueil, stockage vidé', async () => {
     await openSettings();
     await p.getByRole('button', { name: 'Tout effacer' }).click(); await W(200);

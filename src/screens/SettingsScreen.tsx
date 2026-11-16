@@ -5,6 +5,7 @@ import { Platform, ScrollView, StyleSheet, Switch, Text, View } from 'react-nati
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { askPermission, notificationsSupported } from '../data/notify';
 import type { Prefs } from '../data/persist';
+import { lockOffNotice } from '../domain/lock';
 import { MONTH_NAMES } from '../domain/months';
 import { legalDocs, LEGAL_ORDER, type LegalDocId } from '../legal/documents';
 import type { ThemePref } from '../theme/theme';
@@ -32,7 +33,7 @@ export function SettingsScreen({ prefs, today = new Date(), onChange, onClose, o
     if (!on) return onChange({ lock: false });
     if (!(await LocalAuthentication.hasHardwareAsync()) || !(await LocalAuthentication.isEnrolledAsync())) return setMsg('Aucun Face ID, Touch ID ou empreinte configuré sur ce téléphone.');
     const r = await LocalAuthentication.authenticateAsync({ promptMessage: 'Activer le verrouillage', cancelLabel: 'Annuler' });
-    if (r.success) onChange({ lock: true });
+    if (r.success) onChange({ lock: true, lockOff: undefined });
   };
   const toggleAlerts = async (on: boolean) => {
     setMsg(null);
@@ -66,6 +67,7 @@ export function SettingsScreen({ prefs, today = new Date(), onChange, onClose, o
         {toggle('lock', c.vermilion, 'Verrouillage Face ID', web ? 'Indisponible dans le navigateur' : Platform.OS === 'android' ? 'À l’ouverture et après 1 minute en arrière-plan. Masque aussi l’aperçu dans les apps récentes et bloque les captures d’écran' : 'À l’ouverture et après 1 minute en arrière-plan', prefs.lock, toggleLock, web, true)}
         {toggle('bell', c.teal, 'Avant chaque prélèvement', notificationsSupported ? 'Une notification 3 jours avant, sans montant affiché' : 'Indisponible dans le navigateur', prefs.alerts && notificationsSupported, toggleAlerts, !notificationsSupported)}
       </Card>
+      {prefs.lockOff && <View style={st.msg}><Notice icon="unlock" tone="warn">{lockOffNotice(prefs.lockOff.date, MONTH_NAMES)}</Notice></View>}
       {msg && <View style={st.msg}><Notice icon="alert-circle" tone="warn">{msg}</Notice></View>}
 
       <SectionHeader title="Mon budget" />

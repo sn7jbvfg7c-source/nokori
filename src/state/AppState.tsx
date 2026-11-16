@@ -63,7 +63,7 @@ interface AppState extends AppData {
  * Données restaurées : le verrouillage et les rappels dépendent du téléphone (Face ID configuré, notifications
  * autorisées). Ils sont désactivés pour ne pas bloquer l'app sur un appareil qui ne les a pas encore.
  */
-export const forRestore = (d: AppData): AppData => ({ ...d, prefs: { ...d.prefs, lock: false, alerts: false } });
+export const forRestore = (d: AppData): AppData => ({ ...d, prefs: { ...d.prefs, lock: false, alerts: false, lockOff: undefined } });
 
 const Ctx = createContext<AppState | null>(null);
 
