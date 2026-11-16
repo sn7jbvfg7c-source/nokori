@@ -17,6 +17,7 @@ export default function Reglages() {
       prefs={prefs} onChange={savePrefs} onClose={close}
       onEditAnswers={() => router.replace('/accueil')}
       onBackup={() => router.push('/sauvegarde')}
+      onSecurity={() => router.push('/securite')}
       onLegal={doc => router.push({ pathname: '/legal/[doc]', params: { doc } })}
       onWipe={async () => { await wipeAll(); router.dismissAll(); router.replace({ pathname: '/accueil', params: { supprime: '1' } }); }}
     />

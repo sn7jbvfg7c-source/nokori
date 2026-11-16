@@ -70,6 +70,24 @@ const SEED = {
     if (st.prefs.lockOff) throw new Error('avis encore enregistré');
     if (st.expenses.length !== 1 || st.accounts.length !== 1) throw new Error('données modifiées');
   });
+  await t('vérifier la protection : constats honnêtes, aucun montant ni libellé, mesure de vitesse', async () => {
+    await openSettings();
+    await p.getByRole('button', { name: /^Vérifier la protection/ }).click(); await W(800);
+    await p.getByRole('heading', { name: 'Vérifier la protection' }).waitFor();
+    await p.getByText('Données en clair dans ce navigateur').waitFor();
+    await p.getByText('Calculs de chiffrement corrects').waitFor(); // vecteurs officiels recalculés par le navigateur
+    await p.getByText('Aucune sauvegarde', { exact: true }).waitFor();
+    const txt = await p.locator('body').innerText();
+    for (const s of ['Marché', 'Compte courant', 'Loyer', '964', '780', '2 480', '2480']) if (txt.includes(s)) throw new Error('donnée affichée : ' + s);
+    if (/[0-9a-f]{32,}/.test(txt)) throw new Error('valeur hexadécimale affichée');
+    await p.getByRole('button', { name: /^Mesurer/ }).click();
+    await p.getByText(/^Réglage actuel\s:/).waitFor({ timeout: 30000 });
+    const before = await p.evaluate(() => localStorage.getItem('nokori:state'));
+    await p.keyboard.press('Escape'); await W(400);
+    await p.getByRole('heading', { name: 'Réglages' }).waitFor();
+    await p.keyboard.press('Escape'); await W(400);
+    if ((await p.evaluate(() => localStorage.getItem('nokori:state'))) !== before) throw new Error('le diagnostic a modifié des données');
+  });
   await t('tout effacer : confirmation, puis retour à l’accueil, stockage vidé', async () => {
     await openSettings();
     await p.getByRole('button', { name: 'Tout effacer' }).click(); await W(200);

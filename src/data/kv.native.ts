@@ -10,9 +10,10 @@
  */
 import * as Crypto from 'expo-crypto';
 import * as SecureStore from 'expo-secure-store';
-import { File } from 'expo-file-system';
+import { File, FileMode } from 'expo-file-system';
 import * as SQLite from 'expo-sqlite';
 import type { KV } from './kv';
+import { isPlainSqliteHeader, type StorageReport } from '../domain/securityCheck';
 
 const DB_NAME = 'nokori.db';
 const KEY_NAME = 'nokori.dbkey';
@@ -26,12 +27,14 @@ export class KeyLostError extends Error {
   constructor() { super('Clé de chiffrement absente ou différente'); }
 }
 
+const databaseFile = () => {
+  const dir = String(SQLite.defaultDatabaseDirectory);
+  return new File(dir.startsWith('file:') ? dir : `file://${dir}`, DB_NAME);
+};
+
 /** Le fichier de base existe-t-il ? En cas de doute, on répond oui : mieux vaut demander que supprimer. */
 function databaseExists(): boolean {
-  try {
-    const dir = String(SQLite.defaultDatabaseDirectory);
-    return new File(dir.startsWith('file:') ? dir : `file://${dir}`, DB_NAME).exists;
-  } catch { return true; }
+  try { return databaseFile().exists; } catch { return true; }
 }
 
 async function databaseKey(): Promise<string> {
@@ -86,7 +89,32 @@ export const kv: KV = {
   },
 };
 
-/** Pas de drapeau de test sur téléphone */
+/**
+ * Diagnostic de sécurité, en lecture seule : ne renvoie que des constats, JAMAIS la clé ni une donnée.
+ * - version de SQLCipher annoncée par la base ouverte ;
+ * - les 16 premiers octets du fichier : un SQLite non chiffré commence toujours par « SQLite format 3 » ;
+ * - la clé est-elle présente et bien formée (sa valeur ne sort pas de cette fonction).
+ * N'écrit rien et ne crée aucune clé.
+ */
+export async function storageReport(): Promise<StorageReport> {
+  let cipherVersion: string | null = null;
+  try { cipherVersion = (await (await db()).getFirstAsync<{ cipher_version: string }>('PRAGMA cipher_version;'))?.cipher_version || null; } catch { cipherVersion = null; }
+  let fileHeaderPlain: boolean | null = null;
+  try {
+    const f = databaseFile();
+    if (f.exists) {
+      const h = f.open(FileMode.ReadOnly);
+      try { fileHeaderPlain = isPlainSqliteHeader(h.readBytesSync(16)); } finally { h.close(); }
+    }
+  } catch { fileHeaderPlain = null; }
+  let keyPresent = false, keyWellFormed = false;
+  try {
+    const k = await SecureStore.getItemAsync(KEY_NAME, KEY_OPTS);
+    keyPresent = !!k; keyWellFormed = !!k && /^[0-9a-f]{64}$/.test(k);
+  } catch { /* trousseau indisponible : clé signalée absente */ }
+  return { platform: 'telephone', cipherVersion, fileHeaderPlain, keyPresent, keyWellFormed };
+}
+
 /**
  * Drapeaux de test : toujours null dans une version distribuée (preview, production).
  * En développement seulement, on peut en poser depuis la console du débogueur :

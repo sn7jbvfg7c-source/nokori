@@ -14,13 +14,13 @@ import type { Palette } from '../theme/tokens';
 import { space, type as t } from '../theme/tokens';
 import { Badge, Card, Confirm, IconButton, Notice, Row, ScreenHeader, SectionHeader, Segmented, type IconName } from '../ui/kit';
 
-interface Props { prefs: Prefs; today?: Date; onChange: (p: Partial<Prefs>) => void; onClose: () => void; onEditAnswers: () => void; onBackup: () => void; onWipe: () => void; onLegal?: (doc: LegalDocId) => void }
+interface Props { prefs: Prefs; today?: Date; onChange: (p: Partial<Prefs>) => void; onClose: () => void; onEditAnswers: () => void; onBackup: () => void; onWipe: () => void; onLegal?: (doc: LegalDocId) => void; /** Vérifier la protection */ onSecurity?: () => void }
 
 /** Une sauvegarde de plus d'un mois mérite un rappel */
 export const BACKUP_REMINDER_DAYS = 30;
 const longDate = (iso: string) => { const [y, m, d] = iso.split('-').map(Number); return `${d} ${MONTH_NAMES[m - 1]} ${y}`; };
 
-export function SettingsScreen({ prefs, today = new Date(), onChange, onClose, onEditAnswers, onBackup, onWipe, onLegal }: Props) {
+export function SettingsScreen({ prefs, today = new Date(), onChange, onClose, onEditAnswers, onBackup, onWipe, onLegal, onSecurity }: Props) {
   const insets = useSafeAreaInsets();
   const c = useColors(); const st = useStyles(makeStyles);
   const [msg, setMsg] = useState<string | null>(null);
@@ -66,6 +66,7 @@ export function SettingsScreen({ prefs, today = new Date(), onChange, onClose, o
       <Card>
         {toggle('lock', c.vermilion, 'Verrouillage Face ID', web ? 'Indisponible dans le navigateur' : Platform.OS === 'android' ? 'À l’ouverture et après 1 minute en arrière-plan. Masque aussi l’aperçu dans les apps récentes et bloque les captures d’écran' : 'À l’ouverture et après 1 minute en arrière-plan', prefs.lock, toggleLock, web, true)}
         {toggle('bell', c.teal, 'Avant chaque prélèvement', notificationsSupported ? 'Une notification 3 jours avant, sans montant affiché' : 'Indisponible dans le navigateur', prefs.alerts && notificationsSupported, toggleAlerts, !notificationsSupported)}
+        {onSecurity && <Row title="Vérifier la protection" subtitle="Chiffrement, clé, verrouillage et sauvegarde : l’état de cet appareil" left={<Badge color={c.teal} icon="check-circle" size={34} />} onPress={onSecurity} chevron />}
       </Card>
       {prefs.lockOff && <View style={st.msg}><Notice icon="unlock" tone="warn">{lockOffNotice(prefs.lockOff.date, MONTH_NAMES)}</Notice></View>}
       {msg && <View style={st.msg}><Notice icon="alert-circle" tone="warn">{msg}</Notice></View>}

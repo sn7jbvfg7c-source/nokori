@@ -3,6 +3,8 @@
  * Le web ne sert qu'au développement et aux tests automatiques : localStorage n'est pas chiffré.
  * Sur iPhone et Android, c'est kv.native.ts qui est utilisé (base SQLite chiffrée).
  */
+import type { StorageReport } from '../domain/securityCheck';
+
 export interface KV {
   get(key: string): Promise<string | null>;
   set(key: string, value: string): Promise<void>;
@@ -39,6 +41,11 @@ export const kv: KV = {
 };
 
 /** Drapeau de test local (version web uniquement) : « nokori:<nom> » */
+/** Diagnostic de sécurité : dans le navigateur, rien n'est chiffré et il n'y a pas de clé */
+export async function storageReport(): Promise<StorageReport> {
+  return { platform: 'navigateur', cipherVersion: null, fileHeaderPlain: null, keyPresent: false, keyWellFormed: false };
+}
+
 export function testFlag(name: string): string | null {
   try { return globalThis.localStorage?.getItem(PREFIX + name) ?? null; } catch { return null; }
 }

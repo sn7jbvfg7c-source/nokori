@@ -39,6 +39,18 @@ Nokori est une app de suivi de budget **manuelle** : elle ne se connecte à aucu
 - **Plantage d’un écran** : écran « Un problème est survenu » au lieu d’un écran blanc (ErrorBoundary d’Expo Router : racine, chaque onglet, chaque fenêtre ; `src/ui/CrashScreen.tsx`). Il ne lit ni n’écrit aucune donnée ; « Réessayer » réaffiche l’écran. Un onglet qui plante laisse la barre d’onglets et le verrou en place. Les détails techniques sont masqués par défaut et nettoyés (textes entre guillemets et nombres retirés). Vérifié par `e2e/crash.e2e.js` grâce à un drapeau de test (web : stockage du navigateur ; téléphone : version de développement seulement).
 - **SQLCipher** : `PRAGMA temp_store = MEMORY` (pas de fichier temporaire de tri sur le disque) et `PRAGMA secure_delete = ON` (le contenu effacé est réellement écrasé).
 
+## Vérifier la protection (diagnostic dans l’app)
+
+Réglages › Sécurité et rappels › **Vérifier la protection** montre à l’utilisateur, en phrases simples, l’état réel de son appareil :
+
+- **chiffrement** : version de SQLCipher annoncée par la base, et lecture des 16 premiers octets du fichier `nokori.db` (un SQLite non chiffré commence toujours par « SQLite format 3 ») ;
+- **clé** : présente et bien formée dans le trousseau (sa valeur ne sort jamais de `storageReport()`) ;
+- **calculs** : vecteurs officiels de scrypt et d’AES-256-GCM recalculés par le moteur JavaScript du téléphone ;
+- **verrouillage** et **ancienneté de la dernière sauvegarde** ;
+- sur demande, **durée du calcul de la clé d’une sauvegarde** au réglage actuel (2^15) et au double (2^16), pour choisir le réglage après mesure sur de vrais téléphones.
+
+Le diagnostic ne reçoit que des constats (vrai ou faux, numéro de version, durées) : jamais la clé, la phrase secrète ni une donnée financière. Il n’écrit rien et rien ne quitte l’appareil (`src/domain/securityCheck.ts`, testé par `securityCheck.test.ts` et `e2e/settings.e2e.js`). Dans le navigateur, il dit que les données sont en clair.
+
 ## Ce qui est vérifié automatiquement
 
 `src/__tests__/security.test.js` échoue si le code contient :

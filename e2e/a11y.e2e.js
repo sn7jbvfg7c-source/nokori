@@ -70,6 +70,8 @@ const SEED = theme => ({
     await audit('réglages');
     await p.getByRole('button', { name: /^Sauvegarde et restauration/ }).click(); await W(700);
     await audit('sauvegarde'); await p.getByRole('button', { name: 'Fermer la sauvegarde' }).click(); await W(500);
+    await p.getByRole('button', { name: /^Vérifier la protection/ }).click(); await W(1200);
+    await audit('vérifier la protection'); await p.getByRole('button', { name: 'Fermer la vérification' }).click(); await W(500);
     await p.getByRole('button', { name: /^Mentions légales/ }).click(); await W(700);
     await audit('mentions légales'); await p.keyboard.press('Escape'); await W(500);
     await p.getByRole('button', { name: 'Fermer les réglages' }).click(); await W(500);

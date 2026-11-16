@@ -71,6 +71,7 @@ function Shell() {
         <Stack.Screen name="depense" options={{ presentation: 'modal' }} />
         <Stack.Screen name="reglages" options={{ presentation: 'modal' }} />
         <Stack.Screen name="sauvegarde" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="securite" options={{ presentation: 'modal' }} />
         <Stack.Screen name="legal/[doc]" options={{ presentation: 'modal' }} />
       </Stack>
       {needsConsent(trackers, prefs.consent) && (
