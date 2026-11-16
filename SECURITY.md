@@ -11,16 +11,16 @@ Nokori est une app de suivi de budget **manuelle** : elle ne se connecte à aucu
 
 | Risque | Protection |
 | --- | --- |
-| Quelqu’un prend le téléphone déverrouillé | Verrouillage Face ID / Touch ID / empreinte (Réglages). Il revient tout seul après 1 minute en arrière-plan. |
+| Quelqu’un prend le téléphone déverrouillé | Verrouillage Face ID / Touch ID / empreinte (Réglages). Il revient tout seul après 1 minute en arrière-plan. C’est une protection de l’**écran** : la clé de la base n’est pas liée à la biométrie (voir « Limites »). |
 | L’aperçu de l’app dans le sélecteur d’apps | Si le verrouillage est activé : le contenu est masqué dès que l’app passe en arrière-plan et, sur Android, la fenêtre est marquée sécurisée (FLAG_SECURE, module local `modules/nokori-secure`, aucune permission) : aperçu masqué et captures d’écran bloquées. |
 | Regard par-dessus l’épaule | « Masquer les montants » remplace les sommes par •••. |
-| Lecture des fichiers de l’app (sauvegarde, téléphone volé et forcé) | La base SQLite est chiffrée par **SQLCipher** (AES-256). La clé de 256 bits est tirée au hasard et rangée dans le trousseau iOS / Keystore Android avec `WHEN_UNLOCKED_THIS_DEVICE_ONLY` : elle ne part ni dans iCloud ni sur un autre appareil. Une base restaurée par iCloud sur un autre iPhone arrive donc sans sa clé : elle est illisible, et l’app la remplace par une base vide au lieu de rester bloquée. |
+| Lecture des fichiers de l’app (sauvegarde, téléphone volé et forcé) | La base SQLite est chiffrée par **SQLCipher** (AES-256). La clé de 256 bits est tirée au hasard et rangée dans le trousseau iOS / Keystore Android avec `WHEN_UNLOCKED_THIS_DEVICE_ONLY` : elle ne part ni dans iCloud ni sur un autre appareil. Une base restaurée par iCloud sur un autre iPhone arrive donc sans sa clé : elle est illisible. L’app ne supprime rien d’elle-même : elle affiche un écran qui propose de restaurer une sauvegarde chiffrée ou, sur confirmation, de repartir de zéro (`KeyLostError`, `src/data/kv.native.ts`). |
 | Sauvegarde Android copiée ailleurs | `allowBackup` est désactivé. |
 | App publiée sans chiffrement par erreur | Dans l’app publiée, si `PRAGMA cipher_version` ne répond pas, l’app **refuse d’écrire**. |
 | Fichier de données modifié ou corrompu | Chaque champ est relu et validé (types, bornes des montants, longueurs, nombre d’éléments). Une donnée invalide est écartée, l’app ne plante pas. |
 | Injection dans la base | Requêtes paramétrées. La clé, seule valeur insérée dans un `PRAGMA`, doit faire exactement 64 caractères hexadécimaux. |
-| Notifications lues sur l’écran verrouillé | Les rappels de prélèvement ne contiennent **aucun montant**. |
-| Fuite par le réseau | L’app ne fait aucun appel réseau, un test le vérifie à chaque lancement. Sur Android, les versions distribuées n’ont même pas la permission Internet. |
+| Notifications lues sur l’écran verrouillé | Les rappels de prélèvement ne contiennent **aucun montant**. Ils nomment la charge (« Loyer sera prélevé le 5 »), sauf si « Masquer les montants » est activé : ils disent alors seulement qu’un prélèvement est prévu. |
+| Fuite par le réseau | L’app ne fait aucun appel réseau, un test automatique le vérifie (`src/__tests__/security.test.js`). Sur Android, les versions distribuées n’ont même pas la permission Internet. |
 
 ## Sauvegarde chiffrée
 
@@ -62,6 +62,14 @@ Il vérifie aussi la clé liée à l’appareil, le refus d’écrire sans chiff
 - **Chiffrement et export.** Nokori n’utilise le chiffrement que pour protéger ses propres données sur le téléphone, avec un algorithme standard. C’est en principe une utilisation exemptée de déclaration d’export aux États-Unis, d’où `usesNonExemptEncryption: false`. App Store Connect pose aussi une question sur la distribution en **France** : la même exemption s’applique en général aux usages de protection des données, mais à relire au moment de remplir le formulaire.
 - **SQLCipher sur un vrai téléphone.** Le chiffrement ne se vérifie que sur une version compilée (EAS Build) : au lancement, aucun avertissement « SQLCipher absent » ne doit apparaître, et l’app refuse d’écrire sans chiffrement. À contrôler une fois sur iPhone et sur Android (voir docs/BETA.md).
 - **Version web.** C’est une version de test, à partager avec des testeurs, pas une version publique. Elle n’a ni serveur ni accès réseau : les données restent dans le navigateur de chacun, mais en clair (`localStorage`), sans verrouillage ni rappels. Elle le dit dès le premier écran et dans les réglages, et demande aux moteurs de recherche de ne pas l’indexer (`noindex`). Pour de vrais chiffres, l’app pour téléphone reste la référence.
+
+## Limites connues
+
+- **Le verrouillage protège l’écran, pas la clé.** La clé de la base est lisible par l’app dès que le téléphone est déverrouillé (`requireAuthentication` n’est pas utilisé, pour ne pas tout perdre lors d’un changement d’empreinte). Les données sont déchiffrées en mémoire derrière le voile. Sur un téléphone rooté, débogué ou déjà déverrouillé par un tiers, le verrou de Nokori ne suffit pas.
+- **La sauvegarde vaut ce que vaut sa phrase.** Le fichier est chiffré correctement, mais une phrase faible peut être retrouvée par essais hors ligne si le fichier est volé.
+- **La version web n’est pas chiffrée** (voir plus haut).
+- **Les tests de `security.test.js` lisent le code** : ce sont des garde-fous contre les régressions, pas des preuves de comportement. Le chiffrement réel, le verrou et `FLAG_SECURE` se vérifient sur un téléphone.
+- **Permissions Android réellement présentes** (APK `preview` du 16 novembre 2026) : `USE_BIOMETRIC`, `USE_FINGERPRINT`, `POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED`, `WAKE_LOCK`, `VIBRATE`, `READ_APP_BADGE`, `ACCESS_NETWORK_STATE`, `BIND_JOB_SERVICE`, `DUMP`, ajoutées par les modules Expo. Pas d’`INTERNET`.
 
 ## Signaler un problème
 
