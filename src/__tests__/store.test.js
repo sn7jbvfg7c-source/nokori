@@ -54,9 +54,15 @@ describe('configuration de publication', () => {
     expect(eas.submit.production.ios.metadataPath).toBe('./store.config.js');
     expect(eas.submit.production.android).toEqual({ track: 'internal', releaseStatus: 'draft' });
   });
-  test('store.config.js refuse de partir sans adresses publiques', () => {
+  test('store.config.js : pages publiques renseignées, envoi refusé tant que des informations de l’éditeur manquent', () => {
     const src = fs.readFileSync(path.join(root, 'store.config.js'), 'utf8');
-    expect(src).toMatch(/if \(!PRIVACY_URL \|\| !SUPPORT_URL\) throw/);
+    expect(src).toMatch(/PRIVACY_URL = 'https:\/\/nokori\.expo\.app\/legal\/confidentialite'/);
+    expect(src).toMatch(/SUPPORT_URL = 'https:\/\/nokori\.expo\.app\/legal\/assistance'/);
+    const todo = fs.readFileSync(path.join(root, 'docs/A-COMPLETER.md'), 'utf8');
+    if (/^- \[ \]/m.test(todo.split('À décider ou vérifier aussi')[0])) expect(() => require('../../store.config.js')).toThrow(/informations de l’éditeur manquent/);
+  });
+  test('typographie française : espaces insécables partout (node scripts/typo-fr.js)', () => {
+    expect(require('../../scripts/typo-fr.js').run(true)).toEqual([]);
   });
   test('captures présentes aux bonnes tailles', () => {
     const size = f => { const b = fs.readFileSync(f); let i = 2; while (i < b.length) { const m = b[i + 1], l = b.readUInt16BE(i + 2); if (m >= 0xc0 && m <= 0xc2) return [b.readUInt16BE(i + 7), b.readUInt16BE(i + 5)]; i += 2 + l; } return null; };

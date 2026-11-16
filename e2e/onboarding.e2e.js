@@ -65,7 +65,7 @@ const eq = (a, b, what) => { if (a !== b) throw new Error(`${what} : « ${a} » 
     eq(await p.getByLabel('Revenu mensuel').inputValue(), '2 480,00', 'revenu repris');
   });
   await t('retour au budget sans rien changer', async () => { await btn('Passer').click(); await W(300); await btn('Ouvrir mon budget').click(); await W(1000); await p.getByText('kaki, la couleur du mois').waitFor(); });
-  const envies = async () => (await p.locator('[aria-label^="Envies : il reste"]').first().getAttribute('aria-label'));
+  const envies = async () => (await p.locator('[aria-label^="Envies\u00a0: il reste"]').first().getAttribute('aria-label'));
   let before = '';
   await t('dépense : « Ajouter » bloqué sans montant ni catégorie', async () => {
     before = await envies();

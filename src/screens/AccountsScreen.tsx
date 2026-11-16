@@ -34,7 +34,7 @@ function Editor({ draft, setDraft, onSave, onCancel, onDelete }: { draft: Draft;
   const ok = draft.name.trim().length > 0 && bal !== null;
   return (
     <View style={st.editor}>
-      <TextInput value={draft.name} onChangeText={v => setDraft({ ...draft, name: cleanName(v) })} maxLength={40} placeholder="Nom : compte courant, Livret A…" placeholderTextColor={c.ink3} accessibilityLabel="Nom du compte" style={st.input} />
+      <TextInput value={draft.name} onChangeText={v => setDraft({ ...draft, name: cleanName(v) })} maxLength={40} placeholder="Nom : compte courant, Livret A…" placeholderTextColor={c.ink3} accessibilityLabel="Nom du compte" style={st.input} />
       <View style={st.kinds}>
         {ACCOUNT_KINDS.map(k => <Chip key={k.id} label={k.name} icon={KIND_ICON[k.id]} selected={draft.kind === k.id} onPress={() => setDraft({ ...draft, kind: k.id })} />)}
       </View>
@@ -47,7 +47,7 @@ function Editor({ draft, setDraft, onSave, onCancel, onDelete }: { draft: Draft;
       </View>
       {draft.balance.trim() !== '' && bal === null && <Text style={st.err}>Solde invalide (un signe moins pour un découvert, 2 décimales)</Text>}
       {confirm
-        ? <Confirm question="Supprimer ce compte ?" confirmLabel="Supprimer" a11yConfirm={`Confirmer la suppression de ${draft.name}`} onCancel={() => setConfirm(false)} onConfirm={() => onDelete?.()} />
+        ? <Confirm question="Supprimer ce compte ?" confirmLabel="Supprimer" a11yConfirm={`Confirmer la suppression de ${draft.name}`} onCancel={() => setConfirm(false)} onConfirm={() => onDelete?.()} />
         : <View style={st.btns}>
             {onDelete && <Button label="Supprimer" variant="ghost" small onPress={() => setConfirm(true)} a11yLabel={`Supprimer ${draft.name}`} />}
             <View style={{ flex: 1 }} />
@@ -87,9 +87,9 @@ export function AccountsScreen({ accounts, today, onSave, onRemove }: { accounts
         <View style={st.head}>
           <Text style={st.kick}>Total de vos comptes</Text>
           <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={[st.total, tot.total < 0 && !m$.hidden && { color: c.vermilion }]} numberOfLines={1} adjustsFontSizeToFit
-            accessibilityLabel={m$.hidden ? 'Total masqué' : `Total de vos comptes : ${formatEuros(tot.total)}`}>{m$.eur(tot.total)}</Text>
+            accessibilityLabel={m$.hidden ? 'Total masqué' : `Total de vos comptes : ${formatEuros(tot.total)}`}>{m$.eur(tot.total)}</Text>
           {tot.byKind.length > 1 && posSum > 1 && (
-            <View style={st.dist} accessible accessibilityRole="image" accessibilityLabel={`Répartition : ${tot.byKind.map((k, i) => `${k.plural} ${Math.round((positive[i] / posSum) * 100)} %`).join(', ')}`}>
+            <View style={st.dist} accessible accessibilityRole="image" accessibilityLabel={`Répartition : ${tot.byKind.map((k, i) => `${k.plural} ${Math.round((positive[i] / posSum) * 100)} %`).join(', ')}`}>
               {tot.byKind.map((k, i) => positive[i] > 0 && <View key={k.id} style={{ flex: positive[i] / posSum, backgroundColor: kindColor[k.id] }} />)}
             </View>
           )}
@@ -124,7 +124,7 @@ export function AccountsScreen({ accounts, today, onSave, onRemove }: { accounts
             action={<Button label="Ajouter un compte" icon="plus" onPress={newDraft} />} />
         </Card>
       )}
-      <Text style={st.note}>Saisie à la main : Nokori ne se connecte à aucune banque, et ces soldes restent sur votre téléphone.</Text>
+      <Text style={st.note}>Saisie à la main : Nokori ne se connecte à aucune banque, et ces soldes restent sur votre téléphone.</Text>
     </ScrollView>
   );
 }

@@ -37,7 +37,7 @@ const SEED = {
     await p.getByRole('button', { name: 'Bilan : mois d’avant' }).click(); await W(400);
     await p.getByText('Octobre, clos').waitFor();
     await p.getByLabel(/^1.23\d.€ épargnés$/).waitFor();
-    await p.getByText(/^50 % du revenu/).waitFor();
+    await p.getByText(/^50\s%\sdu revenu/).waitFor();
     await p.getByText('Combien voulais-je épargner ?').waitFor();
   });
   await t('note « comment faire mieux » nettoyée et enregistrée', async () => {
@@ -52,7 +52,7 @@ const SEED = {
     await p.getByRole('button', { name: 'Revoir octobre en story' }).click(); await W(600);
     await p.getByText('Votre mois,', { exact: false }).waitFor(); await shot('s1');
     await p.getByRole('button', { name: 'Écran suivant' }).click(); await W(300);
-    await p.getByLabel(/^Épargné : 1.23\d.€$/).waitFor(); await shot('s2');
+    await p.getByLabel(/^Épargné\s:\s1.23\d.€$/).waitFor(); await shot('s2');
     await p.getByRole('button', { name: 'Écran suivant' }).click(); await W(300);
     await p.getByText('Le pilier qui a le plus pesé').waitFor(); await p.getByText('Besoins', { exact: true }).last().waitFor(); await shot('s3');
     await p.getByRole('button', { name: 'Écran suivant' }).click(); await W(300);

@@ -38,7 +38,7 @@ export function SettingsScreen({ prefs, today = new Date(), onChange, onClose, o
     setMsg(null);
     if (!on) return onChange({ alerts: false });
     if (await askPermission()) onChange({ alerts: true });
-    else setMsg('Notifications refusées : autorisez-les dans les réglages du téléphone.');
+    else setMsg('Notifications refusées : autorisez-les dans les réglages du téléphone.');
   };
 
   const toggle = (icon: IconName, color: string, title: string, sub: string, value: boolean, onToggle: (v: boolean) => void, disabled = false, first = false) => (
@@ -55,15 +55,15 @@ export function SettingsScreen({ prefs, today = new Date(), onChange, onClose, o
         <Text style={st.rowT}>Thème</Text>
         <Segmented role="radio" label="Thème" value={prefs.theme} onChange={(k: ThemePref) => onChange({ theme: k })}
           options={[{ key: 'auto', label: 'Auto', a11y: 'Thème Auto' }, { key: 'clair', label: 'Clair', a11y: 'Thème Clair' }, { key: 'sombre', label: 'Sombre', a11y: 'Thème Sombre' }]} />
-        <Text style={st.rowS}>« Auto » suit le réglage du téléphone.</Text>
+        <Text style={st.rowS}>« Auto » suit le réglage du téléphone.</Text>
       </Card>
       <Card style={{ marginTop: space.sm }}>
-        {toggle('eye-off', c.ink2, 'Masquer les montants', 'Pour ouvrir l’app en public : les montants des écrans sont remplacés par •••. Ils restent visibles quand vous les saisissez ou les modifiez.', prefs.hideAmounts, v => onChange({ hideAmounts: v }), false, true)}
+        {toggle('eye-off', c.ink2, 'Masquer les montants', 'Pour ouvrir l’app en public : les montants des écrans sont remplacés par •••. Ils restent visibles quand vous les saisissez ou les modifiez.', prefs.hideAmounts, v => onChange({ hideAmounts: v }), false, true)}
       </Card>
 
       <SectionHeader title="Sécurité et rappels" />
       <Card>
-        {toggle('lock', c.vermilion, 'Verrouillage Face ID', web ? 'Indisponible dans le navigateur' : 'À l’ouverture et après 1 minute en arrière-plan', prefs.lock, toggleLock, web, true)}
+        {toggle('lock', c.vermilion, 'Verrouillage Face ID', web ? 'Indisponible dans le navigateur' : Platform.OS === 'android' ? 'À l’ouverture et après 1 minute en arrière-plan. Masque aussi l’aperçu dans les apps récentes et bloque les captures d’écran' : 'À l’ouverture et après 1 minute en arrière-plan', prefs.lock, toggleLock, web, true)}
         {toggle('bell', c.teal, 'Avant chaque prélèvement', notificationsSupported ? 'Une notification 3 jours avant, sans montant affiché' : 'Indisponible dans le navigateur', prefs.alerts && notificationsSupported, toggleAlerts, !notificationsSupported)}
       </Card>
       {msg && <View style={st.msg}><Notice icon="alert-circle" tone="warn">{msg}</Notice></View>}
@@ -80,20 +80,20 @@ export function SettingsScreen({ prefs, today = new Date(), onChange, onClose, o
         </Notice></View>
       )}
       <Card style={{ marginTop: space.sm }}>
-        <Row first title="Sauvegarde et restauration" subtitle={prefs.lastBackup ? `Dernière sauvegarde : ${longDate(prefs.lastBackup)}` : 'Fichier chiffré, pour changer de téléphone'}
+        <Row first title="Sauvegarde et restauration" subtitle={prefs.lastBackup ? `Dernière sauvegarde : ${longDate(prefs.lastBackup)}` : 'Fichier chiffré, pour changer de téléphone'}
           left={<Badge color={c.teal} icon="shield" size={34} />} onPress={onBackup} chevron />
         <View style={st.privacy}>
           <Feather name={web ? 'globe' : 'smartphone'} size={15} color={c.ink2} style={{ marginTop: 2 }} />
           <Text style={st.rowS}>{web
-            ? 'Version de test : tout est enregistré dans ce navigateur, sans chiffrement. Aucune donnée n’est envoyée à un serveur ni à une banque. L’app pour téléphone chiffre tout.'
+            ? 'Version de test : tout est enregistré dans ce navigateur, sans chiffrement. Aucune donnée n’est envoyée à un serveur ni à une banque. L’app pour téléphone chiffre tout.'
             : 'Tout est enregistré sur ce téléphone, dans une base chiffrée. Aucune donnée n’est envoyée à un serveur ni à une banque.'}</Text>
         </View>
         <View style={st.sep}>
           {confirm ? (
             <View style={{ paddingTop: space.md }}>
-              <Text style={[st.rowT, { color: c.vermilion }]}>{web ? 'Supprimer toutes vos données de ce navigateur ?' : 'Supprimer toutes vos données de ce téléphone ?'}</Text>
-              <Text style={[st.rowS, { marginBottom: space.sm }]}>Dépenses, charges, comptes, objectifs, bilans et réglages seront supprimés, ainsi que la clé de chiffrement. C’est définitif. L’éditeur n’en a aucune copie : rien d’autre n’est à supprimer ailleurs. Les fichiers de sauvegarde que vous avez rangés vous-même (Fichiers, Drive…) ne sont pas touchés : supprimez-les à cet endroit si vous le souhaitez.</Text>
-              <Confirm question="" confirmLabel="Tout supprimer" a11yConfirm="Confirmer : tout effacer et supprimer mes données" onCancel={() => setConfirm(false)} onConfirm={onWipe} />
+              <Text style={[st.rowT, { color: c.vermilion }]}>{web ? 'Supprimer toutes vos données de ce navigateur ?' : 'Supprimer toutes vos données de ce téléphone ?'}</Text>
+              <Text style={[st.rowS, { marginBottom: space.sm }]}>Dépenses, charges, comptes, objectifs, bilans et réglages seront supprimés, ainsi que la clé de chiffrement. C’est définitif. L’éditeur n’en a aucune copie : rien d’autre n’est à supprimer ailleurs. Les fichiers de sauvegarde que vous avez rangés vous-même (Fichiers, Drive…) ne sont pas touchés : supprimez-les à cet endroit si vous le souhaitez.</Text>
+              <Confirm question="" confirmLabel="Tout supprimer" a11yConfirm="Confirmer : tout effacer et supprimer mes données" onCancel={() => setConfirm(false)} onConfirm={onWipe} />
             </View>
           ) : (
             <Row first title="Supprimer toutes mes données" subtitle="Tout effacer de cet appareil, définitivement" danger left={<Badge color={c.vermilion} icon="trash-2" size={34} />} onPress={() => setConfirm(true)} />
@@ -107,6 +107,12 @@ export function SettingsScreen({ prefs, today = new Date(), onChange, onClose, o
             const d = legalDocs()[id];
             return <Row key={id} first={i === 0} title={d.title} subtitle={d.short} onPress={() => onLegal(id)} chevron />;
           })}
+        </Card>
+      </>}
+      {onLegal && <>
+        <SectionHeader title="Aide" />
+        <Card>
+          <Row first title={legalDocs().assistance.title} subtitle={legalDocs().assistance.short} onPress={() => onLegal('assistance')} chevron />
         </Card>
       </>}
       <Text style={st.version}>Nokori · version 1.0 · aucune donnée collectée par l’éditeur</Text>

@@ -12,7 +12,7 @@ Nokori est une app de suivi de budget **manuelle** : elle ne se connecte à aucu
 | Risque | Protection |
 | --- | --- |
 | Quelqu’un prend le téléphone déverrouillé | Verrouillage Face ID / Touch ID / empreinte (Réglages). Il revient tout seul après 1 minute en arrière-plan. |
-| L’aperçu de l’app dans le sélecteur d’apps | Le contenu est masqué dès que l’app passe en arrière-plan (si le verrouillage est activé). |
+| L’aperçu de l’app dans le sélecteur d’apps | Si le verrouillage est activé : le contenu est masqué dès que l’app passe en arrière-plan et, sur Android, la fenêtre est marquée sécurisée (FLAG_SECURE, module local `modules/nokori-secure`, aucune permission) : aperçu masqué et captures d’écran bloquées. |
 | Regard par-dessus l’épaule | « Masquer les montants » remplace les sommes par •••. |
 | Lecture des fichiers de l’app (sauvegarde, téléphone volé et forcé) | La base SQLite est chiffrée par **SQLCipher** (AES-256). La clé de 256 bits est tirée au hasard et rangée dans le trousseau iOS / Keystore Android avec `WHEN_UNLOCKED_THIS_DEVICE_ONLY` : elle ne part ni dans iCloud ni sur un autre appareil. Une base restaurée par iCloud sur un autre iPhone arrive donc sans sa clé : elle est illisible, et l’app la remplace par une base vide au lieu de rester bloquée. |
 | Sauvegarde Android copiée ailleurs | `allowBackup` est désactivé. |

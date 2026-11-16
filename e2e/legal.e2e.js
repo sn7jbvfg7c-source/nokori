@@ -5,7 +5,7 @@ const r = []; let ko = 0;
 const t = async (n, f) => { try { await f(); r.push('✓ ' + n); } catch (e) { ko++; r.push('✗ ' + n + ' : ' + e.message.split('\n').slice(0, 4).join(' ').slice(0, 400)); } };
 const SEED = { v: 1, dismissed: [], notes: {}, prefs: { theme: 'auto', lock: false, hideAmounts: false, alerts: false },
   profile: { income: 248000, extraIncome: 0, payday: 1, savePct: 0.2, charges: [] }, expenses: [{ id: 'a', date: '2026-11-10', label: 'Marché', categoryId: 'courses', amount: 4000 }], accounts: [], goals: [] };
-const DOCS = [['Mentions légales', true], ['Politique de confidentialité', true], ['Conditions d’utilisation', true], ['Politique de remboursement', true], ['Cookies et traceurs', false], ['Licences', false]];
+const DOCS = [['Mentions légales', true], ['Politique de confidentialité', true], ['Conditions d’utilisation', true], ['Politique de remboursement', true], ['Cookies et traceurs', false], ['Licences', false], ['Aide et contact', true]];
 
 (async () => {
   const srv = await serve(8097);
@@ -33,7 +33,7 @@ const DOCS = [['Mentions légales', true], ['Politique de confidentialité', tru
   });
   await p.evaluate(s => localStorage.setItem('nokori:state', JSON.stringify(s)), SEED);
   await p.goto('http://localhost:8097/'); await W(1800);
-  await t('les six documents s’ouvrent depuis les réglages ; les manques sont signalés, rien n’est inventé', async () => {
+  await t('les sept documents (dont l’aide) s’ouvrent depuis les réglages ; les manques sont signalés, rien n’est inventé', async () => {
     for (const [title, incomplete] of DOCS) {
       await p.getByRole('button', { name: 'Réglages' }).click(); await W(600);
       await p.getByRole('button', { name: new RegExp('^' + title) }).click(); await W(600);
@@ -49,9 +49,17 @@ const DOCS = [['Mentions légales', true], ['Politique de confidentialité', tru
   await t('mentions légales : champs manquants surlignés « [À compléter : …] »', async () => {
     await p.getByRole('button', { name: 'Réglages' }).click(); await W(500);
     await p.getByRole('button', { name: /^Mentions légales/ }).click(); await W(500);
-    const n = await p.getByText(/\[À compléter : /).count();
+    const n = await p.getByText(/\[À compléter\s:\s/).count();
     if (n < 5) throw new Error(n + ' repères');
     await p.keyboard.press('Escape'); await W(300); await p.keyboard.press('Escape'); await W(400);
+  });
+  await t('pages publiques pour les stores : confidentialité et assistance s’ouvrent directement par leur adresse', async () => {
+    for (const [path, title] of [['confidentialite', 'Politique de confidentialité'], ['assistance', 'Aide et contact']]) {
+      await p.goto('http://localhost:8097/legal/' + path); await W(1200);
+      await p.getByRole('heading', { name: title }).waitFor();
+    }
+    await p.getByText('Comment tout effacer ?').waitFor();
+    await p.goto('http://localhost:8097/'); await W(1500);
   });
   await t('pages légales lisibles sur petit téléphone et sur ordinateur (aucun débordement)', async () => {
     for (const [w, h] of [[320, 568], [1280, 800]]) {
@@ -63,11 +71,13 @@ const DOCS = [['Mentions légales', true], ['Politique de confidentialité', tru
     await p.setViewportSize({ width: 393, height: 852 });
     await p.goto('http://localhost:8097/'); await W(1500);
   });
-  await t('clavier : Tab atteint « Ajouter une dépense » avec un focus visible, Entrée ouvre, Échap ferme', async () => {
+  await t('clavier : le contenu passe avant la barre d’onglets ; « Ajouter une dépense » a un focus visible, Entrée ouvre, Échap ferme', async () => {
     let found = false;
     for (let i = 0; i < 25 && !found; i++) {
       await p.keyboard.press('Tab');
-      found = await p.evaluate(() => document.activeElement?.getAttribute('aria-label') === 'Ajouter une dépense');
+      const el = await p.evaluate(() => ({ label: document.activeElement?.getAttribute('aria-label'), tab: document.activeElement?.tagName === 'A' && document.activeElement?.getAttribute('role') === 'tab' }));
+      if (el.tab) throw new Error('la barre d’onglets est atteinte avant le contenu');
+      found = el.label === 'Ajouter une dépense';
     }
     if (!found) throw new Error('bouton non atteint au clavier');
     const ring = await p.evaluate(() => { const s = getComputedStyle(document.activeElement); return s.outlineStyle !== 'none' && s.outlineWidth !== '0px' ? 'outline' : s.boxShadow !== 'none' ? 'ombre' : ''; });

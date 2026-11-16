@@ -34,7 +34,7 @@ export function ConsentBanner({ trackers, current, onChoice, onReadPolicy, start
             <View key={x.id} style={st.row}>
               <View style={{ flex: 1 }}>
                 <Text style={st.name}>{x.name}</Text>
-                <Text style={st.small}>{x.purpose} Fourni par : {x.provider}.</Text>
+                <Text style={st.small}>{x.purpose} Fourni par : {x.provider}.</Text>
               </View>
               <Switch value={draft[x.id] === true} onValueChange={v => setDraft(d => ({ ...d, [x.id]: v }))} accessibilityLabel={`Autoriser ${x.name}`}
                 trackColor={{ false: c.fill2, true: c.teal }} thumbColor="#FFFFFF" />

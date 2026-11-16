@@ -39,7 +39,7 @@ export function PillarList({ pillars, highlight, onOpen }: { pillars: PillarStat
           return (
             <Pressable key={p.id} onPress={onOpen ? () => onOpen(p.id) : undefined} disabled={!onOpen} style={({ pressed }) => [st.row, i > 0 && st.sep, pressed && { opacity: 0.6 }]}
               accessibilityRole={onOpen ? 'button' : undefined} accessibilityHint={onOpen ? 'Affiche les dépenses de ce pilier dans l’Activité' : undefined}
-              accessibilityLabel={m.hidden ? `${p.name} : montants masqués, ${p.hint}` : `${p.name} : il reste ${m.spoken(p.left)} sur ${m.spoken(p.budget)}. ${m.round(p.left)} · ${m.round(p.spent)} dépensés sur ${m.round(p.budget)} · ${p.hint}`}>
+              accessibilityLabel={m.hidden ? `${p.name} : montants masqués, ${p.hint}` : `${p.name} : il reste ${m.spoken(p.left)} sur ${m.spoken(p.budget)}. ${m.round(p.left)} · ${m.round(p.spent)} dépensés sur ${m.round(p.budget)} · ${p.hint}`}>
               <Flash color={color} run={highlight === p.id ? p.spent : 0} />
               <Badge color={color} icon={PILLAR_ICON[p.id]} />
               <View style={st.body}>

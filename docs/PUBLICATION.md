@@ -8,15 +8,17 @@ Ce guide fait suite à [BETA.md](BETA.md) : les comptes existent, la bêta tourn
 | Fiche App Store envoyée en une commande | `store.config.js` (EAS Metadata) |
 | 6 captures iPhone 1320 × 2868 | `store/screenshots/ios/` |
 | 6 captures Android 1080 × 1920, image de présentation 1024 × 500, icône 512 × 512 | `store/screenshots/android/` |
-| Politique de confidentialité, conditions, page d’assistance | `docs/legal/` (générés depuis l’app par `node scripts/legal-docs.js`), `docs/assistance.md` |
+| Politique de confidentialité, conditions, page d’assistance | Dans l’app et en ligne (`https://nokori.expo.app/legal/…`), copies dans `docs/legal/` (`node scripts/legal-docs.js`) |
 
 L’app est réglée pour l’iPhone seulement (`supportsTablet: false`) : Apple ne demande donc pas de captures iPad. Sur iPad, elle s’ouvre quand même, en format iPhone.
 
 ## 1. Deux pages web publiques (obligatoire)
 
-1. Renseignez les informations de l’éditeur dans `src/legal/config.ts` (liste dans `docs/A-COMPLETER.md`), lancez `node scripts/legal-docs.js`, puis complétez `docs/assistance.md`.
-2. Publiez-les à une adresse publique : un site perso, une page Notion publique, Google Sites, ou GitHub Pages depuis un dépôt public séparé (ce dépôt-ci est privé).
-3. Recopiez les deux adresses en haut de `store.config.js` (`PRIVACY_URL`, `SUPPORT_URL`). Tant qu’elles sont vides, l’envoi de la fiche s’arrête avec un message.
+Les deux pages existent déjà, servies par la version web : **https://nokori.expo.app/legal/confidentialite** et **https://nokori.expo.app/legal/assistance**. Leurs adresses sont dans `store.config.js`.
+
+1. Renseignez les informations de l’éditeur dans `src/legal/config.ts` (liste dans `docs/A-COMPLETER.md`), puis lancez `node scripts/legal-docs.js`.
+2. Redéployez la version web (`npm run e2e`, puis `npx eas-cli@latest deploy --prod --export-dir dist`) et ouvrez les deux adresses : plus aucun « [À compléter] » ne doit apparaître.
+3. Tant que `docs/A-COMPLETER.md` liste des manques, l’envoi de la fiche App Store s’arrête avec un message.
 
 ## 2. App Store
 

@@ -3,14 +3,14 @@ import { LEGAL, missingLegalFields, TO_COMPLETE, val } from '../legal/config';
 import { choiceAll, choiceCustom, CONSENT_VERSION, isAllowed, needsConsent, OPTIONAL_TRACKERS } from '../legal/consent';
 import { legalDocs } from '../legal/documents';
 
-const all = (id: keyof ReturnType<typeof legalDocs>) => { const d = legalDocs()[id]; return [d.intro, ...d.sections.flatMap(s => [s.h, ...(s.p ?? []), ...(s.list ?? [])])].join('\n'); };
+const all = (id: keyof ReturnType<typeof legalDocs>) => { const d = legalDocs()[id]; return [d.intro, ...d.sections.flatMap(s => [s.h, ...(s.p ?? []), ...(s.list ?? [])])].join('\n').replace(/[\u00a0\u202f]/g, ' '); };
 
 describe('informations de l’éditeur : rien d’inventé', () => {
   test('aucune information personnelle renseignée par défaut : tout est « À compléter »', () => {
     expect(Object.values(LEGAL.editor).every(v => v === null)).toBe(true);
     expect(all('mentions')).toMatch(TO_COMPLETE);
-    expect(val(null, 'SIRET')).toBe('[À compléter : SIRET]');
-    expect(val('  ', 'x')).toBe('[À compléter : x]');
+    expect(val(null, 'SIRET')).toBe('[À compléter\u00a0: SIRET]');
+    expect(val('  ', 'x')).toBe('[À compléter\u00a0: x]');
   });
   test('liste des éléments à fournir, selon le statut', () => {
     expect(missingLegalFields().length).toBeGreaterThan(5);

@@ -56,8 +56,8 @@ async function open(): Promise<SQLite.SQLiteDatabase> {
   await db.execAsync(`PRAGMA key = "x'${key}'";`);
   const cipher = await db.getFirstAsync<{ cipher_version: string }>('PRAGMA cipher_version;');
   if (!cipher?.cipher_version) {
-    if (!__DEV__) { await db.closeAsync(); throw new Error('Base non chiffrée : enregistrement refusé'); }
-    console.warn('[Nokori] SQLCipher absent (Expo Go ?) : base NON chiffrée, développement uniquement.');
+    if (!__DEV__) { await db.closeAsync(); throw new Error('Base non chiffrée : enregistrement refusé'); }
+    console.warn('[Nokori] SQLCipher absent (Expo Go ?) : base NON chiffrée, développement uniquement.');
   }
   // première lecture : si la clé ne correspond pas à la base (« file is not a database »), elle est illisible
   try { await db.getFirstAsync('SELECT count(*) AS n FROM sqlite_master;'); }

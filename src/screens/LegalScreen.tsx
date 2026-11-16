@@ -10,7 +10,7 @@ import { IconButton, Notice, ScreenHeader } from '../ui/kit';
 /** Un texte où les informations manquantes « [À compléter : …] » sont surlignées, pour qu'on ne les oublie pas */
 function Rich({ text, style }: { text: string; style: object }) {
   const c = useColors();
-  const parts = text.split(/(\[À compléter : [^\]]+\])/g);
+  const parts = text.split(/(\[À compléter\s:\s[^\]]+\])/g);
   return (
     <Text style={style}>
       {parts.map((p, i) => TO_COMPLETE.test(p)
@@ -30,7 +30,7 @@ export function LegalScreen({ doc, onClose, extra }: { doc: LegalDoc; onClose: (
       <ScreenHeader title={doc.title} right={<IconButton icon="x" label="Fermer" onPress={onClose} small />} />
       <View style={st.body}>
         <Text style={st.intro}>{doc.intro}</Text>
-        {incomplete && <Notice icon="edit-3" tone="warn">Document en préparation : les passages surlignés doivent être complétés par l’éditeur.</Notice>}
+        {incomplete && <Notice icon="edit-3" tone="warn">Document en préparation : les passages surlignés doivent être complétés par l’éditeur.</Notice>}
         {doc.sections.map(s => (
           <View key={s.h} style={st.section}>
             <Text style={st.h} accessibilityRole="header" {...({ 'aria-level': 2 } as object)}>{s.h}</Text>
@@ -48,7 +48,7 @@ export function LegalScreen({ doc, onClose, extra }: { doc: LegalDoc; onClose: (
           </View>
         ))}
         {extra}
-        <Text style={st.foot}>{Platform.OS === 'web' ? 'Ce texte est une base qui doit être relue par un professionnel du droit.' : 'Texte de référence ; il doit être relu par un professionnel du droit.'}</Text>
+        <Text style={st.foot}>{Platform.OS === 'web' ? 'Ce texte est une base qui doit être relue par un professionnel du droit.' : 'Texte de référence ; il doit être relu par un professionnel du droit.'}</Text>
       </View>
     </ScrollView>
   );

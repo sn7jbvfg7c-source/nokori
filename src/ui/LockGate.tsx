@@ -4,6 +4,7 @@ import { AppState, Platform, Pressable, StyleSheet, Text, View } from 'react-nat
 import type { Palette } from '../theme/tokens';
 import { font, light } from '../theme/tokens';
 import { useColors, useStyles } from '../theme/theme';
+import { setSecureWindow } from '../../modules/nokori-secure';
 import { BIG_TEXT_MAX_SCALE } from './a11y';
 
 const RELOCK_AFTER_MS = 60_000;
@@ -11,7 +12,8 @@ const RELOCK_AFTER_MS = 60_000;
 /**
  * Verrouillage : Face ID / Touch ID / empreinte à l'ouverture (bouton « Déverrouiller ») et,
  * au retour après plus d'une minute en arrière-plan, demande automatique.
- * Quand l'app passe en arrière-plan, son contenu est masqué (aperçu du sélecteur d'apps).
+ * Quand l'app passe en arrière-plan, son contenu est masqué (aperçu du sélecteur d'apps) ; sur Android,
+ * la fenêtre est en plus marquée sécurisée (FLAG_SECURE) tant que le verrou est activé.
  * Le web n'a pas de biométrie : le verrou n'y est pas proposé.
  */
 export function LockGate({ enabled, ready = true, onUnavailable, children }: { enabled: boolean; ready?: boolean; /** plus aucun moyen de déverrouiller (biométrie et code retirés) */ onUnavailable?: () => void; children: ReactNode }) {
@@ -33,6 +35,13 @@ export function LockGate({ enabled, ready = true, onUnavailable, children }: { e
     setFailed(!r.success);
     if (r.success) setLocked(false);
   }, [onUnavailable]);
+
+  // Android : l'aperçu des apps récentes est capturé avant que le voile ci-dessous ait le temps de s'afficher.
+  // Tant que le verrou est activé, la fenêtre est marquée « sécurisée » (aperçu masqué, captures bloquées).
+  useEffect(() => {
+    setSecureWindow(active);
+    return () => setSecureWindow(false);
+  }, [active]);
 
   useEffect(() => {
     if (!active) return;

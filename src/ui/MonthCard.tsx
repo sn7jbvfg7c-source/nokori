@@ -28,7 +28,7 @@ export function MonthCard({ s }: { s: MonthState }) {
 
       <Text style={st.label}>{s.over ? 'Budget dépassé de' : 'Disponible'}</Text>
       <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.big} numberOfLines={1} adjustsFontSizeToFit
-        accessibilityLabel={s.over ? `Budget dépassé de ${m.spoken(-s.free)}` : `Disponible : ${m.spoken(s.free)}, prélèvements à venir déduits`}>
+        accessibilityLabel={s.over ? `Budget dépassé de ${m.spoken(-s.free)}` : `Disponible : ${m.spoken(s.free)}, prélèvements à venir déduits`}>
         {m.round(s.over ? -s.free : s.free)}
       </Text>
       <Text style={st.sub}>

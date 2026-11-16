@@ -23,7 +23,7 @@ const typeOf = (x: GoalType) => GOAL_TYPES.find(g => g.id === x)!;
 const isoOf = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 /** « lun. 3 mars », avec l'année si ce n'est pas l'année en cours */
 const depDay = (iso: string, today: Date) => dayTitle(iso, today) + (iso.slice(0, 4) !== String(today.getFullYear()) ? ` ${iso.slice(0, 4)}` : '');
-const MILESTONE: Record<25 | 50 | 75 | 100, string> = { 25: 'Un quart du chemin.', 50: 'La moitié est faite.', 75: 'Les trois quarts : la ligne d’arrivée approche.', 100: 'Objectif atteint. Bravo.' };
+const MILESTONE: Record<25 | 50 | 75 | 100, string> = { 25: 'Un quart du chemin.', 50: 'La moitié est faite.', 75: 'Les trois quarts : la ligne d’arrivée approche.', 100: 'Objectif atteint. Bravo.' };
 
 interface Draft { id: string | null; name: string; type: GoalType; target: string; saved: string; monthly: string }
 
@@ -50,7 +50,7 @@ function Editor({ d, set, onSave, onCancel, onDelete }: { d: Draft; set: (d: Dra
   const ok = d.name.trim() !== '' && (amount(d.target) ?? 0) > 0 && amount(d.saved || '0') !== null && amount(d.monthly || '0') !== null;
   return (
     <View style={st.editor}>
-      <TextInput value={d.name} onChangeText={v => set({ ...d, name: cleanName(v) })} maxLength={40} placeholder="Nom : voyage au Japon, voiture…" placeholderTextColor={c.ink3} accessibilityLabel="Nom de l’objectif" style={st.input} />
+      <TextInput value={d.name} onChangeText={v => set({ ...d, name: cleanName(v) })} maxLength={40} placeholder="Nom : voyage au Japon, voiture…" placeholderTextColor={c.ink3} accessibilityLabel="Nom de l’objectif" style={st.input} />
       <View style={st.types}>
         {GOAL_TYPES.map(x => <Chip key={x.id} label={x.name} icon={x.icon as IconName} selected={d.type === x.id} onPress={() => set({ ...d, type: x.id })} color={x.color} />)}
       </View>
@@ -58,7 +58,7 @@ function Editor({ d, set, onSave, onCancel, onDelete }: { d: Draft; set: (d: Dra
       <Field label="Déjà épargné" value={d.saved} onChange={v => set({ ...d, saved: v })} />
       <Field label="Versement par mois" value={d.monthly} onChange={v => set({ ...d, monthly: v })} />
       {confirm
-        ? <Confirm question="Supprimer cet objectif ?" confirmLabel="Supprimer" a11yConfirm={`Confirmer la suppression de ${d.name}`} onCancel={() => setConfirm(false)} onConfirm={() => onDelete?.()} />
+        ? <Confirm question="Supprimer cet objectif ?" confirmLabel="Supprimer" a11yConfirm={`Confirmer la suppression de ${d.name}`} onCancel={() => setConfirm(false)} onConfirm={() => onDelete?.()} />
         : <View style={st.btns}>
             {onDelete && <Button label="Supprimer" variant="ghost" small onPress={() => setConfirm(true)} a11yLabel={`Supprimer ${d.name}`} />}
             <View style={{ flex: 1 }} />
@@ -93,7 +93,7 @@ export function GoalsScreen({ goals, profile, expenses, today, onSave, onRemove 
 
   const etaText = (g: Goal) => {
     const e = eta(g.target, g.saved, g.monthly, today);
-    return e.reached ? 'Objectif atteint' : e.label ? `Au rythme de ${m$.round(g.monthly)} par mois : ${e.label}` : 'Ajoutez un versement mensuel pour voir la date d’arrivée';
+    return e.reached ? 'Objectif atteint' : e.label ? `Au rythme de ${m$.round(g.monthly)} par mois : ${e.label}` : 'Ajoutez un versement mensuel pour voir la date d’arrivée';
   };
 
   const depositRow = (g: Goal) => {
@@ -169,7 +169,7 @@ export function GoalsScreen({ goals, profile, expenses, today, onSave, onRemove 
             <Feather name={leadType.icon as IconName} size={24} color="#fff" />
             <Text style={st.leadType}>{leadType.name}</Text>
             <View style={{ flex: 1 }} />
-            <Pressable onPress={() => edit(lead)} style={st.leadEdit} accessibilityRole="button" accessibilityLabel={`${leadType.name} : modifier ${lead.name}`}>
+            <Pressable onPress={() => edit(lead)} style={st.leadEdit} accessibilityRole="button" accessibilityLabel={`${leadType.name} : modifier ${lead.name}`}>
               <Feather name="edit-2" size={14} color="#141412" /><Text style={st.leadEditTxt}>Modifier</Text>
             </Pressable>
           </View>
@@ -181,7 +181,7 @@ export function GoalsScreen({ goals, profile, expenses, today, onSave, onRemove 
             {progress(lead) < 1 && <View style={[st.eta, { backgroundColor: tint(leadType.color, 0.08) }]}>
               <Text style={st.etaMain}>{etaText(lead)}</Text>
               {!eta(lead.target, lead.saved, 0, today).reached && surplus > 0 && leadWith?.label && (
-                <Text style={st.etaSub} accessibilityLabel="Date avec le reste du mois">En y ajoutant ce qui restera fin {MONTH_NAMES[today.getMonth()]} (≈ {m$.round(surplus)}) : {leadWith.label}. Recalculé à chaque dépense.</Text>
+                <Text style={st.etaSub} accessibilityLabel="Date avec le reste du mois">En y ajoutant ce qui restera fin {MONTH_NAMES[today.getMonth()]} (≈ {m$.round(surplus)}) : {leadWith.label}. Recalculé à chaque dépense.</Text>
               )}
             </View>}
             {monthLine(lead)}
@@ -232,14 +232,14 @@ export function GoalsScreen({ goals, profile, expenses, today, onSave, onRemove 
 
       {!goals.length && !draft && (
         <Card style={{ marginTop: space.lg }}>
-          <EmptyState icon="target" title="Un projet en tête ?" text="Un voyage, une voiture, une épargne de précaution : fixez un montant et un versement mensuel, Nokori calcule la date d’arrivée."
+          <EmptyState icon="target" title="Un projet en tête ?" text="Un voyage, une voiture, une épargne de précaution : fixez un montant et un versement mensuel, Nokori calcule la date d’arrivée."
             action={<Button label="Créer un objectif" icon="plus" onPress={newDraft} />} />
         </Card>
       )}
 
       <SectionHeader title="Défis kakeibo" right="cette semaine" />
       <Card style={st.chal}>
-        <View style={st.rowBetween}><Text style={st.name}>Une semaine sans envies</Text><Text style={st.score} accessibilityLabel={`Semaine sans envies : ${okWeek} jour${okWeek > 1 ? 's' : ''} sur 7`}>{okWeek} / 7</Text></View>
+        <View style={st.rowBetween}><Text style={st.name}>Une semaine sans envies</Text><Text style={st.score} accessibilityLabel={`Semaine sans envies : ${okWeek} jour${okWeek > 1 ? 's' : ''} sur 7`}>{okWeek} / 7</Text></View>
         <View style={st.days}>
           {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((l, i) => {
             const v = week[i];
@@ -250,14 +250,14 @@ export function GoalsScreen({ goals, profile, expenses, today, onSave, onRemove 
             );
           })}
         </View>
-        <Text style={st.meta}>{!expenses.length ? 'Le défi commence avec votre première dépense notée.' : week.includes(false) ? 'Une envie s’est glissée cette semaine : on repart lundi.' : `Encore ${week.filter(v => v === null).length} jour${week.filter(v => v === null).length > 1 ? 's' : ''} à tenir sans resto, shopping ni loisirs.`}</Text>
+        <Text style={st.meta}>{!expenses.length ? 'Le défi commence avec votre première dépense notée.' : week.includes(false) ? 'Une envie s’est glissée cette semaine : on repart lundi.' : `Encore ${week.filter(v => v === null).length} jour${week.filter(v => v === null).length > 1 ? 's' : ''} à tenir sans resto, shopping ni loisirs.`}</Text>
       </Card>
       <Card style={[st.chal, { marginTop: space.sm }]}>
-        <View style={st.rowBetween}><Text style={st.name}>3 jours sous le budget du jour</Text><Text style={st.score} accessibilityLabel={`Série : ${Math.min(3, streak.days)} jour${streak.days > 1 ? 's' : ''} sur 3`}>{Math.min(3, streak.days)} / 3</Text></View>
+        <View style={st.rowBetween}><Text style={st.name}>3 jours sous le budget du jour</Text><Text style={st.score} accessibilityLabel={`Série : ${Math.min(3, streak.days)} jour${streak.days > 1 ? 's' : ''} sur 3`}>{Math.min(3, streak.days)} / 3</Text></View>
         <View style={st.flames} aria-hidden>{[0, 1, 2].map(i => <View key={i} style={[st.flame, i < streak.days && { backgroundColor: c.vermilion }]} />)}</View>
-        <Text style={st.meta}>{!expenses.length ? 'La série commence avec votre première dépense notée.' : streak.perDay <= 0 ? 'Le budget du jour est épuisé ce mois-ci.' : streak.days >= 3 ? `Réussi : ${streak.days} jours d’affilée sous ${m$.round(streak.perDay)}.` : `${streak.days} jour${streak.days > 1 ? 's' : ''} d’affilée sous ${m$.round(streak.perDay)}. Encore ${3 - streak.days} jour${3 - streak.days > 1 ? 's' : ''}.`}</Text>
+        <Text style={st.meta}>{!expenses.length ? 'La série commence avec votre première dépense notée.' : streak.perDay <= 0 ? 'Le budget du jour est épuisé ce mois-ci.' : streak.days >= 3 ? `Réussi : ${streak.days} jours d’affilée sous ${m$.round(streak.perDay)}.` : `${streak.days} jour${streak.days > 1 ? 's' : ''} d’affilée sous ${m$.round(streak.perDay)}. Encore ${3 - streak.days} jour${3 - streak.days > 1 ? 's' : ''}.`}</Text>
       </Card>
-      <Text style={st.note}>Nokori ne déplace pas d’argent : notez un versement après l’avoir fait dans votre banque.</Text>
+      <Text style={st.note}>Nokori ne déplace pas d’argent : notez un versement après l’avoir fait dans votre banque.</Text>
     </ScrollView>
   );
 }

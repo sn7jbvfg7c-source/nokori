@@ -42,9 +42,9 @@ function Stepper({ value, onChange, min = 1, max = 31, label }: { value: number;
   const st = useStyles(makeStyles);
   return (
     <View style={st.stepper}>
-      <Pressable style={st.stepBtn} onPress={() => onChange(Math.max(min, value - 1))} accessibilityRole="button" accessibilityLabel={`${label} : jour précédent`}><Text style={st.stepTxt}>−</Text></Pressable>
-      <Text style={st.stepVal} accessibilityLabel={`${label} : le ${value}`}>{value}</Text>
-      <Pressable style={st.stepBtn} onPress={() => onChange(Math.min(max, value + 1))} accessibilityRole="button" accessibilityLabel={`${label} : jour suivant`}><Text style={st.stepTxt}>+</Text></Pressable>
+      <Pressable style={st.stepBtn} onPress={() => onChange(Math.max(min, value - 1))} accessibilityRole="button" accessibilityLabel={`${label} : jour précédent`}><Text style={st.stepTxt}>−</Text></Pressable>
+      <Text style={st.stepVal} accessibilityLabel={`${label} : le ${value}`}>{value}</Text>
+      <Pressable style={st.stepBtn} onPress={() => onChange(Math.min(max, value + 1))} accessibilityRole="button" accessibilityLabel={`${label} : jour suivant`}><Text style={st.stepTxt}>+</Text></Pressable>
     </View>
   );
 }
@@ -119,11 +119,11 @@ function ChargesStep({ draft, setDraft }: { draft: Draft; setDraft: (f: (d: Draf
     <View>
       <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.h2}>Vos charges fixes</Text>
       <Text style={st.p}>Choisissez dans la liste ou ajoutez-les à la main. Elles tombent chaque mois dans le calendrier.</Text>
-      <TextInput value={q} onChangeText={t => setQ(t.slice(0, 40))} maxLength={40} placeholder="Rechercher : loyer, EDF, Netflix…" placeholderTextColor={colors.ink3} accessibilityLabel="Rechercher une charge" style={st.search} />
+      <TextInput value={q} onChangeText={t => setQ(t.slice(0, 40))} maxLength={40} placeholder="Rechercher : loyer, EDF, Netflix…" placeholderTextColor={colors.ink3} accessibilityLabel="Rechercher une charge" style={st.search} />
       <Chips<string> items={[['tout', 'Tout'], ...GROUPS.map(g => [g, GROUP_NAME[g]] as [string, string])]} value={group ?? 'tout'} onChange={v => setGroup(v === 'tout' ? null : (v as ChargeGroup))} />
       <View style={st.list}>
         {list.map(it => row(sel(it.id), it.id, it.name, GROUP_NAME[it.group], () => toggle(it)))}
-        {!list.length && <Text style={[st.p, { padding: 16 }]}>Rien dans la liste : ajoutez-la à la main.</Text>}
+        {!list.length && <Text style={[st.p, { padding: 16 }]}>Rien dans la liste : ajoutez-la à la main.</Text>}
       </View>
       {customs.length > 0 && <>
         <Text style={st.h3}>Ajoutées à la main</Text>
@@ -131,7 +131,7 @@ function ChargesStep({ draft, setDraft }: { draft: Draft; setDraft: (f: (d: Draf
       </>}
       {manual ? (
         <View style={[st.list, { padding: 14, gap: 12 }]}>
-          <TextInput value={manual.name} onChangeText={t => setManual({ ...manual, name: cleanName(t) })} maxLength={40} placeholder="Nom : cantine, crèche, crédit auto" placeholderTextColor={colors.ink3} accessibilityLabel="Nom de la charge" style={st.search} />
+          <TextInput value={manual.name} onChangeText={t => setManual({ ...manual, name: cleanName(t) })} maxLength={40} placeholder="Nom : cantine, crèche, crédit auto" placeholderTextColor={colors.ink3} accessibilityLabel="Nom de la charge" style={st.search} />
           <View style={st.edRow}><Text style={st.edLbl}>Montant</Text><View style={{ width: 150 }}><AmountInput value={manual.amount} onChange={a => setManual({ ...manual, amount: a })} label="Montant de la charge" /></View></View>
           <View style={st.edRow}><Text style={st.edLbl}>Chaque mois le</Text><Stepper value={manual.day} onChange={d => setManual({ ...manual, day: d })} label="Nouvelle charge" /></View>
           <Chips<ChargeGroup> items={GROUPS.map(g => [g, GROUP_NAME[g]])} value={manual.group} onChange={g => setManual({ ...manual, group: g })} />
@@ -203,7 +203,7 @@ export function OnboardingScreen({ initial, onDone, onRestore, onLegal, deleted 
             )}
             <View style={st.art} aria-hidden><Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.artK}>残</Text></View>
             <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.h1}>Le kakeibo,{'\n'}sans le carnet.</Text>
-            <Text style={st.p}>Quelques questions, une minute, et votre mois se calcule tout seul : ce qui tombe, quand, et ce qu’il vous reste vraiment. Tout reste sur votre téléphone.</Text>
+            <Text style={st.p}>Quelques questions, une minute, et votre mois se calcule tout seul : ce qui tombe, quand, et ce qu’il vous reste vraiment. Tout reste sur votre téléphone.</Text>
             {!initial && presentationAvailable && (
               <Pressable onPress={() => setVideo(true)} style={st.video} accessibilityRole="button" accessibilityLabel="Voir la présentation, 38 secondes">
                 <View style={st.play}><Feather name="play" size={16} color="#FFFFFF" /></View>
@@ -226,14 +226,14 @@ export function OnboardingScreen({ initial, onDone, onRestore, onLegal, deleted 
             {Platform.OS === 'web' && (
               <View style={st.webNote} accessibilityRole="text">
                 <Text style={st.webNoteT}>Version de test dans le navigateur</Text>
-                <Text style={st.webNoteS}>Vos chiffres restent dans ce navigateur, sur cet appareil : rien n’est envoyé. Mais ici ils ne sont pas chiffrés, et il n’y a ni Face ID ni rappels. Des montants d’essai suffisent pour tester.</Text>
+                <Text style={st.webNoteS}>Vos chiffres restent dans ce navigateur, sur cet appareil : rien n’est envoyé. Mais ici ils ne sont pas chiffrés, et il n’y a ni Face ID ni rappels. Des montants d’essai suffisent pour tester.</Text>
               </View>
             )}
           </View>
         )}
         {step === 1 && (
           <View>
-            <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.h2}>Combien gagnez-vous par mois ?</Text>
+            <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.h2}>Combien gagnez-vous par mois ?</Text>
             <Text style={st.p}>Salaire net, après impôts. C’est la base du kakeibo.</Text>
             <AmountInput big value={draft.income} onChange={c => setDraft(d => ({ ...d, income: c }))} label="Revenu mensuel" />
             <Text style={st.h3}>Le jour de votre paie</Text>
@@ -242,12 +242,12 @@ export function OnboardingScreen({ initial, onDone, onRestore, onLegal, deleted 
         )}
         {step === 2 && (
           <View>
-            <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.h2}>Combien voulez-vous épargner ?</Text>
-            <Text style={st.p}>Le kakeibo commence par l’épargne : on la retire du budget dès la paie. Vous faites le virement dans votre banque, Nokori le compte.</Text>
-            <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.bigVal} accessibilityLabel={`Épargne : ${formatEurosRound(sum.saving)} par mois`}>{formatEurosRound(sum.saving)}</Text>
+            <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.h2}>Combien voulez-vous épargner ?</Text>
+            <Text style={st.p}>Le kakeibo commence par l’épargne : on la retire du budget dès la paie. Vous faites le virement dans votre banque, Nokori le compte.</Text>
+            <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.bigVal} accessibilityLabel={`Épargne : ${formatEurosRound(sum.saving)} par mois`}>{formatEurosRound(sum.saving)}</Text>
             <Text style={[st.p, { textAlign: 'center' }]}>par mois, {Math.round(draft.savePct * 100)} % du revenu</Text>
             <Chips<number> items={SAVE_STEPS.map(v => [v, `${Math.round(v * 100)} %`])} value={draft.savePct} onChange={v => setDraft(d => ({ ...d, savePct: v }))} />
-            <Text style={st.note}>{draft.savePct >= 0.2 ? 'Très bien : 20 % est la règle d’or du kakeibo.' : draft.savePct >= 0.1 ? 'Un bon début ; vous pourrez monter plus tard.' : 'Même un petit montant compte. Vous pourrez l’ajuster.'}</Text>
+            <Text style={st.note}>{draft.savePct >= 0.2 ? 'Très bien : 20 % est la règle d’or du kakeibo.' : draft.savePct >= 0.1 ? 'Un bon début ; vous pourrez monter plus tard.' : 'Même un petit montant compte. Vous pourrez l’ajuster.'}</Text>
           </View>
         )}
         {step === 3 && <ChargesStep draft={draft} setDraft={setDraft} />}
@@ -272,7 +272,7 @@ export function OnboardingScreen({ initial, onDone, onRestore, onLegal, deleted 
               <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.bigVal} accessibilityLabel={`Environ ${formatEurosRound(sum.perDay)} par jour`}>{formatEurosRound(sum.perDay)}</Text>
               <Text style={st.p}>par jour, sans toucher à votre épargne.</Text>
             </View>
-            {!incomeOk && <Text style={st.err}>Revenu non renseigné : vous pourrez le saisir plus tard.</Text>}
+            {!incomeOk && <Text style={st.err}>Revenu non renseigné : vous pourrez le saisir plus tard.</Text>}
           </View>
         )}
       </ScrollView>

@@ -62,7 +62,7 @@ export function ActivityScreen({ profile, profileAt, expenses, dismissed, today,
           <View style={st.sugg} accessibilityRole="summary">
             <View style={st.suggHead}><Feather name="repeat" size={14} color={c.vermilion} /><Text style={st.suggKicker}>Dépense régulière repérée</Text></View>
             <Text style={st.suggName}>{sugg.label}</Text>
-            <Text style={st.suggTxt}>{m$.eur(sugg.amount)} vers le {sugg.day}, {sugg.months} mois de suite. L’ajouter à vos charges fixes ? Elle sera prévue chaque mois dans le calendrier.</Text>
+            <Text style={st.suggTxt}>{m$.eur(sugg.amount)} vers le {sugg.day}, {sugg.months} mois de suite. L’ajouter à vos charges fixes ? Elle sera prévue chaque mois dans le calendrier.</Text>
             <View style={st.suggBtns}>
               <Button label="Ignorer" variant="secondary" small onPress={() => onIgnore(sugg.key)} a11yLabel={`Ignorer ${sugg.label}`} />
               <Button label="Ajouter aux charges fixes" small onPress={() => onAccept(sugg)} a11yLabel={`Ajouter ${sugg.label} aux charges fixes`} style={{ flex: 1 }} />
@@ -72,12 +72,12 @@ export function ActivityScreen({ profile, profileAt, expenses, dismissed, today,
 
         {!searching && (
           <View style={st.monthNav}>
-            <IconButton icon="chevron-left" label="Activité : mois d’avant" small onPress={() => setOffset(o => o - 1)} disabled={offset <= minOffset} />
+            <IconButton icon="chevron-left" label="Activité : mois d’avant" small onPress={() => setOffset(o => o - 1)} disabled={offset <= minOffset} />
             <View style={{ alignItems: 'center' }}>
               <Text style={st.month} accessibilityRole="header">{capitalize(MONTH_NAMES[mo])} {y}</Text>
               <Text style={st.monthSum}>{m$.round(res.spent)} de dépenses · {m$.round(res.fixed)} de charges</Text>
             </View>
-            <IconButton icon="chevron-right" label="Activité : mois d’après" small onPress={() => setOffset(o => o + 1)} disabled={offset >= 0} />
+            <IconButton icon="chevron-right" label="Activité : mois d’après" small onPress={() => setOffset(o => o + 1)} disabled={offset >= 0} />
           </View>
         )}
         {searching && <Text style={st.results} accessibilityLiveRegion="polite">{res.count ? `${res.count} résultat${res.count > 1 ? 's' : ''}${res.spent ? ` · ${m$.round(res.spent)} de dépenses` : ''}${res.fixed ? ` · ${m$.round(res.fixed)} de charges fixes` : ''}` : 'Aucun résultat'}</Text>}
@@ -104,7 +104,7 @@ export function ActivityScreen({ profile, profileAt, expenses, dismissed, today,
                     <Text style={st.amt}>{m$.signed(i.amount, '−')}</Text>
                   </Pressable>
                   {open === i.key && (confirm === i.key
-                    ? <Confirm question="Supprimer cette dépense ?" confirmLabel="Supprimer" a11yConfirm={`Confirmer la suppression de ${i.label}`}
+                    ? <Confirm question="Supprimer cette dépense ?" confirmLabel="Supprimer" a11yConfirm={`Confirmer la suppression de ${i.label}`}
                         onCancel={() => setConfirm(null)} onConfirm={() => { onDelete(i.id); setOpen(null); setConfirm(null); }} />
                     : <View style={st.actions}>
                         <Button label="Modifier" icon="edit-2" variant="secondary" small onPress={() => { setOpen(null); onEdit(i.id); }} a11yLabel={`Modifier ${i.label}`} />
@@ -116,10 +116,10 @@ export function ActivityScreen({ profile, profileAt, expenses, dismissed, today,
           </View>
         ))}
         {!res.days.length && (
-          searching ? <EmptyState icon="search" title="Aucune dépense trouvée" text="Essayez un autre mot : un magasin, une catégorie (« courses », « santé »)." />
+          searching ? <EmptyState icon="search" title="Aucune dépense trouvée" text="Essayez un autre mot : un magasin, une catégorie (« courses », « santé »)." />
             : filter ? <EmptyState icon="filter" title="Rien dans ce pilier" text={`Aucune dépense ${PILLARS.find(p => p.id === filter)!.name.toLowerCase()} en ${MONTH_NAMES[mo]}.`} />
             : <EmptyState icon="inbox" title={offset === 0 ? 'Aucune dépense pour l’instant' : `Rien en ${MONTH_NAMES[mo]}`}
-                text={offset === 0 ? 'Ajoutez une dépense avec le bouton « + » : elle apparaîtra ici, rangée par jour.' : 'Aucune dépense ni charge n’a été comptée ce mois-là.'}
+                text={offset === 0 ? 'Ajoutez une dépense avec le bouton « + » : elle apparaîtra ici, rangée par jour.' : 'Aucune dépense ni charge n’a été comptée ce mois-là.'}
                 action={offset === 0 ? <Button label="Ajouter une dépense" icon="plus" onPress={onAdd} /> : undefined} />
         )}
       </ScrollView>

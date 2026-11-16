@@ -33,7 +33,7 @@ export function MonthStory({ r, note, visible, onClose }: { r: Review; note: str
     <View key={0} style={st.slide}><Text style={st.kanji}>{c.kanji}</Text><Text style={st.small}>{capitalize(name)}, {c.name}</Text><Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.h2}>Votre mois,{'\n'}en une minute.</Text></View>,
     <View key={1} style={st.slide}>
       <Text style={st.small}>Vous avez épargné</Text>
-      <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.big} accessibilityLabel={`Épargné : ${formatEurosRound(r.savedTotal)}`}>{formatEurosRound(r.savedTotal)}</Text>
+      <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={st.big} accessibilityLabel={`Épargné : ${formatEurosRound(r.savedTotal)}`}>{formatEurosRound(r.savedTotal)}</Text>
       <Text style={st.p}>{Math.round(r.savedPct * 100)} % du revenu. {r.left > 0 ? `Les ${formatEurosRound(r.left)} non dépensés comptent aussi comme épargne.` : r.left < 0 ? `Le budget a été dépassé de ${formatEurosRound(-r.left)}.` : ''}</Text>
     </View>,
     <View key={2} style={st.slide}>
@@ -51,7 +51,7 @@ export function MonthStory({ r, note, visible, onClose }: { r: Review; note: str
     </View>,
     <View key={3} style={st.slide}>
       <Text style={st.small}>Votre idée pour faire mieux</Text>
-      <Text style={st.quote}>{note.trim() ? `« ${note.trim()} »` : 'Pas encore de note pour ce mois. Vous pouvez l’écrire dans le bilan, question 4.'}</Text>
+      <Text style={st.quote}>{note.trim() ? `« ${note.trim()} »` : 'Pas encore de note pour ce mois. Vous pouvez l’écrire dans le bilan, question 4.'}</Text>
     </View>,
     <View key={4} style={st.slide}>
       <Text style={st.small}>Les quatre questions</Text>

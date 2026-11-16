@@ -48,9 +48,9 @@ export function ReviewScreen({ profile, profileAt, expenses, notes, today, onSav
     <ScrollView style={st.screen} contentContainerStyle={{ paddingTop: insets.top + space.md, paddingBottom: insets.bottom + 48 }} keyboardShouldPersistTaps="handled">
       <ScreenHeader title="Bilan" overline="Kakeibo" />
       <View style={st.nav}>
-        <IconButton icon="chevron-left" label="Bilan : mois d’avant" small onPress={() => setOffset(o => o - 1)} disabled={offset <= minOffset} />
+        <IconButton icon="chevron-left" label="Bilan : mois d’avant" small onPress={() => setOffset(o => o - 1)} disabled={offset <= minOffset} />
         <Text style={st.navTitle} accessibilityRole="header">{capitalize(name)} {y}</Text>
-        <IconButton icon="chevron-right" label="Bilan : mois d’après" small onPress={() => setOffset(o => o + 1)} disabled={offset >= 0} />
+        <IconButton icon="chevron-right" label="Bilan : mois d’après" small onPress={() => setOffset(o => o + 1)} disabled={offset >= 0} />
       </View>
 
       <View style={[st.hero, { backgroundColor: col.light }]}>
@@ -92,7 +92,7 @@ export function ReviewScreen({ profile, profileAt, expenses, notes, today, onSav
       <SectionHeader title="Où est parti l’argent" right={variable ? m$.round(variable) : undefined} />
       <Card>
         {cats.length === 0 ? <EmptyState icon="pie-chart" title="Aucune dépense ce mois-ci" text="Les dépenses saisies apparaîtront ici, rangées par catégorie." /> : cats.map((x, i) => (
-          <View key={x.id} style={[st.catRow, i > 0 && st.sep]} accessible accessibilityLabel={`${x.name} : ${m$.spoken(x.spent)}, ${x.count} dépense${x.count > 1 ? 's' : ''}, ${Math.round((x.spent / Math.max(1, variable)) * 100)} %`}>
+          <View key={x.id} style={[st.catRow, i > 0 && st.sep]} accessible accessibilityLabel={`${x.name} : ${m$.spoken(x.spent)}, ${x.count} dépense${x.count > 1 ? 's' : ''}, ${Math.round((x.spent / Math.max(1, variable)) * 100)} %`}>
             <View style={st.catTop}>
               <Text style={st.catName} numberOfLines={1}>{x.name}</Text>
               <Text style={st.catVal}>{m$.round(x.spent)}</Text>
@@ -105,13 +105,13 @@ export function ReviewScreen({ profile, profileAt, expenses, notes, today, onSav
 
       <SectionHeader title="Les quatre questions" />
       <Card>
-        {([['Combien ai-je reçu ?', r.income], [r.closed ? 'Combien voulais-je épargner ?' : 'Combien est-ce que je veux épargner ?', r.saving], ['Combien ai-je dépensé ?', r.spent]] as [string, number][]).map(([q, v], i) => (
+        {([['Combien ai-je reçu ?', r.income], [r.closed ? 'Combien voulais-je épargner ?' : 'Combien est-ce que je veux épargner ?', r.saving], ['Combien ai-je dépensé ?', r.spent]] as [string, number][]).map(([q, v], i) => (
           <View key={q} style={[st.qRow, i > 0 && st.sep]}><Text style={st.qn}>{i + 1}</Text><Text style={st.q}>{q}</Text><Text style={st.qv}>{m$.round(v)}</Text></View>
         ))}
         <View style={[st.sep, { paddingVertical: space.md }]}>
-          <View style={{ flexDirection: 'row', gap: space.sm + 2 }}><Text style={st.qn}>4</Text><Text style={st.q}>Comment faire mieux ?</Text></View>
+          <View style={{ flexDirection: 'row', gap: space.sm + 2 }}><Text style={st.qn}>4</Text><Text style={st.q}>Comment faire mieux ?</Text></View>
           <TextInput
-            value={note} multiline maxLength={280} placeholder="Une idée pour le mois prochain : moins de livraisons, plus de marché…" placeholderTextColor={c.ink3}
+            value={note} multiline maxLength={280} placeholder="Une idée pour le mois prochain : moins de livraisons, plus de marché…" placeholderTextColor={c.ink3}
             onChangeText={v => setDrafts(s => ({ ...s, [key]: cleanNote(v) }))} onBlur={() => { if (drafts[key] !== undefined) onSaveNote(key, drafts[key]); }}
             accessibilityLabel={`Comment faire mieux en ${name}`} style={st.note}
           />
@@ -129,7 +129,7 @@ export function ReviewScreen({ profile, profileAt, expenses, notes, today, onSav
         {r.pillars.map((p, i) => {
           const f = p.budget > 0 ? p.spent / p.budget : 0;
           return (
-            <View key={p.id} style={[st.pRow, i > 0 && st.sep]} accessible accessibilityLabel={`${p.name} : ${Math.round(f * 100)} % du budget utilisé`}>
+            <View key={p.id} style={[st.pRow, i > 0 && st.sep]} accessible accessibilityLabel={`${p.name} : ${Math.round(f * 100)} % du budget utilisé`}>
               <Text style={st.pName}>{p.name}</Text>
               <View style={{ flex: 1 }}><ProgressBar value={f} color={p.spent > p.budget ? c.vermilion : c.pillar[p.id]} /></View>
               <Text style={st.pVal}>{Math.round(f * 100)} %</Text>

@@ -124,7 +124,7 @@ npx eas-cli@latest build --profile production --platform android
 - **Sécurité des données Google Play** : aucune donnée collectée, aucune donnée partagée. Données chiffrées : oui, sur l’appareil. Suppression possible : oui, avec « Tout effacer » ou en désinstallant l’app.
 - **Questionnaire de classification du contenu** (Google) et **classification par âge** (Apple) : ni violence, ni achat, ni contenu généré par d’autres. On obtient « 4+ » ou « Tout public ».
 - **Catégorie** : Finance.
-- **URL d’assistance** (Apple) : une page publique avec vos coordonnées. Le texte est prêt dans `docs/assistance.md`.
+- **URL d’assistance** (Apple) : une page publique avec vos coordonnées. Elle existe : https://nokori.expo.app/legal/assistance (complète une fois `src/legal/config.ts` rempli).
 
 ## 7. Nouvelle version de la bêta
 

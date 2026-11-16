@@ -60,7 +60,7 @@ export function BackupScreen({ mode = 'all', data, today, onReplace, onExported,
       const iso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
       onExported(iso);
       setPass(''); setPass2('');
-      setExportMsg({ ok: true, text: 'Sauvegarde créée. Rangez le fichier en lieu sûr (Fichiers, iCloud Drive, Google Drive, ordinateur) et gardez votre phrase secrète : sans elle, personne ne peut l’ouvrir, pas même vous.' });
+      setExportMsg({ ok: true, text: 'Sauvegarde créée. Rangez le fichier en lieu sûr (Fichiers, iCloud Drive, Google Drive, ordinateur) et gardez votre phrase secrète : sans elle, personne ne peut l’ouvrir, pas même vous.' });
     } catch {
       setProgress(null);
       setExportMsg({ ok: false, text: 'La sauvegarde n’a pas pu être créée. Vos données ne sont pas touchées. Réessayez.' });
@@ -108,11 +108,11 @@ export function BackupScreen({ mode = 'all', data, today, onReplace, onExported,
       <ScrollView contentContainerStyle={{ paddingTop: insets.top + space.md, paddingBottom: insets.bottom + space.xxxl }} keyboardShouldPersistTaps="handled">
         <ScreenHeader title={mode === 'restore' ? 'Restaurer' : 'Sauvegarde'} right={<IconButton icon="x" label="Fermer la sauvegarde" onPress={onClose} small />} />
         <View style={st.intro}>
-          <Notice icon="shield">Le fichier est chiffré par une phrase secrète que vous choisissez. Il ne part nulle part sans vous : c’est vous qui décidez où le ranger. Nokori n’a pas de serveur.</Notice>
+          <Notice icon="shield">Le fichier est chiffré par une phrase secrète que vous choisissez. Il ne part nulle part sans vous : c’est vous qui décidez où le ranger. Nokori n’a pas de serveur.</Notice>
         </View>
 
         {mode === 'all' && <>
-          <SectionHeader title="Créer une sauvegarde" right={data.prefs.lastBackup ? `dernière : ${longDate(data.prefs.lastBackup)}` : 'jamais faite'} />
+          <SectionHeader title="Créer une sauvegarde" right={data.prefs.lastBackup ? `dernière : ${longDate(data.prefs.lastBackup)}` : 'jamais faite'} />
           <Card style={st.card}>
             <Text style={st.label}>Phrase secrète</Text>
             <TextInput value={pass} onChangeText={setPass} secureTextEntry autoCapitalize="none" autoCorrect={false} textContentType="newPassword" autoComplete="new-password"
@@ -130,7 +130,7 @@ export function BackupScreen({ mode = 'all', data, today, onReplace, onExported,
         <SectionHeader title="Restaurer une sauvegarde" />
         <Card style={st.card}>
           {step.k === 'idle' && <>
-            <Text style={st.p}>Sur un nouveau téléphone, ou après avoir réinstallé Nokori : choisissez le fichier .nokori, puis entrez sa phrase secrète.</Text>
+            <Text style={st.p}>Sur un nouveau téléphone, ou après avoir réinstallé Nokori : choisissez le fichier .nokori, puis entrez sa phrase secrète.</Text>
             <Button label="Choisir un fichier" icon="folder" variant="secondary" onPress={doPick} />
           </>}
           {step.k === 'picked' && <>
@@ -146,7 +146,7 @@ export function BackupScreen({ mode = 'all', data, today, onReplace, onExported,
           {step.k === 'opened' && (() => {
             const s = summarize(step.data);
             return <>
-              <Text style={st.p}>Sauvegarde ouverte : {plural(s.expenses, 'dépense', 'dépenses')}, {plural(s.accounts, 'compte', 'comptes')}, {plural(s.goals, 'objectif', 'objectifs')}{s.hasProfile ? ', budget compris' : ''}.</Text>
+              <Text style={st.p}>Sauvegarde ouverte : {plural(s.expenses, 'dépense', 'dépenses')}, {plural(s.accounts, 'compte', 'comptes')}, {plural(s.goals, 'objectif', 'objectifs')}{s.hasProfile ? ', budget compris' : ''}.</Text>
               <Notice icon="alert-triangle" tone="warn">Toutes les données actuelles de cet appareil seront remplacées par celles de la sauvegarde.</Notice>
               <View style={st.row}>
                 <Button label="Annuler" variant="secondary" onPress={() => setStep({ k: 'idle' })} style={{ flex: 1 }} />

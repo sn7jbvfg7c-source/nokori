@@ -13,14 +13,14 @@ function load(file) {
   new Function('require', 'module', 'exports', out)(p => (p.startsWith('.') ? load(path.join(path.dirname(abs), p) + (fs.existsSync(path.join(path.dirname(abs), p) + '.ts') ? '.ts' : '')) : require(p)), mod, mod.exports);
   return mod.exports;
 }
-const { legalDocs, LEGAL_ORDER } = load(path.join(ROOT, 'src/legal/documents.ts'));
+const { legalDocs, ALL_DOCS } = load(path.join(ROOT, 'src/legal/documents.ts'));
 const { missingLegalFields } = load(path.join(ROOT, 'src/legal/config.ts'));
 
 const OUT = path.join(ROOT, 'docs/legal');
 fs.mkdirSync(OUT, { recursive: true });
 const head = '<!-- Fichier généré par node scripts/legal-docs.js à partir de src/legal/ : ne pas modifier à la main. -->\n\n';
 const docs = legalDocs();
-for (const id of LEGAL_ORDER) {
+for (const id of ALL_DOCS) {
   const d = docs[id];
   let md = `${head}# ${d.title}\n\n${d.intro}\n`;
   for (const s of d.sections) {
@@ -35,7 +35,7 @@ for (const id of LEGAL_ORDER) {
 
 // informations que seul le propriétaire peut fournir
 const missing = missingLegalFields();
-fs.writeFileSync(path.join(ROOT, 'docs/A-COMPLETER.md'), `${head}# Informations à compléter par le propriétaire\n\nÀ renseigner dans \`src/legal/config.ts\`, puis relancer \`node scripts/legal-docs.js\`. Tant qu’elles manquent, l’app affiche « [À compléter : …] » à leur place, surligné.\n\n${missing.map(m => `- [ ] ${m}`).join('\n')}\n\nÀ décider ou vérifier aussi :\n\n- [ ] Faire relire les six documents par un professionnel du droit.\n- [ ] Publier la politique de confidentialité et la page d’assistance à une adresse web publique (exigé par Apple et Google).\n- [ ] Demander à Expo le lieu de traitement des journaux d’EAS Hosting et l’existence d’un accord de traitement (DPA).
+fs.writeFileSync(path.join(ROOT, 'docs/A-COMPLETER.md'), `${head}# Informations à compléter par le propriétaire\n\nÀ renseigner dans \`src/legal/config.ts\`, puis relancer \`node scripts/legal-docs.js\`. Tant qu’elles manquent, l’app affiche « [À compléter : …] » à leur place, surligné.\n\n${missing.map(m => `- [ ] ${m}`).join('\n')}\n\nÀ décider ou vérifier aussi :\n\n- [ ] Faire relire les six documents par un professionnel du droit.\n- [ ] Les pages publiques existent déjà : https://nokori.expo.app/legal/confidentialite et https://nokori.expo.app/legal/assistance (adresses déjà dans store.config.js). Elles seront complètes une fois les informations ci-dessus renseignées et le site redéployé.\n- [ ] Demander à Expo le lieu de traitement des journaux d’EAS Hosting et l’existence d’un accord de traitement (DPA).
 `);
 
 // licences des composants embarqués
@@ -48,4 +48,4 @@ const count = {};
 for (const l of rows.values()) count[l] = (count[l] || 0) + 1;
 let lic = `${head}# Licences des composants\n\n## Polices, icônes et visuels\n\n| Ressource | Licence | Titulaire |\n|---|---|---|\n| Police Geist | SIL Open Font License 1.1 | The Geist Project Authors (Vercel) |\n| Icônes Feather (via @expo/vector-icons) | MIT | Cole Bemis ; @expo/vector-icons : Joel Arvidsson, 650 Industries |\n| Icône 残 (assets/*.png, public/*.png) | Créée pour Nokori par store/icons/generate.js, à partir de la police Noto Sans JP (SIL OFL 1.1, Google) : un rendu en image n’est pas soumis à l’OFL | Éditeur de Nokori |\n| Captures, vidéo de présentation | Créées pour Nokori (store/raw.js, store/compose.js, store/video/) | Éditeur de Nokori |\n\n## Logiciels embarqués (${rows.size} paquets)\n\n| Licence | Nombre |\n|---|---|\n${Object.entries(count).sort((a, b) => b[1] - a[1]).map(([l, n]) => `| ${l} | ${n} |`).join('\n')}\n\n<details><summary>Liste complète</summary>\n\n| Paquet | Licence |\n|---|---|\n${[...rows].sort().map(([n, l]) => `| ${n} | ${l} |`).join('\n')}\n\n</details>\n`;
 fs.writeFileSync(path.join(ROOT, 'docs/LICENCES.md'), lic);
-console.log(`docs/legal/ (${LEGAL_ORDER.length} documents), docs/A-COMPLETER.md (${missing.length} éléments), docs/LICENCES.md (${rows.size} paquets)`);
+console.log(`docs/legal/ (${ALL_DOCS.length} documents), docs/A-COMPLETER.md (${missing.length} éléments), docs/LICENCES.md (${rows.size} paquets)`);

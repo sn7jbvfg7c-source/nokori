@@ -77,16 +77,16 @@ export const LEGAL: {
 };
 
 /** Valeur à afficher : la valeur réelle, ou un repère visible « [À compléter : …] » */
-export const val = (v: string | null | undefined, label: string): string => (v && v.trim() ? v : `[À compléter : ${label}]`);
+export const val = (v: string | null | undefined, label: string): string => (v && v.trim() ? v : `[À compléter : ${label}]`);
 
-export const TO_COMPLETE = /\[À compléter : [^\]]+\]/;
+export const TO_COMPLETE = /\[À compléter\s:\s[^\]]+\]/;
 
 /** Champs à fournir par le propriétaire, selon son statut */
 export function missingLegalFields(cfg = LEGAL): string[] {
   const e = cfg.editor, out: string[] = [];
   const anonymous = e.status === 'particulier' && e.anonymous === true;
-  if (!e.status) out.push('Statut de l’éditeur : particulier ou professionnel');
-  if (e.status === 'particulier' && e.anonymous === null) out.push('Particulier : publier votre identité, ou rester anonyme (LCEN art. 1-1 II : seul l’hébergeur est alors indiqué, après lui avoir confié votre identité)');
+  if (!e.status) out.push('Statut de l’éditeur : particulier ou professionnel');
+  if (e.status === 'particulier' && e.anonymous === null) out.push('Particulier : publier votre identité, ou rester anonyme (LCEN art. 1-1 II : seul l’hébergeur est alors indiqué, après lui avoir confié votre identité)');
   if (!anonymous) {
     if (!e.name) out.push('Nom et prénoms (ou dénomination sociale) de l’éditeur');
     if (!e.address) out.push(e.status === 'professionnel' ? 'Adresse du siège social' : 'Adresse du domicile');
@@ -98,11 +98,11 @@ export function missingLegalFields(cfg = LEGAL): string[] {
     if (!e.legalForm) out.push('Forme juridique (et capital social pour une société)');
     if (!e.siret) out.push('Numéro d’inscription (SIRET, RCS ou RNE)');
     if (!e.vatNumber) out.push('Numéro de TVA intracommunautaire (si assujetti)');
-    if (!cfg.consumerMediator) out.push('Médiateur de la consommation (professionnel : obligatoire dès qu’un contrat est conclu avec des consommateurs)');
+    if (!cfg.consumerMediator) out.push('Médiateur de la consommation (professionnel : obligatoire dès qu’un contrat est conclu avec des consommateurs)');
   }
-  if (!cfg.webHost.name) out.push('Hébergeur de la version web : dénomination');
-  if (!cfg.webHost.address) out.push('Hébergeur de la version web (Expo, 650 Industries, Inc.) : adresse postale, à demander à Expo');
-  if (!cfg.webHost.logRetention) out.push('Hébergeur de la version web : durée de conservation des journaux de connexion, à demander à Expo');
-  if (!cfg.webHost.contact) out.push('Hébergeur de la version web : numéro de téléphone (la LCEN l’exige ; Expo ne publie qu’un formulaire)');
+  if (!cfg.webHost.name) out.push('Hébergeur de la version web : dénomination');
+  if (!cfg.webHost.address) out.push('Hébergeur de la version web (Expo, 650 Industries, Inc.) : adresse postale, à demander à Expo');
+  if (!cfg.webHost.logRetention) out.push('Hébergeur de la version web : durée de conservation des journaux de connexion, à demander à Expo');
+  if (!cfg.webHost.contact) out.push('Hébergeur de la version web : numéro de téléphone (la LCEN l’exige ; Expo ne publie qu’un formulaire)');
   return out;
 }

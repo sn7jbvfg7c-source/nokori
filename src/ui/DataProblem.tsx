@@ -29,7 +29,7 @@ export function DataProblem({ status, reason = 'fichier', onRetry, onRestore, on
         {unreadable
           ? reason === 'cle'
             ? 'La clé qui protège vos données n’est plus disponible sur ce téléphone (restauration de l’appareil, réinitialisation du trousseau). Sans elle, la base chiffrée ne peut pas être lue. Rien n’a été effacé.'
-            : 'Le fichier enregistré sur ce téléphone est abîmé ou vient d’une version plus récente de Nokori. Rien n’a été effacé : une copie est gardée telle quelle.'
+            : 'Le fichier enregistré sur ce téléphone est abîmé ou vient d’une version plus récente de Nokori. Rien n’a été effacé : une copie est gardée telle quelle.'
           : 'Le stockage chiffré du téléphone ne répond pas pour l’instant. Rien n’a été modifié. Déverrouillez le téléphone si besoin, puis réessayez.'}
       </Text>
       <View style={st.actions}>
@@ -39,7 +39,7 @@ export function DataProblem({ status, reason = 'fichier', onRetry, onRestore, on
             {reason !== 'cle' && <Button label="Mettre Nokori à jour, puis réessayer" variant="secondary" onPress={onRetry} />}
             {confirm ? (
               <View style={st.confirm}>
-                <Text style={st.ask}>{reason === 'cle' ? 'Repartir de zéro ? La base illisible sera supprimée et l’app sera vide. Une sauvegarde .nokori reste utilisable ensuite.' : 'Repartir de zéro ? L’app sera vide. La copie de l’ancien fichier reste gardée sur le téléphone.'}</Text>
+                <Text style={st.ask}>{reason === 'cle' ? 'Repartir de zéro ? La base illisible sera supprimée et l’app sera vide. Une sauvegarde .nokori reste utilisable ensuite.' : 'Repartir de zéro ? L’app sera vide. La copie de l’ancien fichier reste gardée sur le téléphone.'}</Text>
                 <View style={st.row}>
                   <Button label="Annuler" variant="secondary" onPress={() => setConfirm(false)} style={{ flex: 1 }} />
                   <Button label="Repartir de zéro" variant="danger" onPress={onStartFresh} style={{ flex: 1 }} />

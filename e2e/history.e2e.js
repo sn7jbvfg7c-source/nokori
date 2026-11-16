@@ -103,7 +103,7 @@ const SEED = {
     await tab('Bilan').click(); await W(500);
     await p.getByText('Par rapport à octobre', { exact: false }).waitFor();
     await p.getByText('Du 1er au 14 de chaque mois, hors charges fixes.').waitFor();
-    await p.locator('[aria-label^="Courses : "]').first().waitFor();
+    await p.locator('[aria-label^="Courses\u00a0: "]').first().waitFor();
   });
   await t('bilan de septembre : profil d’époque (revenu 2 000 €), pas l’actuel', async () => {
     for (let i = 0; i < 2; i++) await p.getByRole('button', { name: 'Bilan : mois d’avant' }).click();

@@ -67,10 +67,10 @@ export function AddExpenseScreen({ today, initial, onSave, onClose }: { today: D
       </View>
 
       <ScrollView style={st.top} contentContainerStyle={{ paddingBottom: space.sm }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-        <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={[st.amount, compact && st.amountSm, cents === 0 && { color: c.ink3 }]} accessibilityLabel={`Montant : ${formatEuros(cents)}`} accessibilityLiveRegion="polite">
+        <Text maxFontSizeMultiplier={BIG_TEXT_MAX_SCALE} style={[st.amount, compact && st.amountSm, cents === 0 && { color: c.ink3 }]} accessibilityLabel={`Montant : ${formatEuros(cents)}`} accessibilityLiveRegion="polite">
           {amount}<Text style={st.cur}> €</Text>
         </Text>
-        {cents >= UNUSUAL && <View style={st.warn}><Notice icon="alert-circle" tone="warn">Montant inhabituel : {formatEuros(cents)}. Vérifiez la virgule.</Notice></View>}
+        {cents >= UNUSUAL && <View style={st.warn}><Notice icon="alert-circle" tone="warn">Montant inhabituel : {formatEuros(cents)}. Vérifiez la virgule.</Notice></View>}
 
         {PILLARS.map(pl => (
           <View key={pl.id} style={st.group}>
@@ -113,7 +113,7 @@ export function AddExpenseScreen({ today, initial, onSave, onClose }: { today: D
           </Pressable>
         ))}
       </View>
-      <Button onPress={save} disabled={!ok} color={accent} a11yLabel={`${initial ? 'Enregistrer la dépense' : 'Ajouter la dépense'} : ${goLabel}`} style={{ marginTop: space.sm }} label={goLabel} />
+      <Button onPress={save} disabled={!ok} color={accent} a11yLabel={`${initial ? 'Enregistrer la dépense' : 'Ajouter la dépense'} : ${goLabel}`} style={{ marginTop: space.sm }} label={goLabel} />
     </View>
   );
 }

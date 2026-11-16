@@ -23,7 +23,9 @@ const SEED = { v: 1, dismissed: [], expenses: [], accounts: [], profile: { incom
     await p.getByLabel('Solde du compte').fill(bal);
     await p.getByRole('button', { name: 'Enregistrer le compte' }).click(); await W(300);
   };
-  const total = () => p.locator('[aria-label^="Total de vos comptes"]').getAttribute('aria-label');
+  // espaces normalisées : les textes utilisent des espaces insécables (typographie française)
+  const n = s => s && s.replace(/\s/g, ' ');
+  const total = async () => n(await p.locator('[aria-label^="Total de vos comptes"]').getAttribute('aria-label'));
 
   await t('onglet Comptes, état vide', async () => { await p.getByRole('tab', { name: /Comptes/ }).click(); await W(500); await p.getByText('Aucun compte pour l’instant').waitFor(); });
   await t('ajout du compte courant et du Livret A', async () => {
@@ -31,7 +33,7 @@ const SEED = { v: 1, dismissed: [], expenses: [], accounts: [], profile: { incom
     await add('Livret A', 'Livret', '6 450');
     await p.getByText('mis à jour aujourd’hui').first().waitFor();
   });
-  await t('total : 7 414,33 €', async () => { if ((await total()) !== 'Total de vos comptes : 7 414,33 €') throw new Error(await total()); await shot('k1'); });
+  await t('total : 7 414,33 €', async () => { if ((await total()) !== n('Total de vos comptes : 7 414,33 €')) throw new Error(await total()); await shot('k1'); });
   await t('solde invalide : message et « Enregistrer » bloqué', async () => {
     await p.getByRole('button', { name: /^Compte courant, .*964,33/ }).click(); await W(200);
     await p.getByLabel('Solde du compte').fill('1,234');
@@ -41,7 +43,7 @@ const SEED = { v: 1, dismissed: [], expenses: [], accounts: [], profile: { incom
   await t('découvert : −120 €, total 6 330,00 €', async () => {
     await p.getByLabel('Solde du compte').fill('-120');
     await p.getByRole('button', { name: 'Enregistrer le compte' }).click(); await W(300);
-    if ((await total()) !== 'Total de vos comptes : 6 330,00 €') throw new Error(await total());
+    if ((await total()) !== n('Total de vos comptes : 6 330,00 €')) throw new Error(await total());
     await p.getByText('−120,00 €').first().waitFor(); await shot('k2');
   });
   await t('nom hostile affiché comme du texte', async () => {
@@ -58,7 +60,7 @@ const SEED = { v: 1, dismissed: [], expenses: [], accounts: [], profile: { incom
   });
   await t('gardés après rechargement', async () => {
     await p.reload(); await W(1800); await p.getByRole('tab', { name: /Comptes/ }).click(); await W(500);
-    if ((await total()) !== 'Total de vos comptes : 6 330,00 €') throw new Error(await total());
+    if ((await total()) !== n('Total de vos comptes : 6 330,00 €')) throw new Error(await total());
   });
   await t('aucune injection exécutée, aucune erreur', async () => {
     if (await p.evaluate(() => window.__x)) throw new Error('script exécuté');

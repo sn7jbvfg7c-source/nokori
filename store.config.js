@@ -3,10 +3,12 @@
 const { appStore: t } = require('./store/texts');
 const { expo } = require('./app.json');
 
-// À remplir avant le premier envoi : deux pages web publiques (voir docs/PUBLICATION.md).
-const PRIVACY_URL = '';
-const SUPPORT_URL = '';
-if (!PRIVACY_URL || !SUPPORT_URL) throw new Error('store.config.js : renseignez PRIVACY_URL et SUPPORT_URL (pages publiques).');
+// Pages publiques servies par la version web (src/legal/documents.ts). Elles ne sont présentables qu'une fois
+// les informations de l'éditeur renseignées : l'envoi s'arrête tant que docs/A-COMPLETER.md liste des manques.
+const PRIVACY_URL = 'https://nokori.expo.app/legal/confidentialite';
+const SUPPORT_URL = 'https://nokori.expo.app/legal/assistance';
+const todo = require('fs').readFileSync(require('path').join(__dirname, 'docs/A-COMPLETER.md'), 'utf8').split('À décider ou vérifier aussi')[0];
+if (/^- \[ \]/m.test(todo)) throw new Error('store.config.js : des informations de l’éditeur manquent encore (docs/A-COMPLETER.md). Les pages publiques afficheraient « [À compléter] ».');
 
 module.exports = {
   configVersion: 0,

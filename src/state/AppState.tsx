@@ -125,14 +125,14 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   const commit = useCallback((next: AppData): Promise<void> => {
     if (!writable.current) {
-      setError('Rien n’a été enregistré : vos données ne sont pas chargées.');
+      setError('Rien n’a été enregistré : vos données ne sont pas chargées.');
       return Promise.resolve();
     }
     latest.current = next;
     setData(next);
     const run = queue.current.then(async () => {
       try { await kv.set(STATE_KEY, encode(next)); setError(null); }
-      catch { setError('Impossible d’enregistrer : le stockage sécurisé est indisponible. Réessayez dans un instant.'); }
+      catch { setError('Impossible d’enregistrer : le stockage sécurisé est indisponible. Réessayez dans un instant.'); }
     });
     queue.current = run;
     return run;
