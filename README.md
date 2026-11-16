@@ -13,11 +13,13 @@ npm run android    # émulateur Android ou Expo Go
 
 ## Vérifier
 
+Node 22 (`.nvmrc`, `engines` dans `package.json`). Playwright est déclaré à une version exacte (1.63.0) : installer son navigateur une fois avec `npx playwright install chromium` (inutile dans un environnement où il est déjà fourni).
+
 ```bash
-npm test           # tests unitaires (moteur, accueil, données relues)
+npm test           # tests unitaires (calculs, sauvegarde, cryptographie, verrou, données relues)
 npm run typecheck  # vérification des types
 npm run lint       # règles de code
-npm run e2e        # parcours complets dans la version web : accueil, dépense, calendrier, activité, comptes, objectifs, bilan, réglages, puis audit d’accessibilité axe-core de 26 écrans en clair et en sombre (Playwright)
+npm run e2e        # export web puis parcours complets : accueil, dépense, calendrier, activité, comptes, objectifs, bilan, réglages, sauvegarde, pages légales, plantages, audit d’accessibilité axe-core de 34 écrans en clair et en sombre (Playwright)
 ```
 
 ## Organisation
