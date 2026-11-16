@@ -51,6 +51,8 @@ Nokori est une app de suivi de budget **manuelle** : elle ne se connecte à aucu
 
 Il vérifie aussi la clé liée à l’appareil, le refus d’écrire sans chiffrement, l’absence de montant dans les rappels, et la configuration (`allowBackup: false`, permissions retirées, manifeste de confidentialité iOS).
 
+`src/state/__tests__/AppState.test.tsx` vérifie le **comportement** de l’état de l’app avec un stockage simulé : aucune écriture avant le chargement ni en cas d’erreur de lecture, clé perdue et données illisibles sans réécriture (copies gardées), échec d’écriture signalé puis rattrapé, écritures rapprochées toutes enregistrées dans l’ordre, suppression annulable, « tout supprimer » après les écritures en cours, restauration.
+
 ## Résultats de la revue
 
 - **Dépendances** (`npm audit`) : 3 alertes modérées, toutes dans `minimatch` via `@expo/fingerprint`, un outil de compilation qui n’est pas embarqué dans l’app.
