@@ -13,5 +13,8 @@ Index de la mémoire structurée. Chaque ligne pointe vers un fichier. Moins de 
 ## Project
 - [projet-nokori.md](projet-nokori.md) — état au 17/11/2026, objectif AVERYN, décisions à garder, site non redéployé, reste à faire
 
+## En cours
+- [en-cours.md](en-cours.md) — point d'étape réécrit à la fin de chaque tâche, lu après /clear
+
 ## Reference
 - [reference-deploiement.md](reference-deploiement.md) — tests, déploiement web, builds, sources juridiques
