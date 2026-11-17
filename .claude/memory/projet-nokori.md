@@ -1,6 +1,6 @@
 ---
 name: projet-nokori
-description: Ce qu'est Nokori, où en est le projet et les décisions importantes
+description: Ce qu'est Nokori, où en est le projet (17/11/2026), l'objectif AVERYN et les décisions importantes
 type: project
 ---
 
@@ -23,3 +23,9 @@ Fait le 16/11/2026 : page « Aide et contact » (`/legal/assistance`, adresses d
 **How to apply:** vérifier `git log` et le README avant d'agir ; ces informations datent du 15/11/2026.
 
 Lot « Sécurité et fiabilité » (16/11/2026, commits 843493e → D3) : D4, A2, A1, B, C, D1, E1, E2, E3, D2, D3 faits, un commit chacun. Restent volontairement : campagne sur téléphones (`docs/TESTS-APPAREILS.md`) et choix du coût scrypt A3 (rester à 2^15 sauf si 2^16 < 2-3 s sur Android d'entrée de gamme ; ne pas dépasser 2^16 pour les APK déjà distribués). Intégration continue : `.github/workflows/ci.yml`, vérifiable avec les outils GitHub Actions du dépôt `sn7jbvfg7c-source/nokori`. Le texte de typographie est contrôlé par un test : lancer `node scripts/typo-fr.js` après avoir écrit des textes.
+
+Objectif à long terme (annoncé le 16/11/2026) : rendre Nokori commercialisable et construire AVERYN, un studio qui éditera plusieurs applications. L'audit correspondant est dans `docs/audit/` (7 fichiers, dont `ROADMAP_PRIORISEE.md`, qui donne l'ordre des prochains lots). Il travaille par étapes validées : prise de connaissance, audit sans aucune modification, puis lots, chacun avec un plan qu'il valide avant le code.
+
+État au 17/11/2026 (d'après la session du 16/11, non revérifié depuis) : APK Android de test compilé sur le commit `749757a` avec tout le lot Sécurité et fiabilité (profil `preview`, même signature que le précédent, toujours 1.0.0 build 1 : le numéro de build n'est pas incrémenté). **Le site nokori.expo.app n'a pas été redéployé, à sa demande** : il est en retard sur `main` ; ne pas le redéployer sans son accord. Rien n'a été publié sur Google Play.
+
+Branches : les sessions cloud imposent parfois une branche `claude/…` au lieu de `main` ; dans ce cas, y pousser et lui dire que le travail n'est pas encore sur `main`.
