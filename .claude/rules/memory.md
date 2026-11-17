@@ -2,6 +2,14 @@
 
 Dans ce dépôt, le dossier de mémoire est `.claude/memory/` (versionné avec le code, car les sessions cloud repartent d'un conteneur neuf). Après une mise à jour, faire un commit.
 
+## Règles propres à ce dépôt
+
+- À la fin d'un gros travail (un lot, un audit, un déploiement, une compilation), mettre la mémoire à jour sans attendre qu'on le demande : le propriétaire fait souvent `/clear`.
+- Dater ce qu'on écrit, et distinguer ce qui a été vérifié de ce qui vient d'une autre session.
+- Une question restée sans réponse se note en mémoire et ne se repose pas à chaque message.
+- Ne jamais écrire dans la mémoire de noms de collègues ni de données de son employeur.
+- Les fiches des agents de collecte sont dans `.claude/agents/`.
+
 ## Recall — Before Responding
 
 Check memory when the message involves past decisions, preferences, system
